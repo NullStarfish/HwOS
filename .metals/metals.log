@@ -1,0 +1,1750 @@
+2026.01.29 22:07:20 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/nullstarfish/HwOS/.metals/lsp.trace.json[0m
+2026.01.29 22:07:21 INFO  logging to files /home/nullstarfish/HwOS/.metals/metals.log[0m
+2026.01.29 22:07:21 INFO  Started: Metals version 1.6.5 in folders '/home/nullstarfish/HwOS' for client Visual Studio Code 1.108.2.[0m
+2026.01.29 22:07:21 INFO  Memory monitor started[0m
+2026.01.29 22:07:21 WARN  Using H2 2.4.240 which is newer than the version Flyway has been verified with. The latest verified version of H2 is 2.3.232.[0m
+2026.01.29 22:07:21 INFO  no build target found for /home/nullstarfish/HwOS/core/components/ControlUnit.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+Jan 29, 2026 10:07:23 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2
+Jan 29, 2026 10:07:23 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1
+2026.01.29 22:07:23 INFO  no build target found for /home/nullstarfish/HwOS/core/components/ControlUnit.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:23 INFO  no build target found for /home/nullstarfish/HwOS/core/drivers/SmartAXIDriver.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:23 INFO  no build target found for /home/nullstarfish/HwOS/core/drivers/SmartAXIDriver.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+Jan 29, 2026 10:07:23 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 9
+Jan 29, 2026 10:07:23 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 6
+2026.01.29 22:07:23 INFO  no build target found for /home/nullstarfish/HwOS/core/drivers/SmartAXIDriver.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:23 INFO  no build target found for /home/nullstarfish/HwOS/core/drivers/StandardDrivers.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:23 INFO  no build target found for /home/nullstarfish/HwOS/core/drivers/StandardDrivers.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:23 INFO  no build target found for /home/nullstarfish/HwOS/core/drivers/StandardDrivers.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:23 INFO  no build target found for /home/nullstarfish/HwOS/core/kernel/SysDefs.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:24 INFO  no build target found for /home/nullstarfish/HwOS/core/kernel/SysDefs.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:24 INFO  no build target found for /home/nullstarfish/HwOS/core/kernel/SysDefs.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:24 INFO  no build target found for /home/nullstarfish/HwOS/core/kernel/VirtualResourceHandle.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:24 INFO  no build target found for /home/nullstarfish/HwOS/core/kernel/VirtualResourceHandle.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:25 INFO  no build target found for /home/nullstarfish/HwOS/core/kernel/VirtualResourceHandle.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:25 INFO  no build target found for /home/nullstarfish/HwOS/core/os/ContextScope.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:25 INFO  no build target found for /home/nullstarfish/HwOS/core/os/ContextScope.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:26 INFO  no build target found for /home/nullstarfish/HwOS/core/os/ContextScope.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:26 INFO  no build target found for /home/nullstarfish/HwOS/core/processes/CPUProsses.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:27 INFO  no build target found for /home/nullstarfish/HwOS/core/processes/CPUProsses.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:28 INFO  no build target found for /home/nullstarfish/HwOS/core/processes/CPUProsses.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:32 INFO  no build target found for /home/nullstarfish/HwOS/core/processes/CPUProsses.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:32 INFO  no build target found for /home/nullstarfish/HwOS/common/Config.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:32 INFO  no build target found for /home/nullstarfish/HwOS/common/Config.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:32 INFO  no build target found for /home/nullstarfish/HwOS/common/Config.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:32 INFO  no build target found for /home/nullstarfish/HwOS/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:32 INFO  no build target found for /home/nullstarfish/HwOS/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:33 INFO  no build target found for /home/nullstarfish/HwOS/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:33 INFO  no build target found for /home/nullstarfish/HwOS/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:33 INFO  no build target found for /home/nullstarfish/HwOS/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:35 INFO  no build target found for /home/nullstarfish/HwOS/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:35 INFO  no build target found for /home/nullstarfish/HwOS/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:35 INFO  Running List(/home/nullstarfish/.cache/scalacli/local-repo/bin/scala-cli/scala-cli, setup-ide, /home/nullstarfish/HwOS)[0m
+2026.01.29 22:07:36 INFO  Attempting to connect to the build server...[0m
+2026.01.29 22:07:36 INFO  Running BSP server List(/home/nullstarfish/.cache/scalacli/local-repo/bin/scala-cli/scala-cli, bsp, --json-options, /home/nullstarfish/HwOS/.scala-build/ide-options-v2.json, --json-launcher-options, /home/nullstarfish/HwOS/.scala-build/ide-launcher-options.json, --envs-file, /home/nullstarfish/HwOS/.scala-build/ide-envs.json, /home/nullstarfish/HwOS)[0m
+2026.01.29 22:07:35 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/nullstarfish/HwOS/.metals/bsp.trace.json[0m
+2026.01.29 22:07:36 INFO  no build target found for /home/nullstarfish/HwOS/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.3.7[0m
+2026.01.29 22:07:35 INFO  time: Connected to build server in 0.57s[0m
+2026.01.29 22:07:36 INFO  Connected to Build server: scala-cli v1.12.0[0m
+2026.01.29 22:07:36 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:07:38 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:07:39 INFO  time: indexed workspace in 3.08s[0m
+2026.01.29 22:07:42 INFO  time: compiled HwOS_d5c0a6989e in 5.46s[0m
+2026.01.29 22:07:42 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:07:43 INFO  time: compiled HwOS_d5c0a6989e in 1.28s[0m
+2026.01.29 22:07:43 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:07:44 INFO  time: compiled HwOS_d5c0a6989e in 0.94s[0m
+Jan 29, 2026 10:08:00 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 130
+2026.01.29 22:10:17 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:19 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:10:19 INFO  time: indexed workspace in 2.35s[0m
+2026.01.29 22:10:20 INFO  Deduplicating compilation of HwOS_d5c0a6989e from bsp client 'scala-cli 1.12.0' (since 2m 43.817s)[0m
+2026.01.29 22:10:20 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:20 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/components/ALU.scala[0m
+2026.01.29 22:10:20 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/components/ImmGen.scala[0m
+2026.01.29 22:10:20 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/components/ControlUnit.scala[0m
+2026.01.29 22:10:20 INFO  time: compiled HwOS_d5c0a6989e in 70ms[0m
+2026.01.29 22:10:20 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/components/ALU.scala[0m
+2026.01.29 22:10:20 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/components/ImmGen.scala[0m
+2026.01.29 22:10:20 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/components/ControlUnit.scala[0m
+2026.01.29 22:10:20 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:21 INFO  time: compiled HwOS_d5c0a6989e in 0.99s[0m
+2026.01.29 22:10:48 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:48 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/bundles/PipelineData.scala[0m
+2026.01.29 22:10:48 INFO  time: compiled HwOS_d5c0a6989e in 0.64s[0m
+2026.01.29 22:10:48 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:49 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:10:49 INFO  time: indexed workspace in 1.2s[0m
+2026.01.29 22:10:49 INFO  Deduplicating compilation of HwOS_d5c0a6989e from bsp client 'scala-cli 1.12.0' (since 3m 13.48s)[0m
+2026.01.29 22:10:49 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:49 INFO  time: compiled HwOS_d5c0a6989e in 0.16s[0m
+2026.01.29 22:10:52 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:52 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/components/bundles/PipelineData.scala[0m
+2026.01.29 22:10:52 INFO  time: compiled HwOS_d5c0a6989e in 0.53s[0m
+2026.01.29 22:10:52 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:53 INFO  time: compiled HwOS_d5c0a6989e in 0.56s[0m
+2026.01.29 22:10:53 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:10:53 INFO  time: indexed workspace in 1.46s[0m
+2026.01.29 22:10:53 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:10:53 INFO  time: compiled HwOS_d5c0a6989e in 0.55s[0m
+2026.01.29 22:11:10 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:10 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/processes/CPUProsses.scala[0m
+2026.01.29 22:11:10 INFO  time: compiled HwOS_d5c0a6989e in 0.44s[0m
+2026.01.29 22:11:10 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:10 INFO  time: compiled HwOS_d5c0a6989e in 0.47s[0m
+2026.01.29 22:11:11 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:11:11 INFO  time: indexed workspace in 1.12s[0m
+2026.01.29 22:11:11 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:11 INFO  time: compiled HwOS_d5c0a6989e in 0.38s[0m
+2026.01.29 22:11:24 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:24 INFO  time: compiled HwOS_d5c0a6989e in 0.48s[0m
+2026.01.29 22:11:24 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:25 INFO  time: compiled HwOS_d5c0a6989e in 0.51s[0m
+2026.01.29 22:11:26 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:11:26 INFO  time: indexed workspace in 1.16s[0m
+2026.01.29 22:11:25 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:25 INFO  time: compiled HwOS_d5c0a6989e in 0.44s[0m
+2026.01.29 22:11:32 INFO  no build target found for /home/nullstarfish/HwOS/kernel/HwProcess.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:11:32 INFO  no build target found for /home/nullstarfish/HwOS/kernel/HwProcess.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:11:32 WARN  no build target for: /home/nullstarfish/HwOS/kernel/HwProcess.scala[0m
+2026.01.29 22:11:32 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:32 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/kernel/HwProcess.scala[0m
+2026.01.29 22:11:32 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/kernel/PhysicalDriver.scala[0m
+2026.01.29 22:11:32 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/kernel/VirtualResourceHandle.scala[0m
+2026.01.29 22:11:32 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/kernel/Kernel.scala[0m
+2026.01.29 22:11:32 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/kernel/SysDefs.scala[0m
+2026.01.29 22:11:32 INFO  time: compiled HwOS_d5c0a6989e in 0.4s[0m
+2026.01.29 22:11:32 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:32 INFO  time: compiled HwOS_d5c0a6989e in 0.41s[0m
+2026.01.29 22:11:33 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:11:33 INFO  time: indexed workspace in 1.08s[0m
+2026.01.29 22:11:33 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:33 INFO  time: compiled HwOS_d5c0a6989e in 0.48s[0m
+2026.01.29 22:11:38 INFO  no build target found for /home/nullstarfish/HwOS/example/Core.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:11:38 INFO  no build target found for /home/nullstarfish/HwOS/example/Core.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:11:38 WARN  no build target for: /home/nullstarfish/HwOS/example/Core.scala[0m
+2026.01.29 22:11:38 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:38 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/Core.scala[0m
+2026.01.29 22:11:38 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:38 INFO  time: compiled HwOS_d5c0a6989e in 0.43s[0m
+2026.01.29 22:11:39 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:11:39 INFO  time: indexed workspace in 1.41s[0m
+2026.01.29 22:11:40 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:11:40 INFO  time: compiled HwOS_d5c0a6989e in 0.32s[0m
+2026.01.29 22:12:03 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:12:03 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/drivers/SmartAXIDriver.scala[0m
+2026.01.29 22:12:03 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/drivers/MissingDrivers.scala[0m
+2026.01.29 22:12:03 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/core/drivers/StandardDrivers.scala[0m
+2026.01.29 22:12:03 INFO  time: compiled HwOS_d5c0a6989e in 0.41s[0m
+2026.01.29 22:12:03 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:12:03 INFO  time: compiled HwOS_d5c0a6989e in 0.4s[0m
+2026.01.29 22:12:04 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:12:04 INFO  time: indexed workspace in 1.08s[0m
+2026.01.29 22:12:04 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:12:04 INFO  time: compiled HwOS_d5c0a6989e in 0.29s[0m
+2026.01.29 22:12:32 INFO  no build target found for /home/nullstarfish/HwOS/example/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:12:32 INFO  no build target found for /home/nullstarfish/HwOS/example/common/Consts.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:12:32 WARN  no build target for: /home/nullstarfish/HwOS/example/common/Consts.scala[0m
+2026.01.29 22:12:32 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:12:32 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/common/Config.scala[0m
+2026.01.29 22:12:32 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/common/Consts.scala[0m
+2026.01.29 22:12:32 INFO  time: compiled HwOS_d5c0a6989e in 0.4s[0m
+2026.01.29 22:12:32 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:12:32 INFO  time: compiled HwOS_d5c0a6989e in 0.4s[0m
+2026.01.29 22:12:33 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:12:33 INFO  time: indexed workspace in 1.09s[0m
+2026.01.29 22:12:34 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:12:34 INFO  time: compiled HwOS_d5c0a6989e in 0.28s[0m
+2026.01.29 22:13:02 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:02 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/utils/HardwareAgent.scala[0m
+2026.01.29 22:13:02 INFO  time: compiled HwOS_d5c0a6989e in 0.39s[0m
+2026.01.29 22:13:02 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:02 INFO  time: compiled HwOS_d5c0a6989e in 0.36s[0m
+2026.01.29 22:13:03 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:13:03 INFO  time: indexed workspace in 1.07s[0m
+2026.01.29 22:13:03 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:03 INFO  time: compiled HwOS_d5c0a6989e in 0.33s[0m
+2026.01.29 22:13:05 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:05 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:06 INFO  time: compiled HwOS_d5c0a6989e in 0.56s[0m
+2026.01.29 22:13:07 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:13:07 INFO  time: indexed workspace in 1.9s[0m
+2026.01.29 22:13:06 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:07 INFO  time: compiled HwOS_d5c0a6989e in 0.41s[0m
+2026.01.29 22:13:23 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:23 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/utils/AXI4Defs.scala[0m
+2026.01.29 22:13:23 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/utils/DPI.scala[0m
+2026.01.29 22:13:23 INFO  time: compiled HwOS_d5c0a6989e in 0.33s[0m
+2026.01.29 22:13:23 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:23 INFO  time: compiled HwOS_d5c0a6989e in 0.35s[0m
+2026.01.29 22:13:24 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:13:24 INFO  time: indexed workspace in 1.03s[0m
+2026.01.29 22:13:24 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:13:24 INFO  time: compiled HwOS_d5c0a6989e in 0.3s[0m
+Jan 29, 2026 10:14:12 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1011
+2026.01.29 22:14:28 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:14:28 INFO  time: compiled HwOS_d5c0a6989e in 0.5s[0m
+2026.01.29 22:14:30 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:14:30 INFO  time: compiled HwOS_d5c0a6989e in 0.3s[0m
+2026.01.29 22:14:41 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:14:41 INFO  time: compiled HwOS_d5c0a6989e in 0.27s[0m
+2026.01.29 22:14:57 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:14:57 INFO  time: compiled HwOS_d5c0a6989e in 0.29s[0m
+2026.01.29 22:15:12 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:15:12 INFO  time: compiled HwOS_d5c0a6989e in 0.3s[0m
+2026.01.29 22:15:20 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:15:20 INFO  time: compiled HwOS_d5c0a6989e in 0.29s[0m
+2026.01.29 22:15:32 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:15:32 INFO  time: compiled HwOS_d5c0a6989e in 0.32s[0m
+Jan 29, 2026 10:15:40 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 1719
+2026.01.29 22:15:42 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:15:42 INFO  time: compiled HwOS_d5c0a6989e in 0.29s[0m
+2026.01.29 22:15:52 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:15:52 INFO  time: compiled HwOS_d5c0a6989e in 0.3s[0m
+2026.01.29 22:16:03 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:16:03 INFO  time: compiled HwOS_d5c0a6989e in 0.31s[0m
+2026.01.29 22:16:10 INFO  no build target found for /home/nullstarfish/HwOS/example/CoreWrapper.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:16:10 INFO  no build target found for /home/nullstarfish/HwOS/example/CoreWrapper.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:16:10 WARN  no build target for: /home/nullstarfish/HwOS/example/CoreWrapper.scala[0m
+2026.01.29 22:16:10 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:16:10 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/CoreWrapper.scala[0m
+2026.01.29 22:16:10 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:16:12 INFO  time: compiled HwOS_d5c0a6989e in 0.8s[0m
+2026.01.29 22:16:12 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:16:12 INFO  time: indexed workspace in 1.86s[0m
+2026.01.29 22:16:12 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:16:12 INFO  time: compiled HwOS_d5c0a6989e in 0.69s[0m
+Jan 29, 2026 10:16:49 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 2175
+2026.01.29 22:17:56 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:17:56 INFO  time: compiled HwOS_d5c0a6989e in 0.6s[0m
+2026.01.29 22:18:28 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/kernel/HwProcess.scala][0m
+2026.01.29 22:18:28 INFO  empty definition using pc, found symbol in pc:  (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_empty-definition_(HwOS_5fd5c0a6989e)_22-18-28-282.md")[0m
+2026.01.29 22:19:17 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/kernel/HwProcess.scala][0m
+2026.01.29 22:19:17 INFO  empty definition using pc, found symbol in pc:  (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_empty-definition_(HwOS_5fd5c0a6989e)_22-19-17-471.md")[0m
+2026.01.29 22:19:17 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/kernel/HwProcess.scala][0m
+2026.01.29 22:19:17 INFO  empty definition using pc, found symbol in pc:  (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_empty-definition_(HwOS_5fd5c0a6989e)_22-19-18-397.md")[0m
+2026.01.29 22:19:18 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/kernel/HwProcess.scala][0m
+2026.01.29 22:19:18 INFO  empty definition using pc, found symbol in pc:  (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_empty-definition_(HwOS_5fd5c0a6989e)_22-19-18-775.md")[0m
+2026.01.29 22:19:19 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/kernel/HwProcess.scala][0m
+2026.01.29 22:19:19 INFO  empty definition using pc, found symbol in pc:  (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_empty-definition_(HwOS_5fd5c0a6989e)_22-19-19-269.md")[0m
+2026.01.29 22:19:38 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:19:38 INFO  time: compiled HwOS_d5c0a6989e in 0.65s[0m
+2026.01.29 22:20:05 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/kernel/Kernel.scala][0m
+2026.01.29 22:20:05 INFO  empty definition using pc, found symbol in pc:  (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_empty-definition_(HwOS_5fd5c0a6989e)_22-20-05-969.md")[0m
+2026.01.29 22:20:06 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/kernel/Kernel.scala][0m
+2026.01.29 22:20:06 INFO  empty definition using pc, found symbol in pc:  (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_empty-definition_(HwOS_5fd5c0a6989e)_22-20-06-446.md")[0m
+2026.01.29 22:20:25 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:20:25 INFO  time: compiled HwOS_d5c0a6989e in 0.61s[0m
+2026.01.29 22:23:10 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:23:10 INFO  time: compiled HwOS_d5c0a6989e in 0.68s[0m
+2026.01.29 22:23:47 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:23:47 INFO  time: compiled HwOS_d5c0a6989e in 0.59s[0m
+2026.01.29 22:24:27 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:24:27 INFO  time: compiled HwOS_d5c0a6989e in 0.6s[0m
+2026.01.29 22:25:27 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/drivers/MissingDrivers.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/drivers/StandardDrivers.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/ContextScope.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/HardwareAgent.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/HwProcess.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/Kernel.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/PhysicalDriver.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/SysDefs.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/VirtualResourceHandle.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:27 INFO  no build target found for /home/nullstarfish/HwOS/kernel/drivers/SmartAXIDriver.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+Jan 29, 2026 10:25:27 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3014
+2026.01.29 22:25:27 INFO  Deduplicating compilation of HwOS_d5c0a6989e from bsp client 'scala-cli 1.12.0' (since 17m 51.519s)[0m
+2026.01.29 22:25:27 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/SysDefs.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/VirtualResourceHandle.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/drivers/SmartAXIDriver.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/HardwareAgent.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/Kernel.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/PhysicalDriver.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/HwProcess.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/drivers/MissingDrivers.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/drivers/StandardDrivers.scala[0m
+2026.01.29 22:25:28 INFO  time: compiled HwOS_d5c0a6989e in 0.48s[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/SysDefs.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/VirtualResourceHandle.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/drivers/SmartAXIDriver.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/HardwareAgent.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/Kernel.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/PhysicalDriver.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/HwProcess.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/drivers/MissingDrivers.scala[0m
+2026.01.29 22:25:28 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/kernel/drivers/StandardDrivers.scala[0m
+2026.01.29 22:25:28 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:25:28 INFO  time: compiled HwOS_d5c0a6989e in 0.66s[0m
+2026.01.29 22:25:29 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:25:29 INFO  time: indexed workspace in 2.17s[0m
+2026.01.29 22:25:29 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:25:29 INFO  time: compiled HwOS_d5c0a6989e in 0.59s[0m
+2026.01.29 22:25:35 INFO  no build target found for /home/nullstarfish/HwOS/src/main/scala/example/utils/DPI.scala. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:25:35 WARN  no build target for: /home/nullstarfish/HwOS/src/main/scala/example/utils/DPI.scala[0m
+2026.01.29 22:25:35 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/CoreWrapper.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/common/Config.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/Core.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/utils/AXI4Defs.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/processes/CPUProsses.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/components/ImmGen.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/components/ControlUnit.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/common/Consts.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/components/ALU.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/bundles/PipelineData.scala[0m
+2026.01.29 22:25:35 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/example/utils/DPI.scala[0m
+2026.01.29 22:25:35 INFO  time: compiled HwOS_d5c0a6989e in 0.44s[0m
+2026.01.29 22:25:35 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:25:35 INFO  time: compiled HwOS_d5c0a6989e in 0.46s[0m
+2026.01.29 22:25:36 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:25:36 INFO  time: indexed workspace in 0.99s[0m
+2026.01.29 22:25:36 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:25:36 INFO  time: compiled HwOS_d5c0a6989e in 0.51s[0m
+2026.01.29 22:26:01 INFO  no build target found for /home/nullstarfish/HwOS/build.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:01 INFO  no build target found for /home/nullstarfish/HwOS/build.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:01 WARN  no build target for: /home/nullstarfish/HwOS/build.sbt[0m
+2026.01.29 22:26:01 INFO  no build target found for /home/nullstarfish/HwOS/build.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:01 INFO  no build target found for /home/nullstarfish/HwOS/build.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:01 WARN  no build target for: /home/nullstarfish/HwOS/build.sbt[0m
+2026.01.29 22:26:01 INFO  no build target found for /home/nullstarfish/HwOS/build.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:06 INFO  running '/usr/local/bin/sbt -Dbloop.export-jar-classifiers=sources bloopInstall'[0m
+2026.01.29 22:26:07 INFO  no build target found for /home/nullstarfish/HwOS/project/metals.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:07 WARN  no build target for: /home/nullstarfish/HwOS/project/metals.sbt[0m
+2026.01.29 22:26:06 WARN  no build target for: /home/nullstarfish/HwOS/project/project/metals.sbt[0m
+2026.01.29 22:26:06 INFO  no build target found for /home/nullstarfish/HwOS/build.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:07 INFO  no build target found for /home/nullstarfish/HwOS/project/project/metals.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:08 INFO  [info] Updated file /home/nullstarfish/HwOS/project/build.properties: set sbt.version to 1.9.7[0m
+2026.01.29 22:26:08 INFO  [info] welcome to sbt 1.9.7 (Debian Java 21.0.10-ea)[0m
+2026.01.29 22:26:08 INFO  no build target found for /home/nullstarfish/HwOS/build.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:09 INFO  no build target found for /home/nullstarfish/HwOS/build.sbt. Using presentation compiler with project's scala-library version: 3.8.0[0m
+2026.01.29 22:26:09 INFO  [info] loading settings for project hwos-build-build from metals.sbt ...[0m
+2026.01.29 22:26:09 INFO  [info] loading project definition from /home/nullstarfish/HwOS/project/project[0m
+2026.01.29 22:26:15 INFO  compiling hwos_d5c0a6989e (21 scala sources)[0m
+2026.01.29 22:26:15 INFO  time: compiled HwOS_d5c0a6989e in 0.57s[0m
+2026.01.29 22:26:17 INFO  [info] loading settings for project hwos-build from metals.sbt ...[0m
+2026.01.29 22:26:17 INFO  [info] loading project definition from /home/nullstarfish/HwOS/project[0m
+2026.01.29 22:26:19 INFO  [success] Generated .bloop/hwos-build.json[0m
+2026.01.29 22:26:19 INFO  [success] Total time: 2 s, completed Jan 29, 2026, 10:26:19 PM[0m
+2026.01.29 22:26:20 INFO  [info] loading settings for project root from build.sbt ...[0m
+2026.01.29 22:26:20 INFO  [info] set current project to %NAME% (in build file:/home/nullstarfish/HwOS/)[0m
+2026.01.29 22:26:20 INFO  [success] Generated .bloop/root.json[0m
+2026.01.29 22:26:20 INFO  [success] Generated .bloop/root-test.json[0m
+2026.01.29 22:26:20 INFO  [success] Total time: 0 s, completed Jan 29, 2026, 10:26:21 PM[0m
+2026.01.29 22:26:21 INFO  time: ran 'sbt bloopInstall' in 15s[0m
+2026.01.29 22:26:21 INFO  Disconnecting from scala-cli session...[0m
+2026.01.29 22:26:21 INFO  Shut down connection with build server.[0m
+2026.01.29 22:26:21 INFO  Attempting to connect to the build server...[0m
+2026.01.29 22:26:21 INFO  Found a Bloop server running[0m
+2026.01.29 22:26:21 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/nullstarfish/HwOS/.metals/bsp.trace.json[0m
+2026.01.29 22:26:21 INFO  Attempting to connect to the build server...[0m
+2026.01.29 22:26:21 INFO  Found a Bloop server running[0m
+2026.01.29 22:26:21 INFO  tracing is disabled for protocol BSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/nullstarfish/HwOS/project/.metals/bsp.trace.json[0m
+2026.01.29 22:26:21 INFO  time: Connected to build server in 0.27s[0m
+2026.01.29 22:26:21 INFO  Connected to Build server: Bloop v2.0.18[0m
+2026.01.29 22:26:23 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:26:24 WARN  Could not find java sources in /usr/lib/jvm/src.zip, /usr/lib/jvm/lib/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/src.zip, /usr/lib/jvm/java-21-openjdk-amd64/lib/src.zip. Java symbols will not be available.[0m
+2026.01.29 22:26:30 INFO  time: compiled root in 7.08s[0m
+2026.01.29 22:26:30 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:26:34 INFO  time: indexed workspace in 12s[0m
+2026.01.29 22:26:34 INFO  Deduplicating compilation of root from bsp client 'Metals 1.6.5' (since 12.434s)[0m
+2026.01.29 22:26:34 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:26:34 INFO  time: compiled root in 0.55s[0m
+2026.01.29 22:26:34 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:26:34 INFO  skipping build import with status 'Installed'[0m
+2026.01.29 22:26:37 INFO  time: compiled root in 2.15s[0m
+Jan 29, 2026 10:26:41 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3166
+Jan 29, 2026 10:26:43 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:26:43 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/SmartAXIDriver.scala][0m
+2026.01.29 22:26:43 INFO  java.lang.AssertionError: assertion failed: bad position: [82:79] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-26-43-607.md")[0m
+Jan 29, 2026 10:26:43 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:26:43 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/SmartAXIDriver.scala][0m
+2026.01.29 22:26:43 INFO  java.lang.AssertionError: assertion failed: bad position: [82:79] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-26-43-750.md")[0m
+2026.01.29 22:26:43 WARN  Could not find semantic tokens for: file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/SmartAXIDriver.scala[0m
+Jan 29, 2026 10:26:43 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:26:43 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/SmartAXIDriver.scala][0m
+2026.01.29 22:26:43 INFO  java.lang.AssertionError: assertion failed: bad position: [82:79] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-26-43-888.md")[0m
+Jan 29, 2026 10:26:43 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:26:43 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/SmartAXIDriver.scala][0m
+2026.01.29 22:26:43 INFO  java.lang.AssertionError: assertion failed: bad position: [82:79] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-26-43-974.md")[0m
+Jan 29, 2026 10:26:44 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 3211
+2026.01.29 22:26:45 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:26:46 INFO  time: compiled root in 1.02s[0m
+2026.01.29 22:27:42 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:27:43 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/src/main/scala/example/Core.scala[0m
+2026.01.29 22:27:43 WARN  Invalid text document uri received from build server: file:///home/nullstarfish/HwOS/src/main/scala/example/processes/CPUProsses.scala[0m
+2026.01.29 22:27:43 INFO  time: compiled root in 1.19s[0m
+2026.01.29 22:27:43 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:27:45 INFO  time: compiled root in 1.05s[0m
+2026.01.29 22:28:01 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:28:01 INFO  time: compiled root in 0.69s[0m
+2026.01.29 22:28:21 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:28:21 INFO  time: compiled root in 0.74s[0m
+2026.01.29 22:28:32 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:28:32 INFO  time: compiled root in 0.75s[0m
+Jan 29, 2026 10:28:44 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:28:45 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/StandardDrivers.scala][0m
+2026.01.29 22:28:45 INFO  java.lang.AssertionError: assertion failed: bad position: [81:79] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-28-44-996.md")[0m
+Jan 29, 2026 10:28:45 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:28:45 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/StandardDrivers.scala][0m
+2026.01.29 22:28:45 INFO  java.lang.AssertionError: assertion failed: bad position: [81:79] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-28-45-274.md")[0m
+2026.01.29 22:28:45 WARN  Could not find semantic tokens for: file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/StandardDrivers.scala[0m
+2026.01.29 22:28:47 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:28:47 INFO  time: compiled root in 0.71s[0m
+2026.01.29 22:29:18 INFO  compiling root (22 scala sources)[0m
+2026.01.29 22:29:18 INFO  time: compiled root in 0.73s[0m
+2026.01.29 22:29:50 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:29:50 INFO  time: compiled root in 0.71s[0m
+2026.01.29 22:29:53 INFO  compiling root (22 scala sources)[0m
+2026.01.29 22:29:53 INFO  time: compiled root in 0.14s[0m
+2026.01.29 22:30:11 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:30:11 INFO  time: compiled root in 0.69s[0m
+Jan 29, 2026 10:30:20 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:30:20 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/StandardDrivers.scala][0m
+2026.01.29 22:30:20 INFO  java.lang.AssertionError: assertion failed: bad position: [104:102] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-30-20-748.md")[0m
+Jan 29, 2026 10:30:20 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:30:20 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/StandardDrivers.scala][0m
+2026.01.29 22:30:20 INFO  java.lang.AssertionError: assertion failed: bad position: [104:102] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-30-21-045.md")[0m
+2026.01.29 22:30:21 WARN  Could not find semantic tokens for: file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/StandardDrivers.scala[0m
+Jan 29, 2026 10:30:24 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for mycpu.common.package, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(110,0,false))
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$8(SymbolIndexBucket.scala:242)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:242)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$8(SymbolIndexBucket.scala:242)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:242)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$8(SymbolIndexBucket.scala:242)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:242)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$8(SymbolIndexBucket.scala:242)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:242)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$8(SymbolIndexBucket.scala:242)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:242)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:24 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/src/main/scala/example/common/Config.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set3.foreach(Set.scala:261)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$8(SymbolIndexBucket.scala:242)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:242)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.CompletionItemResolver.handleSymbol(CompletionItemResolver.scala:35)
+	at scala.meta.internal.pc.CompletionItemResolver.resolve(CompletionItemResolver.scala:28)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$completionItemResolve$1(ScalaPresentationCompiler.scala:421)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.completionItemResolve(ScalaPresentationCompiler.scala:422)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$2(Compilers.scala:331)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.Compilers.$anonfun$completionItemResolve$1(Compilers.scala:330)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.Compilers.completionItemResolve(Compilers.scala:329)
+	at scala.meta.internal.metals.MetalsLspService.$anonfun$completionItemResolve$1(MetalsLspService.scala:1196)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLspService.completionItemResolve(MetalsLspService.scala:1194)
+	at scala.meta.internal.metals.WorkspaceLspService.$anonfun$completionItemResolve$1(WorkspaceLspService.scala:615)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.WorkspaceLspService.completionItemResolve(WorkspaceLspService.scala:615)
+	at scala.meta.metals.lsp.DelegatingScalaService.completionItemResolve(DelegatingScalaService.scala:149)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$recursiveFindRpcMethods$0(GenericEndpoint.java:65)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:128)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:271)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:201)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:185)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:97)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:114)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:30:25 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for mycpu.common.package, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(112,0,false))
+2026.01.29 22:30:25 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:30:25 INFO  time: compiled root in 0.65s[0m
+Jan 29, 2026 10:30:34 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 4061
+Jan 29, 2026 10:30:34 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 4068
+Jan 29, 2026 10:30:34 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:30:34 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/SmartAXIDriver.scala][0m
+2026.01.29 22:30:34 INFO  java.lang.AssertionError: assertion failed: bad position: [104:102] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-30-34-504.md")[0m
+Jan 29, 2026 10:30:34 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:30:34 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/SmartAXIDriver.scala][0m
+2026.01.29 22:30:34 INFO  java.lang.AssertionError: assertion failed: bad position: [104:102] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-30-34-748.md")[0m
+2026.01.29 22:30:34 WARN  Could not find semantic tokens for: file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/SmartAXIDriver.scala[0m
+Jan 29, 2026 10:30:40 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for mycpu.utils, tree around the position were scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(109,0,false))
+2026.01.29 22:30:41 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:30:41 INFO  time: compiled root in 0.49s[0m
+Jan 29, 2026 10:30:43 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for mycpu.utils, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$ValDef,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(111,0,false))
+2026.01.29 22:30:43 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:30:43 INFO  time: compiled root in 0.5s[0m
+2026.01.29 22:30:49 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:30:49 INFO  time: compiled root in 0.43s[0m
+Jan 29, 2026 10:30:59 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 4260
+Jan 29, 2026 10:31:08 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:31:08 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/drivers/MissingDrivers.scala][0m
+2026.01.29 22:31:08 INFO  java.lang.AssertionError: assertion failed: bad position: [104:103] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-31-08-724.md")[0m
+2026.01.29 22:31:21 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:31:21 INFO  time: compiled root in 0.5s[0m
+Jan 29, 2026 10:31:42 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 4534
+Jan 29, 2026 10:31:42 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:31:42 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/Kernel.scala][0m
+2026.01.29 22:31:42 INFO  java.lang.AssertionError: assertion failed: bad position: [130:128] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-31-42-486.md")[0m
+Jan 29, 2026 10:31:42 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:31:42 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/Kernel.scala][0m
+2026.01.29 22:31:42 INFO  java.lang.AssertionError: assertion failed: bad position: [130:128] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-31-42-814.md")[0m
+2026.01.29 22:31:42 WARN  Could not find semantic tokens for: file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/Kernel.scala[0m
+2026.01.29 22:31:49 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:31:49 INFO  time: compiled root in 0.5s[0m
+Jan 29, 2026 10:31:59 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/kernel/SysDefs.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/kernel/SysDefs.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set2.foreach(Set.scala:210)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.Signatures$SignaturePrinter.<init>(Signatures.scala:296)
+	at scala.meta.internal.pc.HoverProvider.toHover(HoverProvider.scala:277)
+	at scala.meta.internal.pc.HoverProvider.hoverOffset(HoverProvider.scala:112)
+	at scala.meta.internal.pc.HoverProvider.hover(HoverProvider.scala:30)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$hover$1(ScalaPresentationCompiler.scala:474)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.CompilerAccess.$anonfun$withNonInterruptableCompiler$1(CompilerAccess.scala:132)
+	at scala.meta.internal.pc.CompilerAccess.$anonfun$onCompilerJobQueue$1(CompilerAccess.scala:209)
+	at scala.meta.internal.pc.CompilerJobQueue$Job.run(CompilerJobQueue.scala:152)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:31:59 PM scala.meta.internal.mtags.SymbolIndexBucket addMtagsSourceFile
+WARNING: Error indexing /home/nullstarfish/HwOS/kernel/SysDefs.scala
+java.nio.file.NoSuchFileException: /home/nullstarfish/HwOS/kernel/SysDefs.scala
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at scala.meta.internal.io.PlatformFileIO$.slurp(PlatformFileIO.scala:38)
+	at scala.meta.internal.io.FileIO$.slurp(FileIO.scala:18)
+	at scala.meta.internal.mtags.ScalametaCommonEnrichments$XtensionAbsolutePath.toInput(ScalametaCommonEnrichments.scala:513)
+	at scala.meta.internal.mtags.Mtags.index(Mtags.scala:101)
+	at scala.meta.internal.mtags.Mtags.allSymbols(Mtags.scala:21)
+	at scala.meta.internal.mtags.SymbolIndexBucket.allSymbols(SymbolIndexBucket.scala:293)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:304)
+	at scala.meta.internal.mtags.SymbolIndexBucket.addMtagsSourceFile(SymbolIndexBucket.scala:315)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.$anonfun$query0$1$adapted(SymbolIndexBucket.scala:220)
+	at scala.collection.immutable.Set$Set2.foreach(Set.scala:210)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query0(SymbolIndexBucket.scala:220)
+	at scala.meta.internal.mtags.SymbolIndexBucket.query(SymbolIndexBucket.scala:193)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.$anonfun$findSymbolDefinition$1(OnDemandSymbolIndex.scala:143)
+	at scala.collection.immutable.List.flatMap(List.scala:283)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.findSymbolDefinition(OnDemandSymbolIndex.scala:143)
+	at scala.meta.internal.mtags.OnDemandSymbolIndex.definition(OnDemandSymbolIndex.scala:48)
+	at scala.meta.internal.metals.Docstrings.indexSymbol(Docstrings.scala:138)
+	at scala.meta.internal.metals.Docstrings.documentation(Docstrings.scala:49)
+	at scala.meta.internal.metals.MetalsSymbolSearch.documentation(MetalsSymbolSearch.scala:47)
+	at scala.meta.internal.pc.MetalsGlobal.symbolDocumentation(MetalsGlobal.scala:295)
+	at scala.meta.internal.pc.Signatures$SignaturePrinter.<init>(Signatures.scala:296)
+	at scala.meta.internal.pc.HoverProvider.toHover(HoverProvider.scala:277)
+	at scala.meta.internal.pc.HoverProvider.hoverOffset(HoverProvider.scala:112)
+	at scala.meta.internal.pc.HoverProvider.hover(HoverProvider.scala:30)
+	at scala.meta.internal.pc.ScalaPresentationCompiler.$anonfun$hover$1(ScalaPresentationCompiler.scala:474)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:148)
+	at scala.meta.internal.pc.CompilerAccess.$anonfun$withNonInterruptableCompiler$1(CompilerAccess.scala:132)
+	at scala.meta.internal.pc.CompilerAccess.$anonfun$onCompilerJobQueue$1(CompilerAccess.scala:209)
+	at scala.meta.internal.pc.CompilerJobQueue$Job.run(CompilerJobQueue.scala:152)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+Jan 29, 2026 10:32:11 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 4711
+Jan 29, 2026 10:32:11 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:32:11 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/SysDefs.scala][0m
+2026.01.29 22:32:11 INFO  java.lang.AssertionError: assertion failed: bad position: [256:73] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-32-11-462.md")[0m
+Jan 29, 2026 10:32:11 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:32:11 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/SysDefs.scala][0m
+2026.01.29 22:32:11 INFO  java.lang.AssertionError: assertion failed: bad position: [256:73] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-32-11-622.md")[0m
+2026.01.29 22:32:11 WARN  Could not find semantic tokens for: file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/SysDefs.scala[0m
+Jan 29, 2026 10:32:11 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:32:11 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/SysDefs.scala][0m
+2026.01.29 22:32:11 INFO  java.lang.AssertionError: assertion failed: bad position: [256:73] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-32-11-718.md")[0m
+2026.01.29 22:32:20 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:32:20 INFO  time: compiled root in 0.52s[0m
+Jan 29, 2026 10:32:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 4843
+Jan 29, 2026 10:32:31 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:32:31 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/VirtualResourceHandle.scala][0m
+2026.01.29 22:32:31 INFO  java.lang.AssertionError: assertion failed: bad position: [75:73] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-32-31-162.md")[0m
+Jan 29, 2026 10:32:31 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:32:31 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/VirtualResourceHandle.scala][0m
+2026.01.29 22:32:31 INFO  java.lang.AssertionError: assertion failed: bad position: [75:73] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-32-31-420.md")[0m
+2026.01.29 22:32:31 WARN  Could not find semantic tokens for: file:///home/nullstarfish/HwOS/src/main/scala/HwOS/kernel/VirtualResourceHandle.scala[0m
+2026.01.29 22:32:34 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:32:34 INFO  time: compiled root in 0.45s[0m
+2026.01.29 22:32:57 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:32:57 INFO  time: compiled root in 0.41s[0m
+Jan 29, 2026 10:33:00 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 4994
+Jan 29, 2026 10:33:03 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:33:05 INFO  compiling root (21 scala sources)[0m
+Jan 29, 2026 10:33:06 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(217,0,false))
+Jan 29, 2026 10:33:06 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(217,0,false))
+2026.01.29 22:33:05 INFO  time: compiled root in 0.46s[0m
+2026.01.29 22:33:19 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:33:19 INFO  time: compiled root in 0.42s[0m
+Jan 29, 2026 10:33:39 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:33:39 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/mycpu/Core.scala][0m
+2026.01.29 22:33:39 INFO  java.lang.AssertionError: assertion failed: bad position: [147:146] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-33-39-630.md")[0m
+Jan 29, 2026 10:33:41 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$New,scala.reflect.internal.Trees$Select,scala.reflect.internal.Trees$Apply,scala.reflect.internal.Trees$ValDef, auto import position was Some(AutoImportPosition(201,0,false))
+Jan 29, 2026 10:33:43 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$New,scala.reflect.internal.Trees$Select,scala.reflect.internal.Trees$Apply,scala.reflect.internal.Trees$ValDef, auto import position was Some(AutoImportPosition(201,0,false))
+Jan 29, 2026 10:33:45 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(211,0,false))
+Jan 29, 2026 10:33:45 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 5299
+Jan 29, 2026 10:33:45 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:33:46 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/mycpu/Core.scala][0m
+2026.01.29 22:33:46 INFO  java.lang.AssertionError: assertion failed: bad position: [168:167] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-33-46-019.md")[0m
+Jan 29, 2026 10:33:46 PM scala.meta.internal.pc.CompilerAccess retryWithCleanCompiler
+INFO: compiler crashed due to an error in the Scala compiler, retrying with new compiler instance.
+2026.01.29 22:33:46 INFO  Created report: Optional[file:///home/nullstarfish/HwOS/src/main/scala/mycpu/Core.scala][0m
+2026.01.29 22:33:46 INFO  java.lang.AssertionError: assertion failed: bad position: [168:167] (full report at: "/home/nullstarfish/HwOS/.metals/.reports/metals-full/2026-01-29/r_compiler-error_(root)_22-33-46-222.md")[0m
+2026.01.29 22:33:46 WARN  Could not find semantic tokens for: file:///home/nullstarfish/HwOS/src/main/scala/mycpu/Core.scala[0m
+Jan 29, 2026 10:33:46 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(214,0,false))
+Jan 29, 2026 10:33:46 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(214,0,false))
+Jan 29, 2026 10:33:47 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(214,0,false))
+Jan 29, 2026 10:33:47 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(214,0,false))
+Jan 29, 2026 10:33:49 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(214,0,false))
+Jan 29, 2026 10:33:49 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(214,0,false))
+Jan 29, 2026 10:34:19 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(220,0,false))
+Jan 29, 2026 10:34:20 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(221,0,false))
+Jan 29, 2026 10:34:20 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(221,0,false))
+Jan 29, 2026 10:34:21 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(228,0,false))
+Jan 29, 2026 10:34:21 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel.drivers, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(228,0,false))
+Jan 29, 2026 10:34:21 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(228,0,false))
+Jan 29, 2026 10:34:22 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(229,0,false))
+Jan 29, 2026 10:34:23 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:23 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel.drivers, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:23 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:24 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:24 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel.drivers, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:24 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:26 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:26 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel.drivers, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:26 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:27 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:27 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel.drivers, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:27 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:27 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:27 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel.drivers, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:27 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:32 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:32 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel.drivers, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:32 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:33 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:33 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel.drivers, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$PackageDef, auto import position was Some(AutoImportPosition(230,0,false))
+Jan 29, 2026 10:34:33 PM scala.meta.internal.pc.AutoImportsProvider$$anonfun$1 applyOrElse
+WARNING: Could not infer edits for HwOS.kernel, tree around the position were scala.reflect.internal.Trees$Ident,scala.reflect.internal.Trees$Template,scala.reflect.internal.Trees$ClassDef,scala.reflect.internal.Trees$Block,scala.reflect.internal.Trees$Apply, auto import position was Some(AutoImportPosition(230,0,false))
+2026.01.29 22:34:33 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:34:33 INFO  time: compiled root in 0.6s[0m
+2026.01.29 22:34:41 INFO  compiling root (21 scala sources)[0m
+2026.01.29 22:34:49 INFO  time: compiled root in 7.67s[0m
+2026.01.29 22:35:19 INFO  compiling root (1 scala source)[0m
+2026.01.29 22:35:19 INFO  time: compiled root in 0.96s[0m
+2026.01.29 22:35:19 INFO  compiling root (2 scala sources)[0m
+2026.01.29 22:35:21 INFO  time: compiled root in 0.29s[0m
+2026.01.29 22:35:43 INFO  compiling root (2 scala sources)[0m
+2026.01.29 22:35:44 INFO  time: compiled root in 1.19s[0m
+2026.01.29 22:35:44 INFO  compiling root (1 scala source)[0m
+2026.01.29 22:35:44 INFO  time: compiled root in 0.15s[0m
+2026.01.29 22:35:46 INFO  compiling root (3 scala sources)[0m
+2026.01.29 22:35:47 INFO  time: compiled root in 1.34s[0m
+2026.01.29 22:35:47 INFO  compiling root (1 scala source)[0m
+2026.01.29 22:35:47 INFO  time: compiled root in 0.17s[0m
+2026.01.29 22:35:51 INFO  compiling root (4 scala sources)[0m
+2026.01.29 22:35:52 INFO  time: compiled root in 1.26s[0m
+2026.01.29 22:35:52 INFO  compiling root (1 scala source)[0m
+2026.01.29 22:35:52 INFO  time: compiled root in 0.11s[0m
+2026.01.29 22:36:06 INFO  compiling root (5 scala sources)[0m
+2026.01.29 22:36:08 INFO  time: compiled root in 1.78s[0m
+2026.01.29 22:36:08 INFO  compiling root (1 scala source)[0m
+2026.01.29 22:36:08 INFO  time: compiled root in 0.12s[0m
+2026.01.29 22:36:13 INFO  compiling root (6 scala sources)[0m
+2026.01.29 22:36:15 INFO  time: compiled root in 2.11s[0m
+2026.01.29 22:36:26 INFO  compiling root (1 scala source)[0m
+2026.01.29 22:36:26 INFO  time: compiled root in 0.75s[0m
+2026.01.29 22:36:26 INFO  compiling root (1 scala source)[0m
+2026.01.29 22:36:26 INFO  time: compiled root in 0.12s[0m
+2026.01.29 22:36:33 INFO  compiling root (2 scala sources)[0m
+2026.01.29 22:36:34 INFO  time: compiled root in 1.07s[0m
+Jan 29, 2026 10:37:03 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+Jan 29, 2026 10:37:03 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace

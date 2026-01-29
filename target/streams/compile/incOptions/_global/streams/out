@@ -1,0 +1,97 @@
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = /home/nullstarfish/HwOS/target/scala-2.13/classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = /home/nullstarfish/HwOS/target/scala-2.13/classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ClientChannel.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4Split$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TerminalDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	InlineSimEbreak.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	myCore.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ALU.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Arg1Type.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4WriteOnly.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Arg2Type$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ImmGen.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwProcess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ControlUnit.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipeDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ProcessContext.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ContextScope.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4Parameters.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ClientChannelReq.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverUtils$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FetchProcess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SysResult.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	MainProcess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	LogicCtx.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	InlineSimState.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AtomicCtx$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverTiming$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PhysicalDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	InlineSimEbreak$$anon$2.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SmartAXIDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ServiceType.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HardwareLogic.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	CtrlSignals.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AtomicCtx.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4Parameters$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ALU$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ContextScope$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FetchPacket.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	package.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Kernel.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Core$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverMeta.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4BundleR.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HardwareAgent.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Arg1Type$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverTiming.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Errno.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4BundleB.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	CSRDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4Bundle.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Instructions$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4BundleW.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Core.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HardwareLogic$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	VirtualResourceHandle.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ImmGen$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ServiceType$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	package$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	GenCore$delayedInit$body.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4LiteBundle$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4LiteBundle.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Instructions.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PidAllocator.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PCDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	package$ImmType$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverTiming$Type.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ThreadCtx$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Core$Init$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverTiming$Combinational$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ControlUnit$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	InlineSimState$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	package$ALUOp$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HardwareThread$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Arg2Type.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverMeta$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4BundleA.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HardwareThread.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	myCore$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	GenCore.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverUtils.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PidAllocator$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ThreadCtx.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	LogicCtx$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegFileDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ExecutionContext.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Errno$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4Split.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	package$CSROp$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	GenCore$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AXI4ReadOnly.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	DriverTiming$Sequential$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mRemoving the temporary directory used for backing up class files: /home/nullstarfish/HwOS/target/scala-2.13/classes.bak[0m
