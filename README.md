@@ -144,7 +144,7 @@ class Core extends Module {
 // 伪代码示例
 val fetchPipe = sys_open("Fetch2Main")
 // 像写文件一样写寄存器
-fetchPipe.write(data)
+fetchPipe.sys_write(addr,data)
 
 ```
 
