@@ -13,6 +13,7 @@ abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val 
 
   protected def createThread(name: String = "Main"): HardwareThread = {
     val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable)
+    t.startWhen(true.B) //默认为true
     kernel.registerThread(s"${this.name}/${name}_thread", t)
     threads += t
     t
