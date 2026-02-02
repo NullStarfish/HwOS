@@ -67,8 +67,7 @@ class Kernel {
 
   def mount(driver: PhysicalDriver): Unit = {
     drivers(driver.meta.name) = driver
-    val tracker = new ResourceTracker(driver.meta, systemProcess)
-    tracker.run{} //现在没有逻辑
+    val tracker = new ResourceTracker(driver.meta)
     trackers(driver.meta.name) = tracker
 
     val depth = driver.meta.model match {
@@ -88,96 +87,31 @@ class Kernel {
 
 
   def sys_intent(name: String, addr: UInt, op: UInt, id: UInt): Bool = {
-    if (!this.hasDriver(name)) {
-      throw new Exception(s"[Kernel] doesn't have dirver named $name")
-    }
-
-    val tracker = trackers(name)
-    tracker.send_intent(addr, op, id)
-  }
-
-
-  def sys_inquiry(name: String, addr: UInt, op: UInt, id: UInt): Bool = {
-    if (!this.hasDriver(name)) {
-      throw new Exception(s"[Kernel] doesn't have dirver named $name")
-    }
-
-    val tracker = trackers(name)
-    tracker.access_check(addr, op, id)
-  }
-
-
-  def secure_check(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
-    if (secure_mode) {
-      val canAccess = sys_inquiry(name, addr, op, id)
-      when(!canAccess) {
-        printf(p"[Kernel Violation] Illegal Access! Res:$name Addr:$addr Op:$op ID:$id\n")
-        assert(false.B)
-      }
-    }
-  }
-
-  //单纯返回句柄
-  def sys_open(name: String, addr: UInt, op: UInt, id: UInt): PhysicalDriver = {
-    if (!this.hasDriver(name)) {
-      throw new Exception(s"[Kernel] doesn't have dirver named $name")
-    }
-    drivers(name)
-  }
-
-  def sys_done(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
-    if (!this.hasDriver(name)) {
-      throw new Exception(s"[Kernel] doesn't have dirver named $name")
-    }
-    val tracker = trackers(name)
-    val locks = lockTables(name)
-    locks(addr) := false.B
-
-    tracker.commit_done(addr, op, id)
-    
-  }
-
-  def sys_lock(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
-    // 简单地把对应地址的锁置为 1
-    // 注意：这里没有复杂的握手，因为 lock 通常紧跟 intent 或在 exec 期间调用
-    if (lockTables.contains(name)) {
-       lockTables(name)(addr) := true.B
+    // Decode 阶段调用。
+    // 如果返回 false，CPU 应该 Stall，或者重放。
+    if (trackers.contains(name)) {
+        trackers(name).sys_intent(addr, op, id)
     } else {
-      throw new Exception(s"[Kernel] doesn't have dirver named $name")
+        false.B // 驱动不存在，Intent 失败
     }
   }
 
   def secure_done(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
-    val tracker = trackers(name)
-    val locks   = lockTables(name)
-
-    // [逻辑拦截]
-    // 只有当锁表对应位为 false 时，才允许 Driver 触发 Tracker 的 Commit
-    val isLocked = locks(addr)
-    
-    when (!isLocked) {
-      // 正常流程：Driver 说做完了，且没锁，Tracker 释放资源
-      val isEarly = tracker.commit_done(addr, op, id)
-      
-      // Driver 触发的不可能是 Early Commit (保持之前的断言)
-      if (secure_mode) {
-        when(isEarly) {
-            printf(p"[Kernel Violation] Driver triggered Early Commit! Res:$name ID:$id\n")
-            assert(false.B)
-        }
-      }
-    } .otherwise {
-      // [被锁定]
-      // Driver 虽然调了 secure_done，但 Kernel 假装没听见。
-      // ResourceTracker 的 Head 指针不会移动，资源依然显示为 Busy。
-      // 这样后续指令如果尝试 Access，依然会阻塞。
+    // Driver 完成物理操作后调用
+    if (trackers.contains(name)) {
+        trackers(name).secure_done(addr, op, id)
     }
-
-    // 安全检查 (保持不变，检查 Driver 是否有权操作)
-    secure_check(name, addr, op, id)
   }
 
+  // 用户手动锁
+  def sys_lock(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
+    if (trackers.contains(name)) trackers(name).sys_lock(addr, id)
+  }
 
+  // 用户手动解锁
+  def sys_done(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
+    if (trackers.contains(name)) trackers(name).sys_unlock(addr, id)
+  }
 
   
 }

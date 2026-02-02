@@ -3,170 +3,114 @@ package HwOS.kernel
 import chisel3._
 import chisel3.util._
 
-trait ResourceStrategy {
-  // 阶段 1: 预约 (Reserve/Intent)
-  def canReserve(addr: UInt, op: UInt, id: UInt): Bool
-  def reserve(addr: UInt, op: UInt, id: UInt): Unit
+// ==============================================================================
+// 抽象基类：纯资源调度策略
+// 职责：管理并发槽位、检测读写冲突 (RAW/WAW/WAR)。
+// 不负责：ID 身份验证、全局锁控制。
+// ==============================================================================
+abstract class ResourceStrategy(val meta: DriverMeta) {
+  /**
+   * 尝试分配资源
+   * @return success: True 表示分配成功，False 表示资源忙或冲突
+   */
+  def alloc(addr: UInt, op: UInt): Bool
 
-  // 阶段 2: 访问检查 (Access Check)
-  def canAccess(addr: UInt, op: UInt, id: UInt): Bool
-  
-  // 阶段 3: 提交 (Commit/Done)
-  // 返回值: isEarlyCommit (Bool)
-  //   true  -> 提前提交 (Early Commit): 销毁了队列中间的 Intent，Head 未动
-  //   false -> 正常提交 (Normal Commit): 销毁了 Head Intent，Head 移动到了下一个有效位
-  def commit(addr: UInt, op: UInt, id: UInt): Bool
+  /**
+   * 释放资源
+   * @return void
+   */
+  def free(addr: UInt, op: UInt): Unit
 }
 
 // ==============================================================================
-// 策略 A: 信号量 (Semaphore)
+// 策略 A: 信号量 (Semaphore) - 适用于标量资源 (如总线端口)
 // ==============================================================================
-class SemaphoreStrategy(rMax: Int, wMax: Int) extends ResourceStrategy {
+class SemaphoreStrategy(meta: DriverMeta) extends ResourceStrategy(meta) {
+  val rMax = meta.read_clients
+  val wMax = meta.write_clients
+  
   val rCount = RegInit(0.U(log2Ceil(rMax + 1).W))
   val wCount = RegInit(0.U(log2Ceil(wMax + 1).W))
-  val OP_READ  = 0.U
 
-  def canReserve(addr: UInt, op: UInt, id: UInt): Bool = {
-    Mux(op === OP_READ, rCount < rMax.U, wCount < wMax.U)
+  val rInc = WireInit(false.B)
+  val rDec = WireInit(false.B)
+  val wInc = WireInit(false.B)
+  val wDec = WireInit(false.B)
+
+  // 统一更新逻辑 (放在类构造体最后)
+  rCount := rCount + rInc.asUInt - rDec.asUInt
+  wCount := wCount + wInc.asUInt - wDec.asUInt
+
+  override def alloc(addr: UInt, op: UInt): Bool = {
+    val success = Wire(Bool())
+    
+    // 纯组合逻辑判断容量
+    success := Mux(op === ConflictPolicies.OP_READ, rCount < rMax.U, wCount < wMax.U)
+    
+    // 状态更新 (时序逻辑)
+    when(success) {
+      when (op === ConflictPolicies.OP_READ) { rInc := true.B }
+      .otherwise { wInc := true.B }
+    }
+    success
   }
 
-  def reserve(addr: UInt, op: UInt, id: UInt): Unit = {
-    when(op === OP_READ) { rCount := rCount + 1.U }
-    .otherwise           { wCount := wCount + 1.U }
-  }
-
-  def canAccess(addr: UInt, op: UInt, id: UInt): Bool = true.B 
-
-  def commit(addr: UInt, op: UInt, id: UInt): Bool = {
-    // 信号量不追踪 ID，无法区分 Early/Normal，统一视为 Normal Release
-    when(op === OP_READ) { rCount := rCount - 1.U }
-    .otherwise           { wCount := wCount - 1.U }
-    false.B 
+  override def free(addr: UInt, op: UInt): Unit = {
+    when(op === ConflictPolicies.OP_READ) {
+      when(rCount > 0.U) { rDec := true.B }
+    } .otherwise {
+      when(wCount > 0.U) { wDec := true.B }
+    }
   }
 }
 
 // ==============================================================================
-// 策略 B: 票据算法 (Ticket Strategy) - 支持 Early Commit
+// 策略 B: 计分板 (Scoreboard) - 适用于向量资源 (如寄存器堆)
 // ==============================================================================
-class TicketStrategy(addrDepth: Int, queueDepth: Int, conflictPolicy: (UInt, UInt) => Bool) extends ResourceStrategy {
-  require(isPow2(queueDepth), "Ticket queue depth must be power of 2")
+class ScoreboardStrategy(meta: DriverMeta) extends ResourceStrategy(meta) {
+  // 内部复用 Semaphore 管理物理端口限制
+  val portManager = new SemaphoreStrategy(meta)
+
+  val depth = meta.model match {
+    case VectorResource(d) => d
+    case _ => 1
+  }
   
-  // 状态指针
-  val headTable = RegInit(VecInit(Seq.fill(addrDepth)(0.U(log2Ceil(queueDepth).W))))
-  val tailTable = RegInit(VecInit(Seq.fill(addrDepth)(0.U(log2Ceil(queueDepth).W))))
-  val countTable = RegInit(VecInit(Seq.fill(addrDepth)(0.U(log2Ceil(queueDepth + 1).W))))
+  // 只需要记录由谁占用 (Occupied)，不需要记录具体 ID，ID 校验上移到 Tracker
+  // busyTable: [Addr] -> Bool
+  val busyTable = RegInit(VecInit(Seq.fill(depth)(false.B)))
+  val opTable   = Reg(Vec(depth, UInt(2.W)))
 
-  // 数据存储
-  val opStorage = Reg(Vec(addrDepth, Vec(queueDepth, UInt(2.W)))) 
-  val idStorage = Reg(Vec(addrDepth, Vec(queueDepth, UInt(32.W))))
-  
-  // [新增] 有效位表: 记录哪些 Ticket 是有效的
-  // 如果 valid=false，说明该位置是空的或者已经被 Early Commit 了
-  val validTable = RegInit(VecInit(Seq.fill(addrDepth)(VecInit(Seq.fill(queueDepth)(false.B)))))
-
-  def canReserve(addr: UInt, op: UInt, id: UInt): Bool = {
-    countTable(addr) < queueDepth.U
-  }
-
-  def reserve(addr: UInt, op: UInt, id: UInt): Unit = {
-    val t = tailTable(addr)
-    tailTable(addr) := t + 1.U
-    countTable(addr) := countTable(addr) + 1.U
+  override def alloc(addr: UInt, op: UInt): Bool = {
+    // 1. 先申请物理端口
+    val portOk = portManager.alloc(addr, op)
     
-    opStorage(addr)(t) := op
-    idStorage(addr)(t) := id
-    validTable(addr)(t) := true.B // 标记有效
-  }
+    // 2. 检查地址冲突
+    // 注意：这里我们做简化，假设该资源是互斥的，如果该地址忙，则冲突。
+    // 如果需要支持读者-读者共享，这里需要扩展 busyTable 为计数器或位掩码
+    val slotFree = !busyTable(addr)
 
-  def canAccess(addr: UInt, op: UInt, id: UInt): Bool = {
-    val h = headTable(addr)
-    val activeOp = opStorage(addr)(h)
-    val activeId = idStorage(addr)(h)
-    val activeValid = validTable(addr)(h) // 检查 Head 是否有效
-
-    // 只有当队列非空，且 Head 是有效的，且 ID 匹配时，才允许访问
-    // 注意：如果 Head 被 Early Commit 了 (valid=false)，这里会返回 false，直到 Head 更新
-    val isEmpty = countTable(addr) === 0.U
-    val isMyTurn = !isEmpty && activeValid && (activeId === id)
-    
-    isMyTurn
-  }
-
-  def commit(addr: UInt, op: UInt, id: UInt): Bool = {
-    val h = headTable(addr)
-    val t = tailTable(addr)
-    
-    // 1. 查找 ID 对应的 Ticket (CAM Search)
-    // 遍历当前 Valid 的 Ticket，找到 owner == id 的那个
-    // 注意：这在硬件上是一个并行比较器，QueueDepth 不宜过大 (推荐 4-8)
-    val matches = Wire(Vec(queueDepth, Bool()))
-    for (i <- 0 until queueDepth) {
-      // 必须是有效位，且 ID 匹配
-      matches(i) := validTable(addr)(i) && (idStorage(addr)(i) === id)
-    }
-    
-    val found     = matches.asUInt.orR
-    val ticketIdx = PriorityEncoder(matches) // 找到对应的 Ticket Index
-    
-    val isEarly = WireInit(false.B)
-
-    when (found) {
-      // 标记该位置无效 (逻辑删除)
-      validTable(addr)(ticketIdx) := false.B
-      countTable(addr) := countTable(addr) - 1.U
-      
-      // 判断类型
-      when (ticketIdx === h) {
-        // === Normal Commit ===
-        isEarly := false.B
-        
-        // Head 需要移动到下一个 *有效* 的 Ticket
-        // 这是一个 "Find First Set" 逻辑，从 (h+1) 开始找 valid=true
-        val nextValidOffset = WireInit(0.U(log2Ceil(queueDepth).W))
-        val foundNext = WireInit(false.B)
-        
-        // 简单的链式查找下一跳
-        // 如果 QueueDepth 很大，这里可能成为 Critical Path
-        for (i <- 1 until queueDepth) {
-           val idx = h + i.U
-           // 如果还没找到下一个有效位，且当前位有效
-           when (!foundNext && validTable(addr)(idx)) {
-             nextValidOffset := i.U
-             foundNext := true.B
-           }
-        }
-        
-        // 如果找到了下一个有效位，Head 跳过去
-        // 如果没找到 (说明后面全是空的或者都被 Early Commit 了)，Head 直接变成 Tail (清空)
-        when (foundNext) {
-          headTable(addr) := h + nextValidOffset
-        } .otherwise {
-          // 特殊情况：Head 后面没有 Valid 的了，直接把 Head 追上 Tail
-          // 或者如果 count=0 (上面已经减了)，逻辑上队列已空
-          headTable(addr) := t // Reset Head to Tail's position logic
-          // 但由于我们用环形指针，更安全的做法可能是 headTable := headTable + 1
-          // 如果这里没处理好，可能会导致 Head 停在无效区。
-          // 简化策略：Normal Commit 总是至少 +1。如果 +1 位置无效，依靠下次 AccessCheck 失败?
-          // 不行，AccessCheck 失败会导致死锁。必须保证 Head 最终指向一个 Valid 或者 Head==Tail。
-          
-          // 修正逻辑：
-          // 我们上面已经把当前的 h 设为 false 了。
-          // 如果 foundNext，Head = h + offset。
-          // 如果 !foundNext，说明队列空了，Head 应该等于 Tail (或者 head + 1 等待 push)
-          // 实际上如果 countTable 减为 0，Head/Tail 相对位置不重要，只要下次 Reserve 正确即可。
-          // 最稳妥的移动：如果没找到下一个，就 head := head + 1 (默认行为)
-           headTable(addr) := h + 1.U 
-        }
-
-      } .otherwise {
-        // === Early Commit ===
-        isEarly := true.B
-        // Head 不动！
-        // 我们只是把中间某个 Ticket 的 valid 设为了 false。
-        // 当真正的 Head 以后 Commit 并在寻找 "Next Valid" 时，会自动跳过这个坑。
-      }
+    // 3. 冲突策略检测 (RAW/WAW 等)
+    // 如果 Slot 不空，检查当前操作和正在进行的操作是否兼容
+    val policyOk = Wire(Bool())
+    when (!slotFree) {
+        policyOk := !meta.conflict_policy(opTable(addr), op)
+    } .otherwise {
+        policyOk := true.B
     }
 
-    isEarly
+    val success = portOk && policyOk
+
+    when (success) {
+      busyTable(addr) := true.B
+      opTable(addr)   := op
+    }
+    
+    success
+  }
+
+  override def free(addr: UInt, op: UInt): Unit = {
+    portManager.free(addr, op)
+    busyTable(addr) := false.B
   }
 }

@@ -3,49 +3,83 @@ package HwOS.kernel.drivers
 import chisel3._
 import chisel3.util._
 import HwOS.kernel._
-
 import mycpu.common._
 
-class PCDriver(pcReg: UInt) extends PhysicalDriver(
-  DriverMeta("PC", DriverTiming.Combinational, DriverTiming.Sequential)
+class PCDriver(pcReg: UInt, kernel: Kernel) extends PhysicalDriver(
+  DriverMeta("PC", ScalarResource, 4, 1, 2, ConflictPolicies.RW_Lock)
 ) {
-  override def combRead(addr: UInt, size: UInt): UInt = pcReg
-
-  override def seqWrite(addr: UInt, data: UInt, size: UInt): (UInt, Bool) = {
-    // [修复] data 是 64位，PC 是 32位，显式截断
-    pcReg := data(XLEN-1, 0)
-    (Errno.ESUCCESS, true.B)
-  }
-}
-
-class RegFileDriver(regs: Vec[UInt]) extends PhysicalDriver(
-  DriverMeta("RF", DriverTiming.Combinational, DriverTiming.Sequential)
-) {
-  override def combRead(addr: UInt, size: UInt): UInt = {
-    Mux(addr(4,0) === 0.U, 0.U, regs(addr))
-  }
-
-  override def seqWrite(addr: UInt, data: UInt, size: UInt): (UInt, Bool) = {
-    when(addr =/= 0.U) {
-      // [修复] 显式截断数据
-      regs(addr) := data(XLEN-1, 0)
+  // 读操作也放入 Step，虽然 PC 是寄存器，但为了统一的时序感知和 Hook 能力
+  def read(id: UInt): UInt = {
+    ContextScope.current match {
+      case ThreadCtx(t) => {
+        val latch = RegInit(0.U(XLEN.W))
+        t.Step("PCRead") {
+          latch := pcReg
+          kernel.secure_done(meta.name, 0.U, ConflictPolicies.OP_READ, id)
+        }
+        latch
+      }
+      // 支持非线程环境（如调试器或系统逻辑）直接读取
+      case _ => {
+        kernel.secure_done(meta.name, 0.U, ConflictPolicies.OP_READ, id)
+        pcReg
+      }
     }
-    (Errno.ESUCCESS, true.B)
+  }
+
+  def write(target: UInt, id: UInt): Unit = {
+    ContextScope.current match {
+      case ThreadCtx(t) => {
+        t.Step("PCWrite") {
+          pcReg := target(XLEN-1, 0)
+          kernel.secure_done(meta.name, 0.U, ConflictPolicies.OP_WRITE, id)
+        }
+      }
+      case _ => {
+        pcReg := target(XLEN-1, 0)
+        kernel.secure_done(meta.name, 0.U, ConflictPolicies.OP_WRITE, id)
+      }
+    }
   }
 }
 
-class CSRDriver(regs: Vec[UInt]) extends PhysicalDriver(
-  DriverMeta("CSR", DriverTiming.Combinational, DriverTiming.Sequential)
+class CSRDriver(regs: Vec[UInt], kernel: Kernel) extends PhysicalDriver(
+  DriverMeta("CSR", VectorResource(regs.length), 2, 1, 2, ConflictPolicies.RW_Lock)
 ) {
-  override def combRead(addr: UInt, size: UInt): UInt = {
-    Mux(addr < regs.length.U, regs(addr), 0.U)
+  def read(addr: UInt, id: UInt): UInt = {
+    ContextScope.current match {
+      case ThreadCtx(t) => {
+        val latch = RegInit(0.U(XLEN.W))
+        t.Step("CSRRead") {
+          val safeAddr = Mux(addr < regs.length.U, addr, 0.U)
+          latch := regs(safeAddr)
+          kernel.secure_done(meta.name, addr, ConflictPolicies.OP_READ, id)
+        }
+        latch
+      }
+      case _ => {
+        kernel.secure_done(meta.name, addr, ConflictPolicies.OP_READ, id)
+        Mux(addr < regs.length.U, regs(addr), 0.U)
+      }
+    }
   }
 
-  override def seqWrite(cmdOrAddr: UInt, data: UInt, size: UInt): (UInt, Bool) = {
-    val cmd = cmdOrAddr(1, 0).asTypeOf(CSROp())
-    val addr = data(31, 20) 
-    val wdata = data(19, 0) // 这里逻辑可能需要根据你实际 CSR 协议调整，暂时保留原样
-    // 注意：这里的 CSR 写逻辑比较特殊，如果之前有特定实现请保留
-    (Errno.ESUCCESS, true.B)
+  def write(addr: UInt, data: UInt, id: UInt): Unit = {
+    ContextScope.current match {
+      case ThreadCtx(t) => {
+        t.Step("CSRWrite") {
+          when(addr < regs.length.U) {
+            regs(addr) := data(XLEN-1, 0)
+          }
+          kernel.secure_done(meta.name, addr, ConflictPolicies.OP_WRITE, id)
+        }
+      }
+      case _ => {
+        when(addr < regs.length.U) {
+           regs(addr) := data(XLEN-1, 0)
+        }
+        kernel.secure_done(meta.name, addr, ConflictPolicies.OP_WRITE, id)
+      }
+    }
   }
 }

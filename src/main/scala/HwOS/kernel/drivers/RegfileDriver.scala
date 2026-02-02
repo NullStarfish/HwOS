@@ -1,4 +1,4 @@
-package mycpu.Drivers
+package HwOS.kernel.drivers
 
 import chisel3._
 import HwOS.kernel._
