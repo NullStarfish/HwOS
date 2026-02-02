@@ -52,10 +52,7 @@ case class DriverMeta(
 
 abstract class PhysicalDriver(val meta: DriverMeta) {}
 
-/**
- * [API 重构] 驱动工具集
- * 提供通用的数据对齐和选通信号生成逻辑，供各类总线驱动使用。
- */
+
 object DriverUtils {
 
   def genWStrobe(addr: UInt, size: UInt): UInt = {

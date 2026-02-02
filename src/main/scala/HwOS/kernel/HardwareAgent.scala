@@ -64,21 +64,35 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   }
 
   private val startWire  = WireInit(false.B)
-  private val abortWire  = WireInit(false.B)
+  private val doneWire   = WireInit(false.B)
   
 
   private var _generated = false
-  private var _isLooping = false
-  private var _startCondSet = false
 
 
   val freeze = WireInit(false.B)
 
   def isRunning: Bool = if (isMealy) (activeReg || startWire) else activeReg
-  def hasStartCondition: Boolean = _startCondSet
+  def done: Bool = doneWire
 
-  def startWhen(cond: Bool): Unit = { startWire := cond; _startCondSet = true }
-  def abortWhen(cond: Bool): Unit = { abortWire := cond }
+
+  def start(): Unit = {
+    startWire := true.B
+    if (isMealy) {
+      assert(pc === 0.U, "mealy should ensure start with pc = 0!")
+    }
+  }
+  
+  def exit(): Unit = {
+    ContextScope.current match {
+      case AtomicCtx(t) => 
+        if (t != this) throw new Exception("Cannot exit another thread!")
+      case _ => throw new Exception("exit() must be called inside a Step!")
+    }
+    activeReg := false.B
+    pc  := 0.U
+    doneWire  := true.B
+  }
   
 
 
@@ -130,31 +144,16 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
 
 
+    doneWire := false.B
 
 
-    when (abortWire) {
-      activeReg := false.B
-      pcReg     := 0.U
-    } .elsewhen (active) {
+    when (active) {//mealy需要保证启动的时候，pc为0
       pcReg := pcReg + 1.U
 
       for ((func, idx) <- steps.zipWithIndex) {
         when (pcReg === idx.U) { func() }
       }
-
-      when (pcReg >= (totalSteps - 1).U) {
-        if (_isLooping ) {
-          pcReg := 0.U
-        } else {
-          when(startWire) {
-            pcReg := 0.U
-          }
-          .otherwise {
-            activeReg := false.B
-            pcReg     := 0.U
-          }
-        }
-      }
+      
 
     } .otherwise {
       when (startWire) {
@@ -173,7 +172,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     }
   }
 
-  def Loop(): Unit = { _isLooping = true }
   
   def Step(name: String)(block: => Unit): Unit = {
     ContextScope.current match {

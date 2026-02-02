@@ -59,7 +59,6 @@ class Kernel {
 
   private val drivers = new HashMap[String, PhysicalDriver]()
   private val trackers = new HashMap[String, ResourceTracker]()
-  private val lockTables = new HashMap[String, Vec[Bool]]()
 
 
 
@@ -75,8 +74,6 @@ class Kernel {
       case VectorResource(d) => d
     }
     
-
-    lockTables(driver.meta.name) = RegInit(VecInit(Seq.fill(depth)(false.B)))
 
 
   }
