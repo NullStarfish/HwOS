@@ -4,68 +4,42 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
 
-class ProcessContext(
-  val pid: Int, 
-  val parent: Option[ProcessContext],
-  val name: String,
-  val kernel: Kernel
-) {
-  var children: List[ProcessContext] = Nil
-  def path: String = parent.map(_.path + "/").getOrElse("") + name
-}
-
-object PidAllocator {
-  private var _next = 0
-  def next: Int = { _next += 1; _next }
-}
-
-abstract class HwProcess(val pName: String)(implicit parentCtx: Option[ProcessContext], kernel: Kernel) {
+//命名永远让上一级来命名
+abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val parent: Option[HwProcess])(kernel: Kernel) {
   
-  val ctx = new ProcessContext(PidAllocator.next, parentCtx, pName, kernel)
-  parentCtx.foreach(p => p.children = ctx :: p.children)
-
-  var stdin:  VirtualResourceHandle = _
-  var stdout: VirtualResourceHandle = _
-  var stderr: VirtualResourceHandle = _
-
   private val threads = ArrayBuffer[HardwareThread]()
   private val logics  = ArrayBuffer[HardwareLogic]()
+  private val children = ArrayBuffer[HwProcess]()
 
   protected def createThread(name: String = "Main"): HardwareThread = {
-    val t = new HardwareThread(s"${ctx.path}_$name")
+    val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable)
+    t.startWhen(true.B) //默认为true
+    kernel.registerThread(s"${this.name}/${name}_thread", t)
     threads += t
     t
   }
   
   protected def createLogic(name: String = "Daemon"): HardwareLogic = {
-    val l = new HardwareLogic(s"${ctx.path}_$name")
+    val l = new HardwareLogic(s"${this.name}/${name}_logic", this, debugEnable)
     logics += l
     l
   }
 
-  def sys_open(name: String): VirtualResourceHandle = {
-    kernel.createConnection(name)
-  }
 
-  def spawn[T <: HwProcess](childGen: (Option[ProcessContext], Kernel) => T)
-                           (in: VirtualResourceHandle = this.stdin, 
-                            out: VirtualResourceHandle = this.stdout): T = {
-    val child = childGen(Some(this.ctx), this.kernel)
-    child.stdin  = in
-    child.stdout = out
-    child.stderr = this.stderr
+  def spawn[T <: HwProcess](name: String)(constructor: (String, Boolean, Option[HwProcess], Kernel) => T): T = {
+    val childFullName = if (this.name.isEmpty) name else s"${this.name}/$name"
+    val child = constructor(childFullName, this.debugEnable, Some(this), kernel)
+    kernel.registerProcess(childFullName, child)
+    this.children += child
+    child.build()
     child
   }
+  
 
   def entry(): Unit
+
   
   def build(): Unit = {
-    // hasDriver 已在 Kernel 中添加
-    if (stdin == null && kernel.hasDriver("term"))  stdin  = sys_open("term")
-    if (stdout == null && kernel.hasDriver("term")) stdout = sys_open("term")
-    
     entry()
-    threads.foreach(t => if(!t.hasStartCondition) t.startWhen(true.B))
-    logics.foreach(l => l.run {}) 
   }
 }

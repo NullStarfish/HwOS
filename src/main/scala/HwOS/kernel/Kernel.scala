@@ -7,162 +7,177 @@ import scala.collection.mutable.{ArrayBuffer, HashMap}
 import mycpu.common.KERNEL_DATA_WIDTH
 
 class Kernel {
-  private val drivers = new HashMap[String, PhysicalDriver]()
-  private val clients = new HashMap[String, ArrayBuffer[ClientChannel]]()
+  val secure_mode :Boolean = true
 
-  /**
-   * 挂载一个物理驱动到内核
-   */
+  private val threads = ArrayBuffer[HardwareThread]()
+  private val threadNameMap = new HashMap[String, Int]()
+  def registerThread(name: String, t: HardwareThread): Int = {
+    if (threadNameMap.contains(name)) {
+      throw new Exception(s"[Kernel] Duplicate thread name detected: $name")
+    }
+    
+    val tid = threads.length
+    threads += t
+    threadNameMap(name) = tid
+    
+    println(s"[Kernel] Registered Thread: $name @ TID=$tid") // 编译时打印，方便看
+    tid
+  }
+  def getTID(name: String): Option[Int] = threadNameMap.get(name)
+
+
+
+
+  private val processes = ArrayBuffer[HwProcess]()
+  private val processNameMap = new HashMap[String, Int]()
+
+  def registerProcess(name: String, p: HwProcess): Int = {
+    if (processNameMap.contains(name)) {
+      throw new Exception(s"[Kernel] Duplicate process name detected: $name")
+    }
+
+    val pid = processes.length
+    processes += p
+    processNameMap(name) = pid
+
+    println(s"[Kernel] Registered Process: $name @ PID=$pid")
+    pid
+  }
+
+
+  def getPID(name: String): Option[Int] = processNameMap.get(name) 
+
+
+
+
+
+
+
+  val systemProcess = new HwProcess("KernelSystem", debugEnable=false, parent=None)(this) {
+    override def entry(): Unit = { /* 系统进程不需要跑普通指令，它是逻辑容器 */ }
+  }
+
+  private val drivers = new HashMap[String, PhysicalDriver]()
+  private val trackers = new HashMap[String, ResourceTracker]()
+  private val lockTables = new HashMap[String, Vec[Bool]]()
+
+
+
+
+
   def mount(driver: PhysicalDriver): Unit = {
     drivers(driver.meta.name) = driver
-    clients(driver.meta.name) = ArrayBuffer[ClientChannel]()
+    val tracker = new ResourceTracker(driver.meta, systemProcess)
+    tracker.run{} //现在没有逻辑
+    trackers(driver.meta.name) = tracker
+
+    val depth = driver.meta.model match {
+      case ScalarResource => 1
+      case VectorResource(d) => d
+    }
+    
+
+    lockTables(driver.meta.name) = RegInit(VecInit(Seq.fill(depth)(false.B)))
+
+
   }
 
   def hasDriver(name: String): Boolean = drivers.contains(name)
 
-  /**
-   * 为进程创建一个访问特定驱动的虚拟连接
-   */
-  def createConnection(driverName: String): VirtualResourceHandle = {
-    if (!drivers.contains(driverName)) throw new Exception(s"[Kernel] Unknown driver: $driverName")
-    val drv = drivers(driverName)
-    
-    // 创建一个全局宽度的通道 (64位)，确保数据不被截断
-    val channel = Wire(new ClientChannel(32, KERNEL_DATA_WIDTH))
-    
-    // 初始化默认值，防止 Chisel 报错
-    channel.req.valid := false.B
-    channel.req.addr  := 0.U
-    channel.req.data  := 0.U
-    channel.req.size  := 0.U
-    channel.req.wen   := false.B
-    channel.respData  := 0.U
-    channel.ready     := false.B
-    channel.error     := Errno.ESUCCESS
-    
-    clients(driverName) += channel
-    new VirtualResourceHandle(drv.meta, channel)
+  
+
+
+  def sys_intent(name: String, addr: UInt, op: UInt, id: UInt): Bool = {
+    if (!this.hasDriver(name)) {
+      throw new Exception(s"[Kernel] doesn't have dirver named $name")
+    }
+
+    val tracker = trackers(name)
+    tracker.send_intent(addr, op, id)
   }
 
-  /**
-   * 启动内核：为每个驱动生成对应的资源仲裁逻辑
-   */
-  def boot(): Unit = {
-    drivers.foreach { case (name, drv) =>
-      val driverClients = clients(name)
-      if (driverClients.nonEmpty) generateResourceManager(drv, driverClients)
+
+  def sys_inquiry(name: String, addr: UInt, op: UInt, id: UInt): Bool = {
+    if (!this.hasDriver(name)) {
+      throw new Exception(s"[Kernel] doesn't have dirver named $name")
+    }
+
+    val tracker = trackers(name)
+    tracker.access_check(addr, op, id)
+  }
+
+
+  def secure_check(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
+    if (secure_mode) {
+      val canAccess = sys_inquiry(name, addr, op, id)
+      when(!canAccess) {
+        printf(p"[Kernel Violation] Illegal Access! Res:$name Addr:$addr Op:$op ID:$id\n")
+        assert(false.B)
+      }
     }
   }
 
-  /**
-   * 生成资源管理器：处理多客户端竞争同一物理驱动的情况
-   */
-  private def generateResourceManager(drv: PhysicalDriver, channels: ArrayBuffer[ClientChannel]): Unit = {
-    val meta = drv.meta
+  //单纯返回句柄
+  def sys_open(name: String, addr: UInt, op: UInt, id: UInt): PhysicalDriver = {
+    if (!this.hasDriver(name)) {
+      throw new Exception(s"[Kernel] doesn't have dirver named $name")
+    }
+    drivers(name)
+  }
+
+  def sys_done(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
+    if (!this.hasDriver(name)) {
+      throw new Exception(s"[Kernel] doesn't have dirver named $name")
+    }
+    val tracker = trackers(name)
+    val locks = lockTables(name)
+    locks(addr) := false.B
+
+    tracker.commit_done(addr, op, id)
     
-    // 为该驱动创建一个独立的内核代理逻辑块
-    val logic = new HardwareLogic(s"kArbiter_${meta.name}", debugEnable = false)
-    
-    // 物理层初始化
-    drv.setup(logic)
+  }
 
-    logic.run {
-      // 1. 默认所有通道不响应
-      for (ch <- channels) {
-        ch.respData := 0.U
-        ch.ready    := false.B
-        ch.error    := Errno.ESUCCESS
-      }
-
-      // 2. 状态寄存器
-      val rBusy = RegInit(false.B)
-      val wBusy = RegInit(false.B)
-      val rIdx  = Reg(UInt(log2Ceil(channels.length max 1).W))
-      val wIdx  = Reg(UInt(log2Ceil(channels.length max 1).W))
-
-      // 【关键修复】请求参数锁存器
-      // 必须锁存地址和大小，防止 AXI 事务进行中时，由于客户端 Step 切换导致地址抖动
-      val activeRAddr = Reg(UInt(32.W))
-      val activeRSize = Reg(UInt(2.W))
-      val activeWAddr = Reg(UInt(32.W))
-      val activeWData = Reg(UInt(KERNEL_DATA_WIDTH.W))
-      val activeWSize = Reg(UInt(2.W))
-
-      // 3. 收集并仲裁读写请求
-      val readReqSignals = channels.map(ch => ch.req.valid && !ch.req.wen && (meta.readTiming == DriverTiming.Sequential).B)
-      val writeReqSignals = channels.map(ch => ch.req.valid && ch.req.wen)
-      
-      val readReqs  = VecInit(readReqSignals.toSeq).asUInt
-      val writeReqs = VecInit(writeReqSignals.toSeq).asUInt
-      
-      val nextRIdx = PriorityEncoder(readReqs)
-      val nextWIdx = PriorityEncoder(writeReqs)
-
-      // --- 读事务逻辑 (Sequential) ---
-      when(!rBusy) {
-        when(readReqs.orR) {
-          rBusy := true.B
-          rIdx  := nextRIdx
-          // 锁存当前请求的参数
-          activeRAddr := VecInit(channels.map(_.req.addr).toSeq)(nextRIdx)
-          activeRSize := VecInit(channels.map(_.req.size).toSeq)(nextRIdx)
-        }
-      } .otherwise {
-        // 调用物理驱动的顺序读接口
-        val res = drv.seqRead(activeRAddr, activeRSize)
-        val data: UInt = res._1
-        val err:  UInt = res._2
-        val done: Bool = res._3
-
-        // 将结果反馈给选中的通道
-        for ((ch, i) <- channels.zipWithIndex) {
-          when(rIdx === i.U) {
-            ch.respData := data 
-            ch.ready    := done
-            ch.error    := err
-          }
-        }
-        // 只有当物理驱动报告完成时，才释放 busy 锁
-        when(done) { rBusy := false.B }
-      }
-
-      // --- 写事务逻辑 (Sequential) ---
-      when(!wBusy) {
-        when(writeReqs.orR) {
-          wBusy := true.B
-          wIdx  := nextWIdx
-          // 锁存写操作参数
-          activeWAddr := VecInit(channels.map(_.req.addr).toSeq)(nextWIdx)
-          activeWData := VecInit(channels.map(_.req.data).toSeq)(nextWIdx)
-          activeWSize := VecInit(channels.map(_.req.size).toSeq)(nextWIdx)
-        }
-      } .otherwise {
-        // 调用物理驱动的顺序写接口
-        val res = drv.seqWrite(activeWAddr, activeWData, activeWSize)
-        val err:  UInt = res._1
-        val done: Bool = res._2
-
-        for ((ch, i) <- channels.zipWithIndex) {
-          when(wIdx === i.U) {
-            ch.ready := done
-            ch.error := err
-          }
-        }
-        when(done) { wBusy := false.B }
-      }
-      
-      // --- 组合读逻辑 (Bypass/Combinational) ---
-      // 适用于 RegFile, PC 等不需要握手的设备
-      if (meta.readTiming == DriverTiming.Combinational) {
-        for (ch <- channels) {
-          // 组合设备不参与仲裁，只要 valid 就立即响应
-          when(ch.req.valid && !ch.req.wen) {
-            ch.respData := drv.combRead(ch.req.addr, ch.req.size)
-            ch.ready    := true.B
-            ch.error    := Errno.ESUCCESS
-          }
-        }
-      }
+  def sys_lock(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
+    // 简单地把对应地址的锁置为 1
+    // 注意：这里没有复杂的握手，因为 lock 通常紧跟 intent 或在 exec 期间调用
+    if (lockTables.contains(name)) {
+       lockTables(name)(addr) := true.B
+    } else {
+      throw new Exception(s"[Kernel] doesn't have dirver named $name")
     }
   }
+
+  def secure_done(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
+    val tracker = trackers(name)
+    val locks   = lockTables(name)
+
+    // [逻辑拦截]
+    // 只有当锁表对应位为 false 时，才允许 Driver 触发 Tracker 的 Commit
+    val isLocked = locks(addr)
+    
+    when (!isLocked) {
+      // 正常流程：Driver 说做完了，且没锁，Tracker 释放资源
+      val isEarly = tracker.commit_done(addr, op, id)
+      
+      // Driver 触发的不可能是 Early Commit (保持之前的断言)
+      if (secure_mode) {
+        when(isEarly) {
+            printf(p"[Kernel Violation] Driver triggered Early Commit! Res:$name ID:$id\n")
+            assert(false.B)
+        }
+      }
+    } .otherwise {
+      // [被锁定]
+      // Driver 虽然调了 secure_done，但 Kernel 假装没听见。
+      // ResourceTracker 的 Head 指针不会移动，资源依然显示为 Busy。
+      // 这样后续指令如果尝试 Access，依然会阻塞。
+    }
+
+    // 安全检查 (保持不变，检查 Driver 是否有权操作)
+    secure_check(name, addr, op, id)
+  }
+
+
+
+  
 }
