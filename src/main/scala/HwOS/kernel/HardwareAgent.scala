@@ -58,8 +58,19 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   dontTouch(activeReg)
 
   private var pcEntity :UInt = _
+  private var _generated = false
 
   private var hasExit: Boolean = false
+
+  val startWire  = WireInit(false.B) 
+  dontTouch(startWire)
+
+  private val doneWire   = WireInit(false.B)
+
+  val abortWire = WireInit(false.B)
+  dontTouch(abortWire)
+
+  val freeze = WireInit(false.B)
 
 
   def pc: UInt = {
@@ -70,16 +81,24 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
     pcEntity
   }
-
-  val startWire  = WireInit(false.B) 
-  dontTouch(startWire)
-  private val doneWire   = WireInit(false.B)
   
+  override def driveManaged[T <: Data](target: T, idle: T, default: T): T = {
+    val proxy = Wire(chiselTypeOf(target))
+    managedSignals(proxy) = (idle, default) 
+    
+    if (this.isInstanceOf[HardwareThread]) {
+        val t = this.asInstanceOf[HardwareThread]
+        // [修改] 只有在 (Running AND !Abort) 时，才允许输出 proxy
+        // 如果 abortWire 拉高，强制输出 idle (通常是 false/0)
+        target := Mux(t.isRunning && !t.abortWire, proxy, idle)
+    } else {
+        target := proxy
+    }
+    proxy
+  }
 
-  private var _generated = false
 
 
-  val freeze = WireInit(false.B)
 
   def isRunning: Bool = if (isMealy) (activeReg || startWire) else activeReg
   def done: Bool = doneWire
@@ -91,6 +110,11 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     if (isMealy) {
       assert(pc === 0.U, "mealy should ensure start with pc = 0!")
     }
+  }
+
+  def abort(): Unit = {
+    abortWire := true.B
+    if (debugEnable) printf(p"[$name] *** ABORT SIGNAL RECEIVED ***\n")
   }
   
   def exit(): Unit = {
@@ -165,7 +189,13 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     //分情况：当moore时：active = activeReg。当没有启动的时候，发送脉冲，activeReg变高，在下一拍，逻辑开始工作。当active的时候发送start，并没有用，因为此时active为高，只有在active为低的时候，start才有效：我们必须修复这一点：在done的时候，也可以进行start：
     //当mealy的时候，第一拍，active就是startWire，随后activeReg就启动了，来维持自己的状态，但是我们发现下面这个条件永远不可能满足
     //
-    when (active) {
+
+    when (abortWire) {
+      activeReg := false.B
+      pc := 0.U
+      doneWire := false.B
+    }
+    .elsewhen (active) {
       if (isMealy) {
         activeReg := true.B //维持状态
       }
@@ -179,6 +209,9 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       when(startWire && doneWire) { //捕获最后一拍的启动
         pcReg := 0.U //对于mealy，startWire其实也是一样的
       }
+
+
+      globals.foreach(_()) //最后生成，覆盖全局，而且可以访问pc
       
 
     } .otherwise {
@@ -193,7 +226,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       throw new Exception
     }
 
-    globals.foreach(_()) //最后生成，覆盖全局，而且可以访问pc
+
 
 
     if (debugEnable) { //放在最后防止被覆盖

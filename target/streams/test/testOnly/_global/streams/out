@@ -1,11 +1,11 @@
-[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(HwOS.kernel.ForkNonBlockingTest, org.scalatest.tools.Framework$$anon$1@59355f8c, false, [SuiteSelector])[0m
-[0m[[0m[0minfo[0m] [0m[0m[32mForkNonBlockingTest:[0m[0m
-[0m[[0m[0minfo[0m] [0m[0m[32mHardwareThread[0m[0m
-[0m[[0m[0minfo[0m] [0m[0m[32m- should support Non-Blocking Fork and Interrupt-style Callback[0m[0m
-[0m[[0m[0minfo[0m] [0m[0m[36mRun completed in 4 seconds, 246 milliseconds.[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(HwOS.kernel.ScoreboardDriverTest, org.scalatest.tools.Framework$$anon$1@1631c568, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mScoreboardDriverTest:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mScoreboardDriver[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle priority stalling and instant abort recovery[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mRun completed in 4 seconds, 364 milliseconds.[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[36mTotal number of tests run: 1[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[36mSuites: completed 1, aborted 0[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[36mTests: succeeded 1, failed 0, canceled 0, ignored 0, pending 0[0m[0m
 [0m[[0m[0minfo[0m] [0m[0m[32mAll tests passed.[0m[0m
 [0m[[0m[0mdebug[0m] [0m[0mPassed tests:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	HwOS.kernel.ForkNonBlockingTest[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwOS.kernel.ScoreboardDriverTest[0m

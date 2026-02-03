@@ -1,6 +1,8 @@
 #Successful Tests
-#Tue Feb 03 18:01:28 HKT 2026
+#Tue Feb 03 20:28:55 HKT 2026
+HwOS.kernel.AbortTest=1770116644863
 HwOS.kernel.ForkNonBlockingTest=1770112888782
 HwOS.kernel.HardwareThreadTest=1770111901818
 HwOS.kernel.HardwareThreadTest2=1770098927017
 HwOS.kernel.RegfileDriverTest=1770111901818
+HwOS.kernel.ScoreboardDriverTest=1770121735927

@@ -30,6 +30,7 @@ class BlackboxDriver(val io: BlackboxIO, kernel: Kernel) extends PhysicalDriver(
   io.cmd   := 0.U
   io.addr  := 0.U
   io.wdata := 0.U
+  //为了abort安全，我们必须保证，thread和所有资源的交互全部都通过driver来进行交互
 
   def read(addr: UInt, callback: UInt => Unit): Unit = {
     ContextScope.current match {
