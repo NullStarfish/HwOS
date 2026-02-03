@@ -1,7 +1,7 @@
 package HwOS.kernel
 
 import scala.collection.mutable.Stack
-import mycpu.utils._
+
 
 // 上下文定义
 sealed trait ExecutionContext

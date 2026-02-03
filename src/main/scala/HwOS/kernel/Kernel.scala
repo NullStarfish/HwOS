@@ -4,7 +4,6 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 
-import mycpu.common.KERNEL_DATA_WIDTH
 
 class Kernel {
   val secure_mode :Boolean = true
@@ -58,7 +57,6 @@ class Kernel {
   }
 
   private val drivers = new HashMap[String, PhysicalDriver]()
-  private val trackers = new HashMap[String, ResourceTracker]()
 
 
 
@@ -66,8 +64,7 @@ class Kernel {
 
   def mount(driver: PhysicalDriver): Unit = {
     drivers(driver.meta.name) = driver
-    val tracker = new ResourceTracker(driver.meta)
-    trackers(driver.meta.name) = tracker
+
 
     val depth = driver.meta.model match {
       case ScalarResource => 1
@@ -82,33 +79,6 @@ class Kernel {
 
   
 
-
-  def sys_intent(name: String, addr: UInt, op: UInt, id: UInt): Bool = {
-    // Decode 阶段调用。
-    // 如果返回 false，CPU 应该 Stall，或者重放。
-    if (trackers.contains(name)) {
-        trackers(name).sys_intent(addr, op, id)
-    } else {
-        false.B // 驱动不存在，Intent 失败
-    }
-  }
-
-  def secure_done(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
-    // Driver 完成物理操作后调用
-    if (trackers.contains(name)) {
-        trackers(name).secure_done(addr, op, id)
-    }
-  }
-
-  // 用户手动锁
-  def sys_lock(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
-    if (trackers.contains(name)) trackers(name).sys_lock(addr, id)
-  }
-
-  // 用户手动解锁
-  def sys_done(name: String, addr: UInt, op: UInt, id: UInt): Unit = {
-    if (trackers.contains(name)) trackers(name).sys_unlock(addr, id)
-  }
 
   
 }

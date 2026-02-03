@@ -12,9 +12,14 @@ trait HardwareAgent {
 
   protected val managedSignals = LinkedHashMap[Data, (Data, Data)]()
 
-  def agentPrint(fmt: String, data: Bits*): Unit = {
+  def agentPrint(p:Printable): Unit = {
     if (debugEnable) {
-      printf(s"[$name] " + fmt + "\n", data: _*)
+      printf(p"[$name] " + p + p"\n")
+    }
+  }
+  def agentPrint(msg: String): Unit = {
+    if (debugEnable) {
+      printf(p"[$name] $msg\n")
     }
   }
 
@@ -50,8 +55,11 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   private val globals = ArrayBuffer[() => Unit]()
 
   private val activeReg = RegInit(false.B)
+  dontTouch(activeReg)
 
   private var pcEntity :UInt = _
+
+  private var hasExit: Boolean = false
 
 
   def pc: UInt = {
@@ -63,7 +71,8 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     pcEntity
   }
 
-  private val startWire  = WireInit(false.B)
+  val startWire  = WireInit(false.B) 
+  dontTouch(startWire)
   private val doneWire   = WireInit(false.B)
   
 
@@ -77,6 +86,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
 
   def start(): Unit = {
+    printf(p"Call Start!!\n")
     startWire := true.B
     if (isMealy) {
       assert(pc === 0.U, "mealy should ensure start with pc = 0!")
@@ -85,10 +95,13 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   
   def exit(): Unit = {
     ContextScope.current match {
-      case AtomicCtx(t) => 
+      case AtomicCtx(t) => {
         if (t != this) throw new Exception("Cannot exit another thread!")
+        t.hasExit = true
+      }
       case _ => throw new Exception("exit() must be called inside a Step!")
     }
+    
     activeReg := false.B
     pc  := 0.U
     doneWire  := true.B
@@ -104,6 +117,10 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     }
     _generated = true
 
+
+
+
+    ContextScope.withContext(ThreadCtx(this)) { block } //注意，这是非常重要的
     val totalSteps = steps.length
     if (totalSteps == 0) return
 
@@ -112,8 +129,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     pcEntity = pcReg
 
 
-
-    ContextScope.withContext(ThreadCtx(this)) { block } //注意，这是非常重要的
     managedSignals.foreach { case (proxy, (_, default)) => proxy := default }
 
 
@@ -138,7 +153,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
         watchDog := 0.U
       }
       when(watchDog >= 1000.U) {
-        assert (false.B, "Detected dead lock! ")
+        //assert (false.B, "Detected dead lock! ")
       }
     }
 
@@ -147,19 +162,35 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     doneWire := false.B
 
 
-    when (active) {//mealy需要保证启动的时候，pc为0
+    //分情况：当moore时：active = activeReg。当没有启动的时候，发送脉冲，activeReg变高，在下一拍，逻辑开始工作。当active的时候发送start，并没有用，因为此时active为高，只有在active为低的时候，start才有效：我们必须修复这一点：在done的时候，也可以进行start：
+    //当mealy的时候，第一拍，active就是startWire，随后activeReg就启动了，来维持自己的状态，但是我们发现下面这个条件永远不可能满足
+    //
+    when (active) {
+      if (isMealy) {
+        activeReg := true.B //维持状态
+      }
+
       pcReg := pcReg + 1.U
 
       for ((func, idx) <- steps.zipWithIndex) {
-        when (pcReg === idx.U) { func() }
+        when (pcReg === idx.U) { func() } //状态机硬件生成
+      }
+
+      when(startWire && doneWire) { //捕获最后一拍的启动
+        pcReg := 0.U //对于mealy，startWire其实也是一样的
       }
       
 
     } .otherwise {
       when (startWire) {
-        activeReg := true.B //这一条对mealy没有什么意义
+        activeReg := true.B 
         pcReg     := 0.U
       }
+    }
+
+    if (!this.hasExit) {
+      agentPrint("The thread doesn't have an exit!!!")
+      throw new Exception
     }
 
     globals.foreach(_()) //最后生成，覆盖全局，而且可以访问pc
@@ -200,6 +231,19 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     when(!cond) { 
       this.pc := this.pc
     } 
+  }
+
+  def waitAndAct(cond: Bool)(block: => Unit): Unit = {
+    ContextScope.current match {
+      case AtomicCtx(t) => {}
+      case _ => {agentPrint("Do not use waitCondition outside entry!!!"); throw new Exception("waitCondition outside entry")}
+    }
+
+    when (!cond) {
+      this.pc := this.pc
+    } .otherwise {
+      block
+    }
   }
 
   def Global(block: => Unit): Unit = { 

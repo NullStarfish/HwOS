@@ -1,0 +1,16 @@
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(HwOS.kernel.RegfileDriverTest, org.scalatest.tools.Framework$$anon$1@a478886, false, [SuiteSelector])[0m
+[0m[[0m[0mdebug[0m] [0m[0mRunning TaskDef(HwOS.kernel.HardwareThreadTest, org.scalatest.tools.Framework$$anon$1@a478886, false, [SuiteSelector])[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mRegfileDriverTest:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mRegfileDriver[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should integrate with Thread steps to read/write registers[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mHardwareThreadTest:[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mHardwareThread[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32m- should handle waitCondition, waitAndAct and PC jumps correctly[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mRun completed in 5 seconds, 840 milliseconds.[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTotal number of tests run: 2[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mSuites: completed 2, aborted 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[36mTests: succeeded 2, failed 0, canceled 0, ignored 0, pending 0[0m[0m
+[0m[[0m[0minfo[0m] [0m[0m[32mAll tests passed.[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0mPassed tests:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwOS.kernel.RegfileDriverTest[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwOS.kernel.HardwareThreadTest[0m

@@ -1,19 +1,4 @@
-[0m[[0m[33mwarn[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/main/scala/mycpu/Core.scala:54:55: method addSink in object BoringUtils is deprecated (since Chisel 6.0): Please use the new Boring API instead (BoringUtils.bore(source)). This will be removed in Chisel 7.0[0m
-[0m[[0m[33mwarn[0m] [0m[0m    val commit_valid = WireInit(false.B); BoringUtils.addSink(commit_valid, "DPI_Commit_Valid")[0m
-[0m[[0m[33mwarn[0m] [0m[0m                                                      ^[0m
-[0m[[0m[33mwarn[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/main/scala/mycpu/Core.scala:55:57: method addSink in object BoringUtils is deprecated (since Chisel 6.0): Please use the new Boring API instead (BoringUtils.bore(source)). This will be removed in Chisel 7.0[0m
-[0m[[0m[33mwarn[0m] [0m[0m    val commit_pc    = WireInit(0.U(32.W)); BoringUtils.addSink(commit_pc,    "DPI_Commit_PC")[0m
-[0m[[0m[33mwarn[0m] [0m[0m                                                        ^[0m
-[0m[[0m[33mwarn[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/main/scala/mycpu/Core.scala:56:57: method addSink in object BoringUtils is deprecated (since Chisel 6.0): Please use the new Boring API instead (BoringUtils.bore(source)). This will be removed in Chisel 7.0[0m
-[0m[[0m[33mwarn[0m] [0m[0m    val commit_inst  = WireInit(0.U(32.W)); BoringUtils.addSink(commit_inst,  "DPI_Commit_Inst")[0m
-[0m[[0m[33mwarn[0m] [0m[0m                                                        ^[0m
-[0m[[0m[33mwarn[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/main/scala/mycpu/processes/CPUProsses.scala:95:52: method addSource in object BoringUtils is deprecated (since Chisel 6.0): Please use the new Boring API instead (BoringUtils.bore(source)). This will be removed in Chisel 7.0[0m
-[0m[[0m[33mwarn[0m] [0m[0m    val dpi_valid = WireInit(false.B); BoringUtils.addSource(dpi_valid, "DPI_Commit_Valid")[0m
-[0m[[0m[33mwarn[0m] [0m[0m                                                   ^[0m
-[0m[[0m[33mwarn[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/main/scala/mycpu/processes/CPUProsses.scala:96:54: method addSource in object BoringUtils is deprecated (since Chisel 6.0): Please use the new Boring API instead (BoringUtils.bore(source)). This will be removed in Chisel 7.0[0m
-[0m[[0m[33mwarn[0m] [0m[0m    val dpi_pc    = WireInit(0.U(32.W)); BoringUtils.addSource(dpi_pc, "DPI_Commit_PC")[0m
-[0m[[0m[33mwarn[0m] [0m[0m                                                     ^[0m
-[0m[[0m[33mwarn[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/main/scala/mycpu/processes/CPUProsses.scala:97:54: method addSource in object BoringUtils is deprecated (since Chisel 6.0): Please use the new Boring API instead (BoringUtils.bore(source)). This will be removed in Chisel 7.0[0m
-[0m[[0m[33mwarn[0m] [0m[0m    val dpi_inst  = WireInit(0.U(32.W)); BoringUtils.addSource(dpi_inst, "DPI_Commit_Inst")[0m
-[0m[[0m[33mwarn[0m] [0m[0m                                                     ^[0m
-[0m[[0m[33mwarn[0m] [0m[0m6 warnings found[0m
+[0m[[0m[31merror[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/main/scala/HwOS/kernel/HardwareAgent.scala:113:13: forward reference to value pcReg defined on line 120 extends over definition of value totalSteps[0m
+[0m[[0m[31merror[0m] [0m[0m      when (pcReg === idx.U) { func() } //状态机硬件生成[0m
+[0m[[0m[31merror[0m] [0m[0m            ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

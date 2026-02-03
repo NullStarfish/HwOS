@@ -11,7 +11,7 @@ abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val 
   private val logics  = ArrayBuffer[HardwareLogic]()
   private val children = ArrayBuffer[HwProcess]()
 
-  protected def createThread(name: String = "Main"): HardwareThread = {
+  def createThread(name: String = "Main"): HardwareThread = {
     val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable)
     kernel.registerThread(s"${this.name}/${name}_thread", t)
     threads += t
