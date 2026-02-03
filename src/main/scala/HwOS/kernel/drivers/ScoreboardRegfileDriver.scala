@@ -22,7 +22,6 @@ class ScoreboardRegfileDriver(
 
   val clientIntents = Wire(Vec(maxClients, new ScoreboardEntry(32)))
   
-  // 默认值兜底
   for (i <- 0 until maxClients) {
     clientIntents(i).op   := RegOp.Idle
     clientIntents(i).addr := 0.U
@@ -36,40 +35,61 @@ class ScoreboardRegfileDriver(
     id
   }
 
+  // 核心冲突检测 (复用)
+  private def checkConflict(myId: Int, op: RegOp.Type, addr: UInt): Bool = {
+    val higherPriorityUsers = (0 until myId).map { i =>
+      clientIntents(i).op === op
+    }.foldLeft(0.U)(_ +& _)
+    
+    val limit = if (op == RegOp.Read) meta.read_clients.U else meta.write_clients.U
+    val portAvailable = higherPriorityUsers < limit
+
+    val hazard = if (op == RegOp.Read) {
+      (0 until maxClients).map { i =>
+        val isWriter = clientIntents(i).op === RegOp.Write
+        val addrMatch = clientIntents(i).addr === addr
+        (i.U =/= myId.U) && isWriter && addrMatch
+      }.foldLeft(false.B)(_ || _)
+    } else {
+      val waw = (0 until maxClients).map { i =>
+         (i.U =/= myId.U) && (clientIntents(i).op === RegOp.Write) && (clientIntents(i).addr === addr)
+      }.foldLeft(false.B)(_ || _)
+      val rw = if (meta.conflict_policy == ConflictPolicies.RW_Lock) {
+         (0 until maxClients).map { i =>
+            (clientIntents(i).op === RegOp.Read) && (clientIntents(i).addr === addr)
+         }.foldLeft(false.B)(_ || _)
+      } else { false.B }
+      waw || rw
+    }
+    
+    val stall = !portAvailable || hazard
+    if (meta.name == "SB_RegFile") {
+       printf(p"[Driver] ID=$myId Op=$op Addr=$addr Stall=$stall\n")
+    }
+    stall
+  }
+
+  // ==============================================================================
+  // Read APIs
+  // ==============================================================================
+
+  /**
+   * [Thread Semantic] 阻塞式读取
+   * 语法: val data = driver.read(addr)
+   */
   def read(addr: UInt): UInt = {
     val myId = allocClientId()
-
     ContextScope.current match {
       case ThreadCtx(t) => {
         val readData = RegInit(0.U(32.W))
-        
-        t.Step(s"Reg_Read_Check_ID$myId") {
+        t.Step(s"Reg_Read_Block_ID$myId") {
           clientIntents(myId).op   := RegOp.Read
           clientIntents(myId).addr := addr
+          val stall = checkConflict(myId, RegOp.Read, addr)
           
-          val higherPriorityReaders = (0 until myId).map { i =>
-             clientIntents(i).op === RegOp.Read
-          }.foldLeft(0.U)(_ +& _)
-          
-          val portAvailable = higherPriorityReaders < meta.read_clients.U
-
-          val rawHazard = (0 until maxClients).map { i =>
-            val isWriter = clientIntents(i).op === RegOp.Write
-            val addrMatch = clientIntents(i).addr === addr
-            (i.U =/= myId.U) && isWriter && addrMatch
-          }.foldLeft(false.B)(_ || _)
-          
-          val stall = !portAvailable || rawHazard
-
-          if (meta.name == "SB_RegFile") {
-             printf(p"[Driver] ID=$myId Op=Read Addr=$addr | Higher=$higherPriorityReaders Available=$portAvailable Hazard=$rawHazard => Stall=$stall\n")
-          }
-
-          // [FIX] 语义反转：waitCondition 接受的是“通行证”，所以要取反
           t.waitCondition(!stall) 
-          
           when (!stall) {
-            readData := regs(addr) 
+            readData := regs(addr)
           }
         }
         readData
@@ -78,42 +98,73 @@ class ScoreboardRegfileDriver(
     }
   }
 
-  def write(addr: UInt, data: UInt): Unit = {
+  /**
+   * [Atomic Semantic] 原子回调式读取
+   * 语法: driver.readAtomic(addr) { data => ... }
+   */
+  def readAtomic(addr: UInt)(callback: UInt => Unit): Unit = {
     val myId = allocClientId()
-
     ContextScope.current match {
       case ThreadCtx(t) => {
-        t.Step(s"Reg_Write_Check_ID$myId") {
+        t.Step(s"Reg_Read_Atomic_ID$myId") {
+          clientIntents(myId).op   := RegOp.Read
+          clientIntents(myId).addr := addr
+          val stall = checkConflict(myId, RegOp.Read, addr)
+          
+          // 拿到资源当拍立即执行 callback
+          t.waitAndAct(!stall) {
+            val data = regs(addr) // 直接读 Wire
+            callback(data)
+          }
+        }
+      }
+      case _ =>
+    }
+  }
+
+  // ==============================================================================
+  // Write APIs
+  // ==============================================================================
+
+  /**
+   * [Thread Semantic] 阻塞式写入
+   * 语法: driver.write(addr, data)
+   */
+  def write(addr: UInt, data: UInt): Unit = {
+    val myId = allocClientId()
+    ContextScope.current match {
+      case ThreadCtx(t) => {
+        t.Step(s"Reg_Write_Block_ID$myId") {
           clientIntents(myId).op   := RegOp.Write
           clientIntents(myId).addr := addr
+          val stall = checkConflict(myId, RegOp.Write, addr)
           
-          val higherPriorityWriters = (0 until myId).map { i =>
-            clientIntents(i).op === RegOp.Write
-          }.foldLeft(0.U)(_ +& _)
-          
-          val portAvailable = higherPriorityWriters < meta.write_clients.U
-          
-          val wawHazard = (0 until maxClients).map { i =>
-             (i.U =/= myId.U) && (clientIntents(i).op === RegOp.Write) && (clientIntents(i).addr === addr)
-          }.foldLeft(false.B)(_ || _)
-          
-          val rwConflict = if (meta.conflict_policy == ConflictPolicies.RW_Lock) {
-             (0 until maxClients).map { i =>
-                (clientIntents(i).op === RegOp.Read) && (clientIntents(i).addr === addr)
-             }.foldLeft(false.B)(_ || _)
-          } else { false.B }
-
-          val stall = !portAvailable || wawHazard || rwConflict
-          
-          if (meta.name == "SB_RegFile") {
-             printf(p"[Driver] ID=$myId Op=Write Addr=$addr | Higher=$higherPriorityWriters Available=$portAvailable Hazard=$wawHazard => Stall=$stall\n")
-          }
-
-          // [FIX] 同上，waitCondition(!stall)
           t.waitAndAct(!stall) {
             regs(addr) := data
           }
+        }
+      }
+      case _ =>
+    }
+  }
+
+  /**
+   * [Atomic Semantic] 原子回调式写入
+   * 语法: driver.writeAtomic(addr, data) { ... }
+   */
+  def writeAtomic(addr: UInt, data: UInt)(callback: => Unit): Unit = {
+    val myId = allocClientId()
+    ContextScope.current match {
+      case ThreadCtx(t) => {
+        t.Step(s"Reg_Write_Atomic_ID$myId") {
+          clientIntents(myId).op   := RegOp.Write
+          clientIntents(myId).addr := addr
+          val stall = checkConflict(myId, RegOp.Write, addr)
           
+          t.waitAndAct(!stall) {
+            regs(addr) := data
+            callback
+          }
         }
       }
       case _ =>
