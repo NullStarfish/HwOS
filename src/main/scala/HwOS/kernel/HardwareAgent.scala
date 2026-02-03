@@ -222,6 +222,46 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     }
   }
 
+  def prepareThread(name: String)(childBody: => Unit)(callback: => Unit): HardwareThread = {
+    // 1. 检查上下文：必须在 entry 内部定义 (ThreadCtx)
+    ContextScope.current match {
+      case ThreadCtx(t) if t == this => // OK
+      case _ => throw new Exception(s"[prepareThread] must be called inside thread entry! (Thread: ${this.name})")
+    }
+
+    // 2. 创建子线程
+    val childName = s"${this.name.split("/").last}_fork_$name"
+    val child = owner.createThread(childName) // 需确保 createThread 可见性已改为 private[kernel]
+
+    // 3. 注入子线程逻辑
+    child.entry {
+      childBody
+    }
+
+    // 4. 注册回调 (Global/Interrupt)
+    // 依然保留强大的回调机制
+    this.Global {
+      when (child.done) {
+        if (debugEnable) printf(p"[$name] Child $childName finished. Triggering Callback.\n")
+        callback
+      }
+    }
+    
+    // 5. 返回句柄，不生成 Step
+    child
+  }
+
+  def fork(name: String)(childBody: => Unit)(callback: => Unit): Unit = {
+    val child = prepareThread(name)(childBody)(callback)
+    this.Step(s"Fork_Kick_$name") {
+      child.start()
+    }
+  }
+
+
+
+
+
   def waitCondition(cond: Bool): Unit = { 
     ContextScope.current match {
       case AtomicCtx(t) => {}

@@ -1,1 +1,1 @@
-["HwOS.kernel.RegfileDriverTest","HwOS.kernel.HardwareThreadTest","HwOS.kernel.BlackboxDriverTest"]
+["HwOS.kernel.ForkNonBlockingTest","HwOS.kernel.RegfileDriverTest","HwOS.kernel.HardwareThreadTest","HwOS.kernel.BlackboxDriverTest"]
