@@ -34,8 +34,6 @@ class PipelinedScoreboardDriver(
 
   // 复用冲突检测逻辑 (纯组合逻辑)
   private def checkConflict(myId: Int, op: RegOp.Type, addr: UInt): Bool = {
-    // ... (代码与之前相同，此处省略以节省篇幅) ...
-    // 这里看到的 clientIntents 都是来自 Reg 的输出，时序极佳
     val higherPriorityUsers = (0 until myId).map { i =>
       clientIntents(i).op === op
     }.foldLeft(0.U)(_ +& _)
@@ -58,28 +56,20 @@ class PipelinedScoreboardDriver(
     !portAvailable || hazard
   }
 
-  // ==============================================================================
-  // Pipelined Read API (2-Stage)
-  // ==============================================================================
-  
   def readAtomic(addr: UInt)(callback: UInt => Unit): Unit = {
     val myId = allocClientId()
 
     ContextScope.current match {
       case ThreadCtx(t) => {
-        // [关键改进] 1. 定义意图寄存器 (Intent Register)
-        // 它的生命周期跨越多个 Step，因此必须定义在 entry 顶层 (即这里的 ThreadCtx)
+
         val myOp   = RegInit(RegOp.Idle)
         val myAddr = RegInit(0.U(32.W))
 
-        // [关键改进] 2. 自动 Abort 清理
-        // 如果线程被 Kill，必须立即释放资源，否则会死锁其他人
+
         when (t.abortWire) {
           myOp := RegOp.Idle
         }
 
-        // [关键改进] 3. 持续驱动全局记分牌
-        // 只要我不是 Idle，我就一直把意图挂在总线上
         when (myOp =/= RegOp.Idle) {
           clientIntents(myId).op   := myOp
           clientIntents(myId).addr := myAddr

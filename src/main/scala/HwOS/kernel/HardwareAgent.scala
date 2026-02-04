@@ -19,7 +19,7 @@ trait HardwareAgent {
   }
   def agentPrint(msg: String): Unit = {
     if (debugEnable) {
-      printf(p"[$name] $msg\n")
+      printf(s"[$name] $msg\n")
     }
   }
 
@@ -105,7 +105,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
 
   def start(): Unit = {
-    printf(p"Call Start!!\n")
     startWire := true.B
     if (isMealy) {
       assert(pc === 0.U, "mealy should ensure start with pc = 0!")

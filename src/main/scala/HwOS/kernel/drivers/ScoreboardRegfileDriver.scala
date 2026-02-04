@@ -51,7 +51,7 @@ class ScoreboardRegfileDriver(
         (i.U =/= myId.U) && isWriter && addrMatch
       }.foldLeft(false.B)(_ || _)
     } else {
-      val waw = (0 until maxClients).map { i =>
+      val waw = (0 until myId).map { i =>
          (i.U =/= myId.U) && (clientIntents(i).op === RegOp.Write) && (clientIntents(i).addr === addr)
       }.foldLeft(false.B)(_ || _)
       val rw = if (meta.conflict_policy == ConflictPolicies.RW_Lock) {
