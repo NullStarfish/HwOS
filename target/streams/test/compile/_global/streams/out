@@ -1,7 +1,0 @@
-[0m[[0m[31merror[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/test/scala/HwOS/kernel/testThread2.scala:11:7: ThreadTestModule is already defined as class ThreadTestModule[0m
-[0m[[0m[31merror[0m] [0m[0mclass ThreadTestModule extends Module {[0m
-[0m[[0m[31merror[0m] [0m[0m      ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/nullstarfish/personal-ysyx-workbench/npc/HwOS/src/test/scala/HwOS/kernel/testThread2.scala:94:7: HardwareThreadTest is already defined as class HardwareThreadTest[0m
-[0m[[0m[31merror[0m] [0m[0mclass HardwareThreadTest extends AnyFlatSpec {[0m
-[0m[[0m[31merror[0m] [0m[0m      ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m

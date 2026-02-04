@@ -78,7 +78,94 @@ class Kernel {
   def hasDriver(name: String): Boolean = drivers.contains(name)
 
   
-
-
+  // ==============================================================================
+  // 新增：全局状态监控接口 (DPI)
+  // ==============================================================================
   
+ def attachMonitor(): Unit = {
+    val nThreads = threads.length
+    if (nThreads == 0) return
+
+    // [关键修复] 显式将每个 PC 扩展/填充为 32 位宽，确保与 DPI 接口对齐
+    val pc32Seq = threads.map { t =>
+      // 如果 PC 位宽小于 32，则补零；如果大于 32（理论上不应发生），则截断
+      // pad(32) 确保最小宽度，run-time width adjustment
+      // 但最稳妥的方式是 Wire 初始化指定宽度
+      val w = Wire(UInt(32.W))
+      w := t.pc
+      w
+    }.toSeq
+
+    val pcVec     = VecInit(pc32Seq).asUInt                // [32*N] packed
+    val activeVec = VecInit(threads.map(_.isRunning).toSeq).asUInt 
+    val startVec  = VecInit(threads.map(_.startWire).toSeq).asUInt 
+    val abortVec  = VecInit(threads.map(_.abortWire).toSeq).asUInt 
+    val doneVec   = VecInit(threads.map(_.done).toSeq).asUInt      
+
+    // 实例化 DPI BlackBox
+    val monitor = Module(new KernelStateMonitorDPI(nThreads))
+    
+    monitor.io.clock   := Module.clock
+    monitor.io.reset   := Module.reset
+    monitor.io.pcs     := pcVec
+    monitor.io.actives := activeVec
+    monitor.io.starts  := startVec
+    monitor.io.aborts  := abortVec
+    monitor.io.dones   := doneVec
+    
+    println(s"[Kernel] Attached DPI Monitor for $nThreads threads.")
+  }
+} 
+
+
+class KernelStateMonitorDPI(val nThreads: Int) extends BlackBox with HasBlackBoxInline {
+  val io = IO(new Bundle {
+    val clock   = Input(Clock())
+    val reset   = Input(Bool())
+    val pcs     = Input(UInt((32 * nThreads).W))
+    val actives = Input(UInt(nThreads.W))
+    val starts  = Input(UInt(nThreads.W))
+    val aborts  = Input(UInt(nThreads.W))
+    val dones   = Input(UInt(nThreads.W))
+  })
+
+  // 生成 SystemVerilog 代码
+  setInline("KernelStateMonitorDPI.sv",
+    s"""
+       |module KernelStateMonitorDPI(
+       |  input clock,
+       |  input reset,
+       |  input [${nThreads * 32 - 1}:0] pcs,
+       |  input [${nThreads - 1}:0]      actives,
+       |  input [${nThreads - 1}:0]      starts,
+       |  input [${nThreads - 1}:0]      aborts,
+       |  input [${nThreads - 1}:0]      dones
+       |);
+       |
+       |  // 声明 DPI-C 函数
+       |  // 注意：在 C++ 侧，bit 向量通常映射为 svBitVecVal* 数组
+       |  import "DPI-C" function void kernel_monitor_tick(
+       |    input int n_threads,
+       |    input bit [${nThreads * 32 - 1}:0] pcs,
+       |    input bit [${nThreads - 1}:0]      actives,
+       |    input bit [${nThreads - 1}:0]      starts,
+       |    input bit [${nThreads - 1}:0]      aborts,
+       |    input bit [${nThreads - 1}:0]      dones
+       |  );
+       |
+       |  always @(posedge clock) begin
+       |    if (!reset) begin
+       |      kernel_monitor_tick(
+       |        ${nThreads},
+       |        pcs,
+       |        actives,
+       |        starts,
+       |        aborts,
+       |        dones
+       |      );
+       |    end
+       |  end
+       |
+       |endmodule
+       |""".stripMargin)
 }
