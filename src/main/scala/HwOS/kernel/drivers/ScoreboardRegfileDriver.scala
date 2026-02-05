@@ -82,7 +82,7 @@ class ScoreboardRegfileDriver(
     ContextScope.current match {
       case ThreadCtx(t) => {
         val readData = RegInit(0.U(32.W))
-        t.Step(s"Reg_Read_Block_ID$myId") {
+        DriverStep(s"Reg_Read_Block_ID$myId") {
           clientIntents(myId).op   := RegOp.Read
           clientIntents(myId).addr := addr
           val stall = checkConflict(myId, RegOp.Read, addr)
@@ -106,7 +106,7 @@ class ScoreboardRegfileDriver(
     val myId = allocClientId()
     ContextScope.current match {
       case ThreadCtx(t) => {
-        t.Step(s"Reg_Read_Atomic_ID$myId") {
+        DriverStep(s"Reg_Read_Atomic_ID$myId") {
           clientIntents(myId).op   := RegOp.Read
           clientIntents(myId).addr := addr
           val stall = checkConflict(myId, RegOp.Read, addr)
@@ -134,7 +134,7 @@ class ScoreboardRegfileDriver(
     val myId = allocClientId()
     ContextScope.current match {
       case ThreadCtx(t) => {
-        t.Step(s"Reg_Write_Block_ID$myId") {
+        DriverStep(s"Reg_Write_Block_ID$myId") {
           clientIntents(myId).op   := RegOp.Write
           clientIntents(myId).addr := addr
           val stall = checkConflict(myId, RegOp.Write, addr)
@@ -156,7 +156,7 @@ class ScoreboardRegfileDriver(
     val myId = allocClientId()
     ContextScope.current match {
       case ThreadCtx(t) => {
-        t.Step(s"Reg_Write_Atomic_ID$myId") {
+        DriverStep(s"Reg_Write_Atomic_ID$myId") {
           clientIntents(myId).op   := RegOp.Write
           clientIntents(myId).addr := addr
           val stall = checkConflict(myId, RegOp.Write, addr)

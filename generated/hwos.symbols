@@ -1,33 +1,33 @@
-PipelineCpu/I0_Addi_thread 0 SB_Dispatch_ID0
-PipelineCpu/I0_Addi_thread 1 Reg_Read_Atomic_ID0
-PipelineCpu/I0_Addi_thread 2 ALU_Execute_I
-PipelineCpu/I0_Addi_thread 3 Reg_Write_Atomic_ID1
-PipelineCpu/I0_Addi_thread 4 SB_Retire_ID0
-PipelineCpu/I0_Addi_thread 5 Inst_Retire
-PipelineCpu/I1_Addi_thread 0 SB_Dispatch_ID1
-PipelineCpu/I1_Addi_thread 1 Reg_Read_Atomic_ID2
-PipelineCpu/I1_Addi_thread 2 ALU_Execute_I
-PipelineCpu/I1_Addi_thread 3 Reg_Write_Atomic_ID3
-PipelineCpu/I1_Addi_thread 4 SB_Retire_ID1
-PipelineCpu/I1_Addi_thread 5 Inst_Retire
-PipelineCpu/I2_Store_thread 0 SB_Dispatch_ID2
-PipelineCpu/I2_Store_thread 1 Reg_Read_Atomic_ID4
-PipelineCpu/I2_Store_thread 2 Reg_Read_Atomic_ID5
-PipelineCpu/I2_Store_thread 3 RAM_Write_Req
-PipelineCpu/I2_Store_thread 4 RAM_Wait
-PipelineCpu/I2_Store_thread 5 SB_Retire_ID2
-PipelineCpu/I2_Store_thread 6 Inst_Retire
-PipelineCpu/I3_Load_thread 0 SB_Dispatch_ID3
-PipelineCpu/I3_Load_thread 1 Reg_Read_Atomic_ID6
-PipelineCpu/I3_Load_thread 2 RAM_Req_Bridge
-PipelineCpu/I3_Load_thread 3 RAM_Wait_Bridge
-PipelineCpu/I3_Load_thread 4 Reg_Write_Atomic_ID7
-PipelineCpu/I3_Load_thread 5 SB_Retire_ID3
-PipelineCpu/I3_Load_thread 6 Inst_Retire
-PipelineCpu/I4_Add_thread 0 SB_Dispatch_ID4
-PipelineCpu/I4_Add_thread 1 Reg_Read_Atomic_ID8
-PipelineCpu/I4_Add_thread 2 Reg_Read_Atomic_ID9
-PipelineCpu/I4_Add_thread 3 ALU_Execute
-PipelineCpu/I4_Add_thread 4 Reg_Write_Atomic_ID10
-PipelineCpu/I4_Add_thread 5 SB_Retire_ID4
-PipelineCpu/I4_Add_thread 6 Inst_Retire
+PipelineCpu/I0_Addi_thread 0 SB_Dispatch_ID0 3
+PipelineCpu/I0_Addi_thread 1 Reg_Read_Atomic_ID0 1
+PipelineCpu/I0_Addi_thread 2 ALU_Execute_I 0
+PipelineCpu/I0_Addi_thread 3 Reg_Write_Atomic_ID1 1
+PipelineCpu/I0_Addi_thread 4 SB_Retire_ID0 3
+PipelineCpu/I0_Addi_thread 5 Inst_Retire 0
+PipelineCpu/I1_Addi_thread 0 SB_Dispatch_ID1 3
+PipelineCpu/I1_Addi_thread 1 Reg_Read_Atomic_ID2 1
+PipelineCpu/I1_Addi_thread 2 ALU_Execute_I 0
+PipelineCpu/I1_Addi_thread 3 Reg_Write_Atomic_ID3 1
+PipelineCpu/I1_Addi_thread 4 SB_Retire_ID1 3
+PipelineCpu/I1_Addi_thread 5 Inst_Retire 0
+PipelineCpu/I2_Store_thread 0 SB_Dispatch_ID2 3
+PipelineCpu/I2_Store_thread 1 Reg_Read_Atomic_ID4 1
+PipelineCpu/I2_Store_thread 2 Reg_Read_Atomic_ID5 1
+PipelineCpu/I2_Store_thread 3 RAM_Write_Req 2
+PipelineCpu/I2_Store_thread 4 RAM_Wait 2
+PipelineCpu/I2_Store_thread 5 SB_Retire_ID2 3
+PipelineCpu/I2_Store_thread 6 Inst_Retire 0
+PipelineCpu/I3_Load_thread 0 SB_Dispatch_ID3 3
+PipelineCpu/I3_Load_thread 1 Reg_Read_Atomic_ID6 1
+PipelineCpu/I3_Load_thread 2 RAM_Req_Bridge 0
+PipelineCpu/I3_Load_thread 3 RAM_Wait_Bridge 0
+PipelineCpu/I3_Load_thread 4 Reg_Write_Atomic_ID7 1
+PipelineCpu/I3_Load_thread 5 SB_Retire_ID3 3
+PipelineCpu/I3_Load_thread 6 Inst_Retire 0
+PipelineCpu/I4_Add_thread 0 SB_Dispatch_ID4 3
+PipelineCpu/I4_Add_thread 1 Reg_Read_Atomic_ID8 1
+PipelineCpu/I4_Add_thread 2 Reg_Read_Atomic_ID9 1
+PipelineCpu/I4_Add_thread 3 ALU_Execute 0
+PipelineCpu/I4_Add_thread 4 Reg_Write_Atomic_ID10 1
+PipelineCpu/I4_Add_thread 5 SB_Retire_ID4 3
+PipelineCpu/I4_Add_thread 6 Inst_Retire 0

@@ -56,6 +56,7 @@ class Kernel {
     override def entry(): Unit = { /* 系统进程不需要跑普通指令，它是逻辑容器 */ }
   }
 
+  private var driverIdAlloc = 1 //0 for users
   private val drivers = new HashMap[String, PhysicalDriver]()
 
 
@@ -66,10 +67,9 @@ class Kernel {
     drivers(driver.meta.name) = driver
 
 
-    val depth = driver.meta.model match {
-      case ScalarResource => 1
-      case VectorResource(d) => d
-    }
+    driver._driverId = driverIdAlloc
+    println(s"[Kernel] Mounted Driver: ${driver.meta.name} @ ID=${driver._driverId}")
+    driverIdAlloc += 1
     
 
 
@@ -89,13 +89,10 @@ class Kernel {
     
     // 遍历所有注册的线程
     for (t <- threads) {
-      // 遍历该线程的所有 Step
-      for ((stepName, pc) <- t.stepNames.zipWithIndex) {
-        // 格式: <ThreadName> <PC> <StepName>
-        // 为了方便区分，我们在 Driver 注入的 stepName 前面没有什么特殊标记，
-        // 但我们可以约定：用户一般用 CamelCase 或 下划线，
-        // 我们可以后续在 C++ 里根据名字特征染色。
-        bw.write(s"${t.name} $pc $stepName\n")
+      // zip stepNames 和 stepOwners
+      for (((stepName, ownerId), pc) <- t.stepNames.zip(t.stepOwners).zipWithIndex) {
+        // 格式: <ThreadName> <PC> <StepName> <OwnerID>
+        bw.write(s"${t.name} $pc $stepName $ownerId\n")
       }
     }
     bw.close()

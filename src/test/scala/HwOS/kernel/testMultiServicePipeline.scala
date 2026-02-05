@@ -66,7 +66,7 @@ class DependencyScoreboard(kernel: Kernel, maxClients: Int = 32) extends Physica
     val myId = allocId()
     ContextScope.current match {
       case ThreadCtx(t) =>
-        t.Step(s"SB_Dispatch_ID$myId") {
+        DriverStep(s"SB_Dispatch_ID$myId") {
            // 1. In-Order Dispatch Check
            val isMyTurn = nextIssueId === myId.U
 
@@ -108,7 +108,7 @@ class DependencyScoreboard(kernel: Kernel, maxClients: Int = 32) extends Physica
     val myId = ticket
     ContextScope.current match {
       case ThreadCtx(t) =>
-        t.Step(s"SB_Retire_ID$myId") {
+        DriverStep(s"SB_Retire_ID$myId") {
            intents(myId).release := true.B
            intents(myId).reg     := dst(4,0)
         }
@@ -175,13 +175,13 @@ class MockRamDriver(kernel: Kernel) extends PhysicalDriver(
   def access(isWrite: Boolean, addr: UInt, data: UInt)(callback: UInt => Unit): Unit = {
     ContextScope.current match {
       case ThreadCtx(t) =>
-        t.Step(if(isWrite) "RAM_Write_Req" else "RAM_Read_Req") {
+        DriverStep(if(isWrite) "RAM_Write_Req" else "RAM_Read_Req") {
            io.req   := true.B
            io.isWr  := isWrite.B
            io.addr  := addr
            io.wdata := data
         }
-        t.Step("RAM_Wait") {
+        DriverStep("RAM_Wait") {
            t.waitAndAct(io.valid) { callback(io.rdata) }
         }
       case _ =>

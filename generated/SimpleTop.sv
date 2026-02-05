@@ -54,16 +54,16 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
                 io_r4	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:279:14
 );
 
-  wire        startWire = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-  wire        startWire_1 = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-  wire        startWire_2 = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-  wire        startWire_3 = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-  wire        startWire_4 = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-  wire        abortWire = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-  wire        abortWire_1 = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-  wire        abortWire_2 = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-  wire        abortWire_3 = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-  wire        abortWire_4 = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
+  wire        startWire = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+  wire        startWire_1 = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+  wire        startWire_2 = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+  wire        startWire_3 = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+  wire        startWire_4 = io_start;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+  wire        abortWire = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+  wire        abortWire_1 = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+  wire        abortWire_2 = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+  wire        abortWire_3 = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+  wire        abortWire_4 = 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
   reg  [31:0] phyRegs_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
   reg  [31:0] phyRegs_2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
   reg  [31:0] phyRegs_3;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
@@ -206,110 +206,110 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   reg         busyTable_3;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34
   reg         busyTable_4;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34
   reg  [4:0]  nextIssueId;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
-  reg         activeReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  wire        activeReg_0 = activeReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  reg         activeReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  wire        activeReg_1_0 = activeReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  reg         activeReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  wire        activeReg_2_0 = activeReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  reg         activeReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  wire        activeReg_3_0 = activeReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  reg         activeReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-  wire        activeReg_4_0 = activeReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
+  reg         activeReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  wire        activeReg_0 = activeReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  reg         activeReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  wire        activeReg_1_0 = activeReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  reg         activeReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  wire        activeReg_2_0 = activeReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  reg         activeReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  wire        activeReg_3_0 = activeReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  reg         activeReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+  wire        activeReg_4_0 = activeReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
   reg  [31:0] res;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
-  reg  [2:0]  pcReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire [2:0]  pcReg_0 = pcReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire        _GEN = pcReg == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
+  reg  [2:0]  pcReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire [2:0]  pcReg_0 = pcReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire        _GEN = pcReg == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
   wire        stall = (|nextIssueId) | busyTable_1 | busyTable_0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :71:39, :94:{34,41}
-  wire        intents_0_acquire = ~abortWire & activeReg & _GEN & ~stall;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :94:{34,41}, :97:37
-  wire        _GEN_0 = activeReg & pcReg == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :151:24, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
-  wire        clientIntents_1_op = ~abortWire & _GEN_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-  wire        clientIntents_1_addr = ~abortWire & _GEN_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-  wire        _GEN_1 = pcReg == 3'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        intents_0_release = ~abortWire & activeReg & _GEN_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
-  wire        intents_0_reg = ~(abortWire | ~activeReg) & (_GEN_1 | _GEN & ~stall);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :94:{34,41}, :98:37, :113:34
-  wire        _GEN_2 = pcReg == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        doneWire = ~abortWire & activeReg & _GEN_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+  wire        intents_0_acquire = ~abortWire & activeReg & _GEN & ~stall;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :94:{34,41}, :97:37
+  wire        _GEN_0 = activeReg & pcReg == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :153:24, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
+  wire        clientIntents_1_op = ~abortWire & _GEN_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+  wire        clientIntents_1_addr = ~abortWire & _GEN_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+  wire        _GEN_1 = pcReg == 3'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        intents_0_release = ~abortWire & activeReg & _GEN_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
+  wire        intents_0_reg = ~(abortWire | ~activeReg) & (_GEN_1 | _GEN & ~stall);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :94:{34,41}, :98:37, :113:34
+  wire        _GEN_2 = pcReg == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        doneWire = ~abortWire & activeReg & _GEN_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
   reg  [31:0] op1_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:26
   reg  [31:0] res_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
-  reg  [2:0]  pcReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire [2:0]  pcReg_1_0 = pcReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire        _GEN_3 = pcReg_1 == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
+  reg  [2:0]  pcReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire [2:0]  pcReg_1_0 = pcReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire        _GEN_3 = pcReg_1 == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
   wire        _stall_T_7 =
-    nextIssueId != 5'h1 | busyTable_2 | busyTable_1 | intents_0_acquire & intents_0_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :35:24, :37:24, :71:39, :78:34, :80:44, :94:{24,34,41}
-  wire        intents_1_acquire = ~abortWire_1 & activeReg_1 & _GEN_3 & ~_stall_T_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :80:44, :94:{34,41}, :97:37
-  wire        _GEN_4 = activeReg_1 & pcReg_1 == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :151:24, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
-  wire        clientIntents_3_op = ~abortWire_1 & _GEN_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-  wire        clientIntents_3_addr = ~abortWire_1 & _GEN_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-  wire        _GEN_5 = pcReg_1 == 3'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        intents_1_release = ~abortWire_1 & activeReg_1 & _GEN_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
+    nextIssueId != 5'h1 | busyTable_2 | busyTable_1 | intents_0_acquire & intents_0_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :35:24, :37:24, :71:39, :78:34, :80:44, :94:{24,34,41}
+  wire        intents_1_acquire = ~abortWire_1 & activeReg_1 & _GEN_3 & ~_stall_T_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :80:44, :94:{34,41}, :97:37
+  wire        _GEN_4 = activeReg_1 & pcReg_1 == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :153:24, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
+  wire        clientIntents_3_op = ~abortWire_1 & _GEN_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+  wire        clientIntents_3_addr = ~abortWire_1 & _GEN_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+  wire        _GEN_5 = pcReg_1 == 3'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        intents_1_release = ~abortWire_1 & activeReg_1 & _GEN_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
   wire        intents_1_reg =
-    ~(abortWire_1 | ~activeReg_1) & (_GEN_5 | _GEN_3 & ~_stall_T_7);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :80:44, :94:{34,41}, :98:37, :113:34
-  wire        _GEN_6 = pcReg_1 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        doneWire_1 = ~abortWire_1 & activeReg_1 & _GEN_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+    ~(abortWire_1 | ~activeReg_1) & (_GEN_5 | _GEN_3 & ~_stall_T_7);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :80:44, :94:{34,41}, :98:37, :113:34
+  wire        _GEN_6 = pcReg_1 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        doneWire_1 = ~abortWire_1 & activeReg_1 & _GEN_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
   reg  [31:0] addrVal;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:30
   reg  [31:0] dataVal;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64
-  reg  [2:0]  pcReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire [2:0]  pcReg_2_0 = pcReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire        _GEN_7 = pcReg_2 == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
+  reg  [2:0]  pcReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire [2:0]  pcReg_2_0 = pcReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire        _GEN_7 = pcReg_2 == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
   wire        stall_6 =
     nextIssueId != 5'h2 | busyTable_0 | busyTable_1 | intents_0_acquire & intents_0_reg
     | busyTable_2 | intents_1_acquire & intents_1_reg | intents_0_acquire & ~intents_0_reg
-    | intents_1_acquire & ~intents_1_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :35:24, :37:24, :71:39, :78:34, :80:44, :84:36, :86:32, :91:{34,52}, :92:34, :94:{24,34,41,49,57}
-  wire        intents_2_acquire = ~abortWire_2 & activeReg_2 & _GEN_7 & ~stall_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :80:44, :86:32, :92:34, :94:{34,41,49,57}, :97:37
-  wire        _GEN_8 = pcReg_2 == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        _GEN_9 = activeReg_2 & _GEN_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:10
-  wire        _GEN_10 = ~abortWire_2 & _GEN_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :140:10
-  wire        _GEN_11 = abortWire_2 | ~(activeReg_2 & _GEN_8);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:50, :181:21
-  wire        intents_2_release = ~abortWire_2 & activeReg_2 & pcReg_2 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :151:24, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
-  wire        _GEN_12 = pcReg_2 == 3'h6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        doneWire_2 = ~abortWire_2 & activeReg_2 & _GEN_12;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+    | intents_1_acquire & ~intents_1_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :35:24, :37:24, :71:39, :78:34, :80:44, :84:36, :86:32, :91:{34,52}, :92:34, :94:{24,34,41,49,57}
+  wire        intents_2_acquire = ~abortWire_2 & activeReg_2 & _GEN_7 & ~stall_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :80:44, :86:32, :92:34, :94:{34,41,49,57}, :97:37
+  wire        _GEN_8 = pcReg_2 == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        _GEN_9 = activeReg_2 & _GEN_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:10
+  wire        _GEN_10 = ~abortWire_2 & _GEN_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :140:10
+  wire        _GEN_11 = abortWire_2 | ~(activeReg_2 & _GEN_8);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:50, :181:21
+  wire        intents_2_release = ~abortWire_2 & activeReg_2 & pcReg_2 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :153:24, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
+  wire        _GEN_12 = pcReg_2 == 3'h6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        doneWire_2 = ~abortWire_2 & activeReg_2 & _GEN_12;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
   reg  [31:0] addrVal_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:30
   reg  [31:0] memData;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:64
-  reg  [2:0]  pcReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire [2:0]  pcReg_3_0 = pcReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire        _GEN_13 = pcReg_3 == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
+  reg  [2:0]  pcReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire [2:0]  pcReg_3_0 = pcReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire        _GEN_13 = pcReg_3 == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
   wire        _stall_T_15 =
     nextIssueId != 5'h3 | busyTable_3 | busyTable_1 | intents_0_acquire & intents_0_reg
     | busyTable_0 | intents_0_acquire & ~intents_0_reg | intents_1_acquire
-    & ~intents_1_reg | intents_2_acquire;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :35:24, :37:24, :71:39, :78:34, :80:44, :84:{36,54}, :85:36, :86:32, :94:{24,34,41,49}
-  wire        intents_3_acquire = ~abortWire_3 & activeReg_3 & _GEN_13 & ~_stall_T_15;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :80:44, :85:36, :86:32, :94:{34,41,49}, :97:37
-  wire        _GEN_14 = pcReg_3 == 3'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        _GEN_15 = activeReg_3 & _GEN_14;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:259:24
-  wire        io_1_req = ~abortWire_3 & _GEN_15 | _GEN_10;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :140:10, :259:24
+    & ~intents_1_reg | intents_2_acquire;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :35:24, :37:24, :71:39, :78:34, :80:44, :84:{36,54}, :85:36, :86:32, :94:{24,34,41,49}
+  wire        intents_3_acquire = ~abortWire_3 & activeReg_3 & _GEN_13 & ~_stall_T_15;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :80:44, :85:36, :86:32, :94:{34,41,49}, :97:37
+  wire        _GEN_14 = pcReg_3 == 3'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        _GEN_15 = activeReg_3 & _GEN_14;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:259:24
+  wire        io_1_req = ~abortWire_3 & _GEN_15 | _GEN_10;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :140:10, :259:24
   wire        io_1_isWr =
-    abortWire_3 | ~activeReg_3 ? _GEN_10 : ~(_GEN_14 | abortWire_2) & _GEN_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:{10,30}, :260:24
+    abortWire_3 | ~activeReg_3 ? _GEN_10 : ~(_GEN_14 | abortWire_2) & _GEN_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:{10,30}, :260:24
   wire [31:0] io_1_addr =
-    abortWire_3 | ~_GEN_15 ? (_GEN_11 ? 32'h0 : addrVal) : addrVal_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:50, :236:30, :252:30, :259:24
-  wire        _GEN_16 = pcReg_3 == 3'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        _GEN_17 = activeReg_3 & _GEN_16;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
-  wire        clientIntents_7_op = ~abortWire_3 & _GEN_17;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-  wire [1:0]  clientIntents_7_addr = abortWire_3 | ~_GEN_17 ? 2'h0 : 2'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :160:36
-  wire        _GEN_18 = pcReg_3 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        intents_3_release = ~abortWire_3 & activeReg_3 & _GEN_18;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
+    abortWire_3 | ~_GEN_15 ? (_GEN_11 ? 32'h0 : addrVal) : addrVal_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:50, :236:30, :252:30, :259:24
+  wire        _GEN_16 = pcReg_3 == 3'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        _GEN_17 = activeReg_3 & _GEN_16;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
+  wire        clientIntents_7_op = ~abortWire_3 & _GEN_17;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+  wire [1:0]  clientIntents_7_addr = abortWire_3 | ~_GEN_17 ? 2'h0 : 2'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :160:36
+  wire        _GEN_18 = pcReg_3 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        intents_3_release = ~abortWire_3 & activeReg_3 & _GEN_18;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
   wire [1:0]  intents_3_reg =
-    abortWire_3 | ~(activeReg_3 & (_GEN_18 | ~(~_GEN_13 | _stall_T_15))) ? 2'h0 : 2'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :80:44, :85:36, :86:32, :94:{34,41,49}, :113:34
-  wire        _GEN_19 = pcReg_3 == 3'h6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        doneWire_3 = ~abortWire_3 & activeReg_3 & _GEN_19;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+    abortWire_3 | ~(activeReg_3 & (_GEN_18 | ~(~_GEN_13 | _stall_T_15))) ? 2'h0 : 2'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :80:44, :85:36, :86:32, :94:{34,41,49}, :113:34
+  wire        _GEN_19 = pcReg_3 == 3'h6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        doneWire_3 = ~abortWire_3 & activeReg_3 & _GEN_19;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
   reg  [31:0] op1_2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:26
   reg  [31:0] op2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:56
   reg  [31:0] res_2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86
-  reg  [2:0]  pcReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire [2:0]  pcReg_4_0 = pcReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-  wire        _GEN_20 = pcReg_4 == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
+  reg  [2:0]  pcReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire [2:0]  pcReg_4_0 = pcReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+  wire        _GEN_20 = pcReg_4 == 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
   wire        _stall_T_19 =
     nextIssueId != 5'h4 | busyTable_4 | busyTable_3 | intents_3_acquire & (&intents_3_reg)
     | busyTable_1 | intents_0_acquire & intents_0_reg | intents_3_acquire
-    & intents_3_reg == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:45:45, :65:17, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :35:24, :37:24, :71:39, :78:{34,52}, :80:44, :84:{36,54}, :85:36, :86:32, :94:{24,34,41,49}
-  wire        intents_4_acquire = ~abortWire_4 & activeReg_4 & _GEN_20 & ~_stall_T_19;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :80:44, :85:36, :86:32, :94:{34,41,49}, :97:37
-  wire        _GEN_21 = pcReg_4 == 3'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        _GEN_22 = activeReg_4 & _GEN_21;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
-  wire        _GEN_23 = pcReg_4 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        intents_4_release = ~abortWire_4 & activeReg_4 & _GEN_23;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
+    & intents_3_reg == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:45:45, :65:17, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :24:28, :35:24, :37:24, :71:39, :78:{34,52}, :80:44, :84:{36,54}, :85:36, :86:32, :94:{24,34,41,49}
+  wire        intents_4_acquire = ~abortWire_4 & activeReg_4 & _GEN_20 & ~_stall_T_19;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :80:44, :85:36, :86:32, :94:{34,41,49}, :97:37
+  wire        _GEN_21 = pcReg_4 == 3'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        _GEN_22 = activeReg_4 & _GEN_21;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
+  wire        _GEN_23 = pcReg_4 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        intents_4_release = ~abortWire_4 & activeReg_4 & _GEN_23;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :36:24
   wire        intents_4_reg =
-    ~(abortWire_4 | ~activeReg_4) & (_GEN_23 | _GEN_20 & ~_stall_T_19);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :80:44, :85:36, :86:32, :94:{34,41,49}, :98:37, :113:34
-  wire        _GEN_24 = pcReg_4 == 3'h6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-  wire        io_done_0 = ~abortWire_4 & activeReg_4 & _GEN_24;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+    ~(abortWire_4 | ~activeReg_4) & (_GEN_23 | _GEN_20 & ~_stall_T_19);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :80:44, :85:36, :86:32, :94:{34,41,49}, :98:37, :113:34
+  wire        _GEN_24 = pcReg_4 == 3'h6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+  wire        io_done_0 = ~abortWire_4 & activeReg_4 & _GEN_24;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
   always @(posedge clock) begin	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
     automatic logic _GEN_25;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:153:18
     automatic logic _GEN_26;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:153:18
@@ -457,65 +457,65 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       busyTable_3 <= 1'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34
       busyTable_4 <= 1'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34
       nextIssueId <= 5'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
-      activeReg <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-      activeReg_1 <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-      activeReg_2 <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-      activeReg_3 <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-      activeReg_4 <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
+      activeReg <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+      activeReg_1 <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+      activeReg_2 <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+      activeReg_3 <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+      activeReg_4 <= 1'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
       res <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
-      pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
+      pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
       op1_1 <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:26
       res_1 <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
-      pcReg_1 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
+      pcReg_1 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
       addrVal <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:30
       dataVal <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64
-      pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
+      pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
       addrVal_1 <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:30
       memData <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:64
-      pcReg_3 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
+      pcReg_3 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
       op1_2 <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:26
       op2 <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:56
       res_2 <= 32'h0;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86
-      pcReg_4 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
+      pcReg_4 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
     end
     else begin	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-      automatic logic            _GEN_28 = intents_0_release & ~intents_0_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:36:24, :37:24, :41:26, :43:{31,58}
+      automatic logic            _GEN_28 = intents_0_release & ~intents_0_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:36:24, :37:24, :41:26, :43:{31,58}
       automatic logic            _GEN_29;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:43:{31,58}
-      automatic logic            _GEN_30 = intents_3_reg == 2'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :43:58
-      automatic logic            _GEN_31 = intents_3_reg == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :43:58
-      automatic logic            _GEN_32 = intents_3_reg == 2'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :43:58
+      automatic logic            _GEN_30 = intents_3_reg == 2'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :43:58
+      automatic logic            _GEN_31 = intents_3_reg == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :43:58
+      automatic logic            _GEN_32 = intents_3_reg == 2'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:37:24, :43:58
       automatic logic            _GEN_33;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:43:{31,58}
-      automatic logic            _GEN_34 = intents_0_acquire & ~intents_0_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :37:24, :43:{31,58}, :46:{31,58}
+      automatic logic            _GEN_34 = intents_0_acquire & ~intents_0_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :37:24, :43:{31,58}, :46:{31,58}
       automatic logic            _GEN_35;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:46:{31,58}
-      automatic logic            _GEN_36;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:21
-      automatic logic            _GEN_37;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:21
-      automatic logic            _GEN_38;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+      automatic logic            _GEN_36;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:21
+      automatic logic            _GEN_37;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:21
+      automatic logic            _GEN_38;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
       automatic logic            _stall_hazard_T_146;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29
-      automatic logic            _GEN_39;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:21
-      automatic logic            _GEN_40;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+      automatic logic            _GEN_39;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:21
+      automatic logic            _GEN_40;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
       automatic logic [2:0]      _GEN_41;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23
       automatic logic            stall_7;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32
-      automatic logic            _GEN_42;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:21
-      automatic logic            _GEN_43;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+      automatic logic            _GEN_42;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:21
+      automatic logic            _GEN_43;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
       automatic logic [4:0]      _GEN_44;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23
       automatic logic            stall_8;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32
-      automatic logic [31:0]     io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:67
-      automatic logic            _GEN_45;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:314:11, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:150:22
-      automatic logic            _GEN_46;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:21
-      automatic logic            _GEN_47;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+      automatic logic [31:0]     io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:67
+      automatic logic            _GEN_45;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:317:11, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:150:22
+      automatic logic            _GEN_46;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:21
+      automatic logic            _GEN_47;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
       automatic logic [5:0]      _GEN_48;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23
       automatic logic            stall_10;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32
-      automatic logic            _GEN_49;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:21
+      automatic logic            _GEN_49;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:21
       automatic logic [3:0]      _GEN_50 =
-        {3'h0, clientIntents_1_op} + {3'h0, clientIntents_3_op};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23
-      automatic logic            _GEN_51;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:21
-      automatic logic            _GEN_52;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+        {3'h0, clientIntents_1_op} + {3'h0, clientIntents_3_op};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23
+      automatic logic            _GEN_51;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:21
+      automatic logic            _GEN_52;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
       automatic logic [6:0]      _GEN_53;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23
       automatic logic            stall_13;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:65:32
-      automatic logic            _GEN_54;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:21
+      automatic logic            _GEN_54;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:21
       automatic logic [8:0]      _GEN_55;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23
       automatic logic            stall_14;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32
-      automatic logic [7:0]      _GEN_56 = {4'h0, _GEN_50} + {7'h0, clientIntents_7_op};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23
+      automatic logic [7:0]      _GEN_56 = {4'h0, _GEN_50} + {7'h0, clientIntents_7_op};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23
       automatic logic [3:0][1:0] _GEN_57;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:143:22, :150:22, :153:18, :155:21, :164:28, :171:13
       automatic logic [31:0]     _GEN_58 =
         {{1'h0},
@@ -549,479 +549,479 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
          {intents_3_acquire},
          {intents_2_acquire},
          {intents_1_acquire},
-         {intents_0_acquire}};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :52:39
+         {intents_0_acquire}};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :52:39
       _GEN_29 =
         intents_1_release
           ? ~(~intents_1_reg | _GEN_28) & busyTable_0
-          : ~_GEN_28 & busyTable_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :36:24, :37:24, :41:26, :43:{31,58}
+          : ~_GEN_28 & busyTable_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :36:24, :37:24, :41:26, :43:{31,58}
       _GEN_33 =
         ~(intents_4_release & ~intents_4_reg)
         & (intents_3_release
              ? ~(_GEN_30 | intents_2_release) & _GEN_29
-             : ~intents_2_release & _GEN_29);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:36:24, :37:24, :43:{31,58}
+             : ~intents_2_release & _GEN_29);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:36:24, :37:24, :43:{31,58}
       _GEN_35 =
-        intents_1_acquire ? ~intents_1_reg | _GEN_34 | _GEN_33 : _GEN_34 | _GEN_33;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :37:24, :43:{31,58}, :46:{31,58}
-      _GEN_36 = pcReg == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-      _GEN_37 = pcReg_1 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-      _GEN_38 = activeReg_1 & _GEN_37;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+        intents_1_acquire ? ~intents_1_reg | _GEN_34 | _GEN_33 : _GEN_34 | _GEN_33;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :37:24, :43:{31,58}, :46:{31,58}
+      _GEN_36 = pcReg == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+      _GEN_37 = pcReg_1 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+      _GEN_38 = activeReg_1 & _GEN_37;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
       _stall_hazard_T_146 =
         clientIntents_1_op & clientIntents_1_addr | clientIntents_7_op
-        & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :50:47, :51:38, :52:29
-      _GEN_39 = pcReg_2 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-      _GEN_40 = activeReg_2 & _GEN_39;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
-      _GEN_41 = {2'h0, ~abortWire & activeReg & _GEN_36} + {2'h0, ~abortWire_1 & _GEN_38};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+        & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :50:47, :51:38, :52:29
+      _GEN_39 = pcReg_2 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+      _GEN_40 = activeReg_2 & _GEN_39;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+      _GEN_41 = {2'h0, ~abortWire & activeReg & _GEN_36} + {2'h0, ~abortWire_1 & _GEN_38};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
       stall_7 =
         _GEN_41[2] | clientIntents_1_op & clientIntents_1_addr | clientIntents_7_op
-        & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :52:29, :65:{17,32}
-      _GEN_42 = pcReg_2 == 3'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-      _GEN_43 = activeReg_2 & _GEN_42;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
-      _GEN_44 = {2'h0, _GEN_41} + {4'h0, ~abortWire_2 & _GEN_40};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+        & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :52:29, :65:{17,32}
+      _GEN_42 = pcReg_2 == 3'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+      _GEN_43 = activeReg_2 & _GEN_42;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+      _GEN_44 = {2'h0, _GEN_41} + {4'h0, ~abortWire_2 & _GEN_40};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
       stall_8 =
         (|(_GEN_44[4:2])) | clientIntents_3_op & clientIntents_3_addr | clientIntents_7_op
-        & clientIntents_7_addr == 2'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :52:29, :65:{17,32}
-      io_1_wdata = _GEN_11 ? 32'h0 : dataVal;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:{50,67}, :236:64
-      _GEN_45 = state != 2'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:314:11, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:143:22, :150:22
-      _GEN_46 = pcReg_3 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-      _GEN_47 = activeReg_3 & _GEN_46;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
-      _GEN_48 = {1'h0, _GEN_44} + {5'h0, ~abortWire_2 & _GEN_43};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+        & clientIntents_7_addr == 2'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :52:29, :65:{17,32}
+      io_1_wdata = _GEN_11 ? 32'h0 : dataVal;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:{50,67}, :236:64
+      _GEN_45 = state != 2'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:317:11, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:143:22, :150:22
+      _GEN_46 = pcReg_3 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+      _GEN_47 = activeReg_3 & _GEN_46;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+      _GEN_48 = {1'h0, _GEN_44} + {5'h0, ~abortWire_2 & _GEN_43};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
       stall_10 =
         (|(_GEN_48[5:2])) | clientIntents_1_op & clientIntents_1_addr | clientIntents_7_op
-        & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :52:29, :65:{17,32}
-      _GEN_49 = pcReg_3 == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-      _GEN_51 = pcReg_4 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-      _GEN_52 = activeReg_4 & _GEN_51;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :197:24, :205:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
-      _GEN_53 = {1'h0, _GEN_48} + {6'h0, ~abortWire_3 & _GEN_47};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-      stall_13 = (|(_GEN_53[6:2])) | clientIntents_7_op & (&clientIntents_7_addr);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :65:{17,32}
-      _GEN_54 = pcReg_4 == 3'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :205:21
-      _GEN_55 = {2'h0, _GEN_53} + {8'h0, ~abortWire_4 & _GEN_52};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+        & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :52:29, :65:{17,32}
+      _GEN_49 = pcReg_3 == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+      _GEN_51 = pcReg_4 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+      _GEN_52 = activeReg_4 & _GEN_51;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :199:24, :207:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
+      _GEN_53 = {1'h0, _GEN_48} + {6'h0, ~abortWire_3 & _GEN_47};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+      stall_13 = (|(_GEN_53[6:2])) | clientIntents_7_op & (&clientIntents_7_addr);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :65:{17,32}
+      _GEN_54 = pcReg_4 == 3'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :207:21
+      _GEN_55 = {2'h0, _GEN_53} + {8'h0, ~abortWire_4 & _GEN_52};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :110:36, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
       stall_14 =
         (|(_GEN_55[8:2])) | clientIntents_1_op & clientIntents_1_addr | clientIntents_7_op
-        & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :52:29, :65:{17,32}
-      if (abortWire | ~_GEN_0) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
+        & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :50:47, :51:38, :52:29, :65:{17,32}
+      if (abortWire | ~_GEN_0) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
         phyRegs_1 <= res;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56, :288:24
-      if (abortWire_1 | ~_GEN_4) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
+      if (abortWire_1 | ~_GEN_4) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
         phyRegs_2 <= res_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56, :288:24
-      if (abortWire_3 | ~_GEN_17 | (|(_GEN_50[3:1]))) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :65:17, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
+      if (abortWire_3 | ~_GEN_17 | (|(_GEN_50[3:1]))) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :42:23, :45:45, :65:17, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
         phyRegs_3 <= memData;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:64, :288:24
-      if (abortWire_4 | ~_GEN_22 | (|(_GEN_56[7:1]))) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :45:45, :65:17, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
+      if (abortWire_4 | ~_GEN_22 | (|(_GEN_56[7:1]))) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :42:23, :45:45, :65:17, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
         phyRegs_4 <= res_2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86, :288:24
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h0)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_0 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_1 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_2 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_3 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:45:45, :65:17, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_4 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_5 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_6 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_7 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h8)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_8 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h9)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_9 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hA)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_10 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hB)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_11 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hC)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_12 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hD)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_13 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hE)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_14 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hF)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_15 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h10)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_16 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h11)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_17 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h12)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_18 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h13)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_19 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h14)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_20 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h15)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_21 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h16)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_22 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h17)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_23 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h18)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_24 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h19)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_25 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_26 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_27 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_28 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_29 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_30 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_31 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h20)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_32 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h21)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_33 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h22)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_34 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h23)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_35 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h24)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_36 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h25)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_37 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h26)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_38 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h27)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_39 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h28)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_40 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h29)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_41 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_42 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_43 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_44 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_45 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_46 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_47 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h30)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_48 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h31)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_49 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h32)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_50 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h33)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_51 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h34)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_52 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h35)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_53 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h36)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_54 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h37)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_55 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h38)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_56 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h39)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_57 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_58 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_59 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_60 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_61 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_62 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_63 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h40)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_64 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h41)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_65 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h42)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_66 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h43)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_67 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h44)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_68 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h45)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_69 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h46)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_70 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h47)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_71 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h48)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_72 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h49)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_73 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_74 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_75 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_76 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_77 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_78 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_79 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h50)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_80 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h51)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_81 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h52)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_82 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h53)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_83 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h54)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_84 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h55)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_85 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h56)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_86 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h57)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_87 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h58)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_88 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h59)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_89 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_90 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_91 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_92 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_93 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_94 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_95 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h60)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_96 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h61)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_97 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h62)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_98 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h63)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_99 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h64)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_100 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h65)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_101 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h66)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_102 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h67)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_103 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h68)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_104 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h69)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_105 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_106 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_107 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_108 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_109 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_110 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_111 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h70)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_112 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h71)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_113 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h72)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_114 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h73)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_115 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h74)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_116 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h75)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_117 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h76)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_118 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h77)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_119 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h78)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_120 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h79)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_121 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_122 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_123 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_124 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_125 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_126 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      if (_GEN_25 & io_1_req & io_1_isWr & (&(io_1_addr[6:0])))	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
-        mem_127 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
-      _GEN_57 = {{state}, {2'h0}, {_GEN_27 ? 2'h2 : state}, {io_1_req ? 2'h1 : state}};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:143:22, :150:22, :153:18, :155:21, :156:15, :164:{19,28}, :165:15, :171:13
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h0)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_0 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_1 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_2 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_3 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:45:45, :65:17, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_4 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_5 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_6 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_7 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h8)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_8 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h9)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_9 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hA)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_10 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hB)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_11 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hC)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_12 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hD)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_13 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hE)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_14 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'hF)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_15 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h10)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_16 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h11)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_17 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h12)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_18 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h13)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_19 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h14)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_20 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h15)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_21 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h16)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_22 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h17)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_23 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h18)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_24 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h19)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_25 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_26 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_27 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_28 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_29 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_30 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h1F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_31 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h20)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_32 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h21)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_33 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h22)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_34 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h23)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_35 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h24)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_36 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h25)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_37 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h26)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_38 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h27)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_39 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h28)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_40 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h29)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_41 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_42 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_43 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_44 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_45 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_46 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h2F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_47 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h30)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_48 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h31)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_49 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h32)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_50 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h33)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_51 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h34)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_52 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h35)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_53 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h36)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_54 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h37)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_55 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h38)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_56 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h39)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_57 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_58 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_59 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_60 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_61 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_62 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h3F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_63 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h40)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_64 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h41)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_65 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h42)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_66 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h43)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_67 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h44)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_68 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h45)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_69 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h46)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_70 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h47)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_71 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h48)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_72 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h49)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_73 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_74 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_75 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_76 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_77 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_78 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h4F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_79 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h50)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_80 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h51)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_81 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h52)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_82 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h53)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_83 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h54)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_84 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h55)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_85 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h56)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_86 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h57)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_87 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h58)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_88 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h59)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_89 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_90 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_91 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_92 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_93 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_94 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h5F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_95 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h60)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_96 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h61)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_97 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h62)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_98 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h63)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_99 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h64)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_100 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h65)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_101 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h66)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_102 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h67)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_103 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h68)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_104 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h69)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_105 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_106 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_107 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_108 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_109 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_110 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h6F)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_111 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h70)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_112 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h71)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_113 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h72)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_114 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h73)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_115 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h74)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_116 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h75)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_117 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h76)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_118 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h77)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_119 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h78)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_120 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h79)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_121 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7A)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_122 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7B)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_123 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7C)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_124 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7D)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_125 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & io_1_addr[6:0] == 7'h7E)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_126 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      if (_GEN_25 & io_1_req & io_1_isWr & (&(io_1_addr[6:0])))	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :153:18, :155:21, :159:{24,37,44}
+        mem_127 <= io_1_wdata;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :140:67
+      _GEN_57 = {{state}, {2'h0}, {_GEN_27 ? 2'h2 : state}, {io_1_req ? 2'h1 : state}};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:143:22, :150:22, :153:18, :155:21, :156:15, :164:{19,28}, :165:15, :171:13
       state <= _GEN_57[state];	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:143:22, :150:22, :153:18, :155:21, :164:28, :171:13
       busyTable_0 <=
         intents_4_acquire & ~intents_4_reg
         | (intents_3_acquire
              ? _GEN_30 | intents_2_acquire | _GEN_35
-             : intents_2_acquire | _GEN_35);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :37:24, :43:58, :46:{31,58}
+             : intents_2_acquire | _GEN_35);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :37:24, :43:58, :46:{31,58}
       busyTable_1 <=
         intents_3_acquire & _GEN_31 | intents_0_acquire & intents_0_reg
         | ~(intents_3_release & _GEN_31) & ~(intents_0_release & intents_0_reg)
-        & busyTable_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :36:24, :37:24, :41:26, :43:{31,58}, :46:{31,58}
+        & busyTable_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :36:24, :37:24, :41:26, :43:{31,58}, :46:{31,58}
       busyTable_2 <=
         intents_3_acquire & _GEN_32 | intents_1_acquire & intents_1_reg
         | ~(intents_3_release & _GEN_32) & (~intents_1_release | ~intents_1_reg)
-        & busyTable_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :36:24, :37:24, :41:26, :43:{31,58}, :46:{31,58}
+        & busyTable_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :36:24, :37:24, :41:26, :43:{31,58}, :46:{31,58}
       busyTable_3 <=
         intents_3_acquire & (&intents_3_reg) | ~(intents_3_release & (&intents_3_reg))
-        & busyTable_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :36:24, :37:24, :43:{31,58}, :46:{31,58}
+        & busyTable_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :36:24, :37:24, :43:{31,58}, :46:{31,58}
       busyTable_4 <=
         intents_4_acquire & intents_4_reg | ~(intents_4_release & intents_4_reg)
-        & busyTable_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :36:24, :37:24, :43:{31,58}, :46:{31,58}
+        & busyTable_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :35:24, :36:24, :37:24, :43:{31,58}, :46:{31,58}
       if (_GEN_58[nextIssueId])	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28, :52:39
         nextIssueId <= nextIssueId + 5'h1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28, :53:32
-      activeReg <= ~abortWire & (activeReg ? ~_GEN_2 : startWire);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :65:28, :70:27, :128:15, :192:22, :193:17, :197:24, :205:{21,32}, :217:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-      activeReg_1 <= ~abortWire_1 & (activeReg_1 ? ~_GEN_6 : startWire_1);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :65:28, :70:27, :128:15, :192:22, :193:17, :197:24, :205:{21,32}, :217:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-      activeReg_2 <= ~abortWire_2 & (activeReg_2 ? ~_GEN_12 : startWire_2);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :65:28, :70:27, :128:15, :192:22, :193:17, :197:24, :205:{21,32}, :217:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-      activeReg_3 <= ~abortWire_3 & (activeReg_3 ? ~_GEN_19 : startWire_3);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :65:28, :70:27, :128:15, :192:22, :193:17, :197:24, :205:{21,32}, :217:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-      activeReg_4 <= ~abortWire_4 & (activeReg_4 ? ~_GEN_24 : startWire_4);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :65:28, :70:27, :128:15, :192:22, :193:17, :197:24, :205:{21,32}, :217:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
-      if (abortWire | ~(activeReg & pcReg == 3'h2)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :151:24, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56, :221:39
+      activeReg <= ~abortWire & (activeReg ? ~_GEN_2 : startWire);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :130:15, :194:22, :195:17, :199:24, :207:{21,32}, :219:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+      activeReg_1 <= ~abortWire_1 & (activeReg_1 ? ~_GEN_6 : startWire_1);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :130:15, :194:22, :195:17, :199:24, :207:{21,32}, :219:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+      activeReg_2 <= ~abortWire_2 & (activeReg_2 ? ~_GEN_12 : startWire_2);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :130:15, :194:22, :195:17, :199:24, :207:{21,32}, :219:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+      activeReg_3 <= ~abortWire_3 & (activeReg_3 ? ~_GEN_19 : startWire_3);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :130:15, :194:22, :195:17, :199:24, :207:{21,32}, :219:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+      activeReg_4 <= ~abortWire_4 & (activeReg_4 ? ~_GEN_24 : startWire_4);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :130:15, :194:22, :195:17, :199:24, :207:{21,32}, :219:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24
+      if (abortWire | ~(activeReg & pcReg == 3'h2)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :153:24, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56, :221:39
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
         res <= 32'hA;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
-      if (abortWire)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-        pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      else if (activeReg) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-        if (startWire & doneWire | _GEN_2)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28, :129:9, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, :208:{22,35}, :209:15
-          pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
+      if (abortWire)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+        pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      else if (activeReg) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+        if (startWire & doneWire | _GEN_2)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :131:9, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, :210:{22,35}, :211:15
+          pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
         else if (_GEN_36
                  & (clientIntents_1_op & ~clientIntents_1_addr | clientIntents_3_op
                     & ~clientIntents_3_addr | clientIntents_7_op
                     & clientIntents_7_addr == 2'h0 | ~abortWire_4 & _GEN_22
-                    & ~(~abortWire_4 & _GEN_22)) | _GEN & stall) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :202:13, :205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :50:47, :51:38, :52:29, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :94:{34,41}
+                    & ~(~abortWire_4 & _GEN_22)) | _GEN & stall) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :204:13, :207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :50:47, :51:38, :52:29, :160:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:35:24, :94:{34,41}
         end
-        else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:32, :314:18, :315:15
-          pcReg <= pcReg + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :202:22
+        else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:32, :317:18, :318:15
+          pcReg <= pcReg + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :204:22
       end
-      else if (startWire)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-        pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      if (abortWire_1 | ~_GEN_38 | _stall_hazard_T_146) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:26
+      else if (startWire)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+        pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      if (abortWire_1 | ~_GEN_38 | _stall_hazard_T_146) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:26
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:26
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:26
         op1_1 <= phyRegs_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:26, :288:24
-      if (abortWire_1 | ~(activeReg_1 & pcReg_1 == 3'h2)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :151:24, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56, :221:39
+      if (abortWire_1 | ~(activeReg_1 & pcReg_1 == 3'h2)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :153:24, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56, :221:39
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
         res_1 <= op1_1 + 32'h14;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:{26,56}, :221:46
-      if (abortWire_1)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-        pcReg_1 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      else if (activeReg_1) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-        if (startWire_1 & doneWire_1 | _GEN_6)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28, :129:9, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, :208:{22,35}, :209:15
-          pcReg_1 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-        else if (_GEN_37 & _stall_hazard_T_146 | _GEN_3 & _stall_T_7) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:80:44, :94:{34,41}
+      if (abortWire_1)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+        pcReg_1 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      else if (activeReg_1) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+        if (startWire_1 & doneWire_1 | _GEN_6)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :131:9, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, :210:{22,35}, :211:15
+          pcReg_1 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+        else if (_GEN_37 & _stall_hazard_T_146 | _GEN_3 & _stall_T_7) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:80:44, :94:{34,41}
         end
-        else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:32, :314:18, :315:15
-          pcReg_1 <= pcReg_1 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :202:22
+        else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:32, :317:18, :318:15
+          pcReg_1 <= pcReg_1 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :204:22
       end
-      else if (startWire_1)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-        pcReg_1 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      if (abortWire_2 | ~_GEN_40 | stall_7) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:30
+      else if (startWire_1)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+        pcReg_1 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      if (abortWire_2 | ~_GEN_40 | stall_7) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:30
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:30
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:30
         addrVal <= phyRegs_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:30, :288:24
-      if (abortWire_2 | ~_GEN_43 | stall_8) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64
+      if (abortWire_2 | ~_GEN_43 | stall_8) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64
         dataVal <= phyRegs_2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64, :288:24
-      if (abortWire_2)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-        pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      else if (activeReg_2) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-        if (startWire_2 & doneWire_2 | _GEN_12)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28, :129:9, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, :208:{22,35}, :209:15
-          pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-        else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:129:9, :205:32, :208:35, :209:15
-          automatic logic _GEN_59;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:32, :314:18, :315:15
-          automatic logic _GEN_60;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:32, :314:18, :315:15
-          _GEN_59 = _GEN_39 & stall_7 | _GEN_7 & stall_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:80:44, :86:32, :92:34, :94:{34,41,49,57}
-          _GEN_60 = _GEN_42 & stall_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32
-          if (pcReg_2 == 3'h4 ? _GEN_45 | _GEN_60 | _GEN_59 : _GEN_60 | _GEN_59) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :202:13, :205:{21,32}, :314:{11,18}, :315:15, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:150:22
+      if (abortWire_2)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+        pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      else if (activeReg_2) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+        if (startWire_2 & doneWire_2 | _GEN_12)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :131:9, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, :210:{22,35}, :211:15
+          pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+        else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:131:9, :207:32, :210:35, :211:15
+          automatic logic _GEN_59;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:32, :317:18, :318:15
+          automatic logic _GEN_60;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:32, :317:18, :318:15
+          _GEN_59 = _GEN_39 & stall_7 | _GEN_7 & stall_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:80:44, :86:32, :92:34, :94:{34,41,49,57}
+          _GEN_60 = _GEN_42 & stall_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32
+          if (pcReg_2 == 3'h4 ? _GEN_45 | _GEN_60 | _GEN_59 : _GEN_60 | _GEN_59) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :204:13, :207:{21,32}, :317:{11,18}, :318:15, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:150:22
           end
-          else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:32, :314:18, :315:15
-            pcReg_2 <= pcReg_2 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :202:22
+          else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:32, :317:18, :318:15
+            pcReg_2 <= pcReg_2 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :204:22
         end
       end
-      else if (startWire_2)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-        pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      if (abortWire_3 | ~_GEN_47 | stall_10) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:30
+      else if (startWire_2)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+        pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      if (abortWire_3 | ~_GEN_47 | stall_10) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:30
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:30
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:30
         addrVal_1 <= phyRegs_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:30, :288:24
-      if (abortWire_3 | ~(activeReg_3 & _GEN_49 & state == 2'h2)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:{11,18}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:143:22, :150:22, :252:64, :264:49
+      if (abortWire_3 | ~(activeReg_3 & _GEN_49 & state == 2'h2)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:{11,18}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:143:22, :150:22, :252:64, :264:49
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:64
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:64
         memData <= rdataBuffer;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:145:24, :252:64
-      if (abortWire_3)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-        pcReg_3 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      else if (activeReg_3) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-        if (startWire_3 & doneWire_3 | _GEN_19)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28, :129:9, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, :208:{22,35}, :209:15
-          pcReg_3 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-        else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:129:9, :205:32, :208:35, :209:15
-          automatic logic _GEN_61;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:32, :314:18, :315:15
-          automatic logic _GEN_62;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:32, :314:18, :315:15
-          _GEN_61 = _GEN_46 & stall_10 | _GEN_13 & _stall_T_15;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:80:44, :85:36, :86:32, :94:{34,41,49}
-          _GEN_62 = _GEN_49 & _GEN_45;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:{21,32}, :314:{11,18}, :315:15, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:150:22
-          if (_GEN_16 ? (|(_GEN_50[3:1])) | _GEN_62 | _GEN_61 : _GEN_62 | _GEN_61) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23, :45:45, :65:17
+      if (abortWire_3)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+        pcReg_3 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      else if (activeReg_3) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+        if (startWire_3 & doneWire_3 | _GEN_19)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :131:9, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, :210:{22,35}, :211:15
+          pcReg_3 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+        else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:131:9, :207:32, :210:35, :211:15
+          automatic logic _GEN_61;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:32, :317:18, :318:15
+          automatic logic _GEN_62;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:32, :317:18, :318:15
+          _GEN_61 = _GEN_46 & stall_10 | _GEN_13 & _stall_T_15;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:80:44, :85:36, :86:32, :94:{34,41,49}
+          _GEN_62 = _GEN_49 & _GEN_45;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:{21,32}, :317:{11,18}, :318:15, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:150:22
+          if (_GEN_16 ? (|(_GEN_50[3:1])) | _GEN_62 | _GEN_61 : _GEN_62 | _GEN_61) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23, :45:45, :65:17
           end
-          else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:32, :314:18, :315:15
-            pcReg_3 <= pcReg_3 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :202:22
+          else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:32, :317:18, :318:15
+            pcReg_3 <= pcReg_3 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :204:22
         end
       end
-      else if (startWire_3)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-        pcReg_3 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      if (abortWire_4 | ~_GEN_52 | stall_13) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, :192:22, :197:24, :205:32, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:26
+      else if (startWire_3)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+        pcReg_3 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      if (abortWire_4 | ~_GEN_52 | stall_13) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :194:22, :199:24, :207:32, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:26
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:26
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:26
         op1_2 <= phyRegs_3;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:26, :288:24
-      if (abortWire_4 | ~(activeReg_4 & _GEN_54) | stall_14) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :192:22, :197:24, :205:{21,32}, :314:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:56
+      if (abortWire_4 | ~(activeReg_4 & _GEN_54) | stall_14) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :194:22, :199:24, :207:{21,32}, :317:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :65:32, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:56
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, :205:32, :314:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:56
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, :207:32, :317:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:56
         op2 <= phyRegs_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:56, :288:24
-      if (abortWire_4 | ~(activeReg_4 & pcReg_4 == 3'h3)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, :70:27, :151:24, :192:22, :197:24, :205:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86, :205:37
+      if (abortWire_4 | ~(activeReg_4 & pcReg_4 == 3'h3)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :153:24, :194:22, :199:24, :207:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86, :205:37
       end
-      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86
+      else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86
         res_2 <= op1_2 + op2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:{26,56,86}, :205:44
-      if (abortWire_4)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27
-        pcReg_4 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-      else if (activeReg_4) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34
-        if (startWire_4 & io_done_0 | _GEN_24)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28, :129:9, :185:14, :192:22, :195:16, :197:24, :205:{21,32}, :208:{22,35}, :209:15
-          pcReg_4 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
-        else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:129:9, :205:32, :208:35, :209:15
-          automatic logic _GEN_63;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:32, :314:18, :315:15
-          automatic logic _GEN_64;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:32, :314:18, :315:15
-          _GEN_63 = _GEN_51 & stall_13 | _GEN_20 & _stall_T_19;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:65:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:80:44, :85:36, :86:32, :94:{34,41,49}
-          _GEN_64 = _GEN_54 & stall_14;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32
-          if (_GEN_21 ? (|(_GEN_56[7:1])) | _GEN_64 | _GEN_63 : _GEN_64 | _GEN_63) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:202:13, :205:{21,32}, :314:18, :315:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23, :45:45, :65:17
+      if (abortWire_4)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
+        pcReg_4 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+      else if (activeReg_4) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
+        if (startWire_4 & io_done_0 | _GEN_24)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :131:9, :187:14, :194:22, :197:16, :199:24, :207:{21,32}, :210:{22,35}, :211:15
+          pcReg_4 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
+        else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:131:9, :207:32, :210:35, :211:15
+          automatic logic _GEN_63;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:32, :317:18, :318:15
+          automatic logic _GEN_64;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:32, :317:18, :318:15
+          _GEN_63 = _GEN_51 & stall_13 | _GEN_20 & _stall_T_19;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:65:32, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:80:44, :85:36, :86:32, :94:{34,41,49}
+          _GEN_64 = _GEN_54 & stall_14;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, :65:32
+          if (_GEN_21 ? (|(_GEN_56[7:1])) | _GEN_64 | _GEN_63 : _GEN_64 | _GEN_63) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:204:13, :207:{21,32}, :317:18, :318:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23, :45:45, :65:17
           end
-          else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:32, :314:18, :315:15
-            pcReg_4 <= pcReg_4 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, :202:22
+          else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:207:32, :317:18, :318:15
+            pcReg_4 <= pcReg_4 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, :204:22
         end
       end
-      else if (startWire_4)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28
-        pcReg_4 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24
+      else if (startWire_4)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
+        pcReg_4 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24
     end
     if (_GEN_25) begin	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:153:18
-      if (io_1_req)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24
+      if (io_1_req)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24
         timer <= 4'h2;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:45:45, :65:17, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:144:18
     end
     else if (_GEN_26)	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:153:18
@@ -1161,8 +1161,8 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
          {mem_0}};	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:129:28, :167:21
       rdataBuffer <= _GEN_65[addrLatch[6:0]];	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:145:24, :148:22, :167:{21,37}
     end
-    if (_GEN_25 & io_1_req)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:148:22, :153:18, :155:21, :158:19
-      addrLatch <= io_1_addr;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:192:22, :197:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:148:22
+    if (_GEN_25 & io_1_req)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:148:22, :153:18, :155:21, :158:19
+      addrLatch <= io_1_addr;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:194:22, :199:24, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:148:22
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
     `ifdef FIRRTL_BEFORE_INITIAL	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
@@ -1319,43 +1319,43 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
         busyTable_3 = _RANDOM[8'hA2][9];	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :148:22
         busyTable_4 = _RANDOM[8'hA2][10];	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:20:34, :148:22
         nextIssueId = _RANDOM[8'hA3][10:6];	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
-        activeReg = _RANDOM[8'hA3][11];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
-        activeReg_1 = _RANDOM[8'hA3][12];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
-        activeReg_2 = _RANDOM[8'hA3][13];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
-        activeReg_3 = _RANDOM[8'hA3][14];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
-        activeReg_4 = _RANDOM[8'hA3][15];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
+        activeReg = _RANDOM[8'hA3][11];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
+        activeReg_1 = _RANDOM[8'hA3][12];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
+        activeReg_2 = _RANDOM[8'hA3][13];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
+        activeReg_3 = _RANDOM[8'hA3][14];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
+        activeReg_4 = _RANDOM[8'hA3][15];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:24:28
         res = {_RANDOM[8'hA4][31:16], _RANDOM[8'hA5][15:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
-        pcReg = _RANDOM[8'hA5][18:16];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
+        pcReg = _RANDOM[8'hA5][18:16];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
         op1_1 = {_RANDOM[8'hA6][31:23], _RANDOM[8'hA7][22:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:26
         res_1 = {_RANDOM[8'hA7][31:23], _RANDOM[8'hA8][22:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:{26,56}
-        pcReg_1 = _RANDOM[8'hA8][25:23];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
+        pcReg_1 = _RANDOM[8'hA8][25:23];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:217:56
         addrVal = {_RANDOM[8'hA9][31:30], _RANDOM[8'hAA][29:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:30
         dataVal = {_RANDOM[8'hAA][31:30], _RANDOM[8'hAB][29:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:{30,64}
-        pcReg_2 = {_RANDOM[8'hAB][31:30], _RANDOM[8'hAC][0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64
+        pcReg_2 = {_RANDOM[8'hAB][31:30], _RANDOM[8'hAC][0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:236:64
         addrVal_1 = {_RANDOM[8'hAD][31:5], _RANDOM[8'hAE][4:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:30
         memData = {_RANDOM[8'hAE][31:5], _RANDOM[8'hAF][4:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:{30,64}
-        pcReg_3 = _RANDOM[8'hAF][7:5];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:64
+        pcReg_3 = _RANDOM[8'hAF][7:5];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:252:64
         op1_2 = {_RANDOM[8'hB0][31:12], _RANDOM[8'hB1][11:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:26
         op2 = {_RANDOM[8'hB1][31:12], _RANDOM[8'hB2][11:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:{26,56}
         res_2 = {_RANDOM[8'hB2][31:12], _RANDOM[8'hB3][11:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:{56,86}
-        pcReg_4 = _RANDOM[8'hB3][14:12];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86
+        pcReg_4 = _RANDOM[8'hB3][14:12];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:200:86
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       `FIRRTL_AFTER_INITIAL	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  KernelStateMonitorDPI monitor (	// src/main/scala/HwOS/kernel/Kernel.scala:126:25
+  KernelStateMonitorDPI monitor (	// src/main/scala/HwOS/kernel/Kernel.scala:123:25
     .clock   (clock),
     .reset   (reset),
     .pcs
-      ({29'h0, pcReg_4, 29'h0, pcReg_3, 29'h0, pcReg_2, 29'h0, pcReg_1, 29'h0, pcReg}),	// src/main/scala/HwOS/kernel/HardwareAgent.scala:151:24, src/main/scala/HwOS/kernel/Kernel.scala:119:38, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:221:46
-    .actives ({activeReg_4, activeReg_3, activeReg_2, activeReg_1, activeReg}),	// src/main/scala/HwOS/kernel/HardwareAgent.scala:57:34, src/main/scala/HwOS/kernel/Kernel.scala:120:61
-    .starts  ({startWire_4, startWire_3, startWire_2, startWire_1, startWire}),	// src/main/scala/HwOS/kernel/HardwareAgent.scala:65:28, src/main/scala/HwOS/kernel/Kernel.scala:121:61
-    .aborts  ({abortWire_4, abortWire_3, abortWire_2, abortWire_1, abortWire}),	// src/main/scala/HwOS/kernel/HardwareAgent.scala:70:27, src/main/scala/HwOS/kernel/Kernel.scala:122:61
-    .dones   ({io_done_0, doneWire_3, doneWire_2, doneWire_1, doneWire})	// src/main/scala/HwOS/kernel/HardwareAgent.scala:185:14, :192:22, :195:16, :197:24, :205:32, src/main/scala/HwOS/kernel/Kernel.scala:123:56
-  );	// src/main/scala/HwOS/kernel/Kernel.scala:126:25
-  assign io_done = io_done_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:185:14, :192:22, :195:16, :197:24, :205:32, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
+      ({29'h0, pcReg_4, 29'h0, pcReg_3, 29'h0, pcReg_2, 29'h0, pcReg_1, 29'h0, pcReg}),	// src/main/scala/HwOS/kernel/HardwareAgent.scala:153:24, src/main/scala/HwOS/kernel/Kernel.scala:116:38, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:221:46
+    .actives ({activeReg_4, activeReg_3, activeReg_2, activeReg_1, activeReg}),	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/main/scala/HwOS/kernel/Kernel.scala:117:61
+    .starts  ({startWire_4, startWire_3, startWire_2, startWire_1, startWire}),	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, src/main/scala/HwOS/kernel/Kernel.scala:118:61
+    .aborts  ({abortWire_4, abortWire_3, abortWire_2, abortWire_1, abortWire}),	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, src/main/scala/HwOS/kernel/Kernel.scala:119:61
+    .dones   ({io_done_0, doneWire_3, doneWire_2, doneWire_1, doneWire})	// src/main/scala/HwOS/kernel/HardwareAgent.scala:187:14, :194:22, :197:16, :199:24, :207:32, src/main/scala/HwOS/kernel/Kernel.scala:120:56
+  );	// src/main/scala/HwOS/kernel/Kernel.scala:123:25
+  assign io_done = io_done_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:187:14, :194:22, :197:16, :199:24, :207:32, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   assign io_r1 = phyRegs_1;	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
   assign io_r2 = phyRegs_2;	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24
   assign io_r3 = phyRegs_3;	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:288:24

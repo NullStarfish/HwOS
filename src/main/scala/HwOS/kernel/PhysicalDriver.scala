@@ -50,7 +50,18 @@ case class DriverMeta(
 
 
 
-abstract class PhysicalDriver(val meta: DriverMeta) {}
+abstract class PhysicalDriver(val meta: DriverMeta) {
+  var _driverId: Int = 0
+  protected def DriverStep(name: String)(block: => Unit): Unit = {
+    ContextScope.current match {
+      case ThreadCtx(t) => 
+        // 调用我们稍后修改过的 Step 方法，传入 driverId
+        t.Step(name, _driverId)(block) 
+      case _ => 
+        throw new Exception(s"[Driver Error] DriverStep '$name' called outside of Thread context!")
+    }
+  }
+}
 
 
 object DriverUtils {

@@ -52,6 +52,8 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
   private val steps = ArrayBuffer[() => Unit]()
   val stepNames = ArrayBuffer[String]()
+  val stepOwners = ArrayBuffer[Int]()
+
   private val globals = ArrayBuffer[() => Unit]()
 
   private val activeReg = RegInit(false.B)
@@ -236,7 +238,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   }
 
   
-  def Step(name: String)(block: => Unit): Unit = {
+  def Step(name: String, ownerId: Int = 0)(block: => Unit): Unit = {
     ContextScope.current match {
       case ThreadCtx(t) => {}
       case AtomicCtx(t) => {
@@ -249,6 +251,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       }
     }
     stepNames += name
+    stepOwners += ownerId
     steps += { () => 
       ContextScope.withContext(AtomicCtx(this)) { block }
     }

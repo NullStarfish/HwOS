@@ -23,6 +23,11 @@
 // 1. 数据结构
 // ==========================================
 
+struct StepInfo {
+    std::string name;
+    int owner_id; // 0 = User, >0 = Driver/Kernel Resource
+};
+
 struct ThreadSnapshot {
     int id;
     std::string name; 
@@ -30,6 +35,7 @@ struct ThreadSnapshot {
     bool active;
     bool done;
     std::string step_name;
+    int step_owner_id; // 新增：保存当前 Step 的所有者 ID
 };
 
 struct CycleSnapshot {
@@ -43,7 +49,9 @@ static const int MAX_HISTORY = 2000;
 // 线程元数据
 static std::vector<std::string> g_all_thread_names; // index = TID
 static std::map<std::string, int> g_thread_name_to_id; // Name -> TID
-static std::map<std::string, std::map<int, std::string>> g_symbols; 
+
+// Symbol map: ThreadName -> PC -> StepInfo
+static std::map<std::string, std::map<int, StepInfo>> g_symbols; 
 
 // UI 状态
 static uint64_t g_cycle_count = 0;
@@ -60,25 +68,23 @@ static std::string g_hit_reason = "";
 // 2. 表达式解析器 (Expression Parser)
 // ==========================================
 
-// 简单的 AST 节点基类
 struct ExprNode {
     virtual ~ExprNode() = default;
     virtual bool evaluate(const std::vector<ThreadSnapshot>& threads) = 0;
 };
 
-// 相等比较节点: ThreadName.pc == Value
+// ThreadName.pc == Value
 struct PcEqNode : ExprNode {
     int tid;
     uint32_t target_pc;
     PcEqNode(int id, uint32_t pc) : tid(id), target_pc(pc) {}
     bool evaluate(const std::vector<ThreadSnapshot>& threads) override {
         if (tid >= (int)threads.size()) return false;
-        // 只有当线程 active 或 done 时才检查 PC (或者你希望 idle 时也检查？通常 idle pc=0)
         return threads[tid].pc == target_pc; 
     }
 };
 
-// 逻辑与节点: Left && Right
+// Logic AND
 struct AndNode : ExprNode {
     ExprNode *left, *right;
     AndNode(ExprNode* l, ExprNode* r) : left(l), right(r) {}
@@ -88,7 +94,7 @@ struct AndNode : ExprNode {
     }
 };
 
-// 逻辑或节点: Left || Right
+// Logic OR
 struct OrNode : ExprNode {
     ExprNode *left, *right;
     OrNode(ExprNode* l, ExprNode* r) : left(l), right(r) {}
@@ -107,34 +113,19 @@ class BreakpointParser {
         if (pos == input.size()) return 0;
         return input[pos];
     }
-
-    char get() {
-        char c = peek();
-        if (pos < input.size()) pos++;
-        return c;
-    }
-
+    char get() { char c = peek(); if (pos < input.size()) pos++; return c; }
     bool match(const std::string& token) {
         size_t saved_pos = pos;
         while (pos < input.size() && std::isspace(input[pos])) pos++;
-        
-        if (input.substr(pos, token.size()) == token) {
-            pos += token.size();
-            return true;
-        }
-        pos = saved_pos;
-        return false;
+        if (input.substr(pos, token.size()) == token) { pos += token.size(); return true; }
+        pos = saved_pos; return false;
     }
-
-    // 解析数字
     uint32_t parseNumber() {
         while (pos < input.size() && std::isspace(input[pos])) pos++;
         size_t start = pos;
         while (pos < input.size() && std::isdigit(input[pos])) pos++;
         return std::stoi(input.substr(start, pos - start));
     }
-
-    // 解析标识符 (线程名)
     std::string parseIdentifier() {
         while (pos < input.size() && std::isspace(input[pos])) pos++;
         size_t start = pos;
@@ -144,48 +135,31 @@ class BreakpointParser {
 
 public:
     BreakpointParser(const std::string& s) : input(s) {}
-
-    // Grammar:
-    // Expression -> Term { "||" Term }
-    // Term       -> Factor { "&&" Factor }
-    // Factor     -> Identifier ".pc" "==" Number | "(" Expression ")"
-
     ExprNode* parseExpression() {
         ExprNode* left = parseTerm();
-        while (match("||")) {
-            ExprNode* right = parseTerm();
-            left = new OrNode(left, right);
-        }
+        while (match("||")) { left = new OrNode(left, parseTerm()); }
         return left;
     }
-
     ExprNode* parseTerm() {
         ExprNode* left = parseFactor();
-        while (match("&&")) {
-            ExprNode* right = parseFactor();
-            left = new AndNode(left, right);
-        }
+        while (match("&&")) { left = new AndNode(left, parseFactor()); }
         return left;
     }
-
     ExprNode* parseFactor() {
         if (match("(")) {
             ExprNode* node = parseExpression();
             if (!match(")")) throw std::runtime_error("Missing ')'");
             return node;
         }
-
         std::string name = parseIdentifier();
         if (match(".pc")) {
             if (match("==")) {
                 uint32_t val = parseNumber();
-                if (g_thread_name_to_id.find(name) == g_thread_name_to_id.end()) {
-                    throw std::runtime_error("Unknown thread: " + name);
-                }
+                if (g_thread_name_to_id.find(name) == g_thread_name_to_id.end()) throw std::runtime_error("Unknown: " + name);
                 return new PcEqNode(g_thread_name_to_id[name], val);
             }
         }
-        throw std::runtime_error("Syntax error at: " + name);
+        throw std::runtime_error("Syntax error: " + name);
     }
 };
 
@@ -194,7 +168,6 @@ struct Breakpoint {
     ExprNode* expr;
     bool enabled;
 };
-
 static std::vector<Breakpoint> g_breakpoints;
 
 void add_breakpoint(const std::string& cmd) {
@@ -202,9 +175,7 @@ void add_breakpoint(const std::string& cmd) {
         BreakpointParser parser(cmd);
         ExprNode* root = parser.parseExpression();
         g_breakpoints.push_back({cmd, root, true});
-    } catch (std::exception& e) {
-        // UI should handle error printing, but here we can just log or ignore
-    }
+    } catch (...) {}
 }
 
 bool check_breakpoints(const std::vector<ThreadSnapshot>& threads) {
@@ -221,13 +192,15 @@ bool check_breakpoints(const std::vector<ThreadSnapshot>& threads) {
 // 3. 辅助逻辑
 // ==========================================
 
+// [修改] 解析 ownerId
 void load_symbols(const std::string& filename) {
     std::ifstream infile(filename);
     if (!infile.good()) return;
     std::string t_name, s_name;
-    int pc;
-    while (infile >> t_name >> pc >> s_name) {
-        g_symbols[t_name][pc] = s_name;
+    int pc, owner_id;
+    // 格式: <ThreadName> <PC> <StepName> <OwnerID>
+    while (infile >> t_name >> pc >> s_name >> owner_id) {
+        g_symbols[t_name][pc] = {s_name, owner_id};
     }
 }
 
@@ -248,9 +221,9 @@ void scan_thread_names(const std::string& filename) {
     }
 }
 
-std::string get_step_name(const std::string& t_name, int pc) {
+StepInfo get_step_info(const std::string& t_name, int pc) {
     if (g_symbols[t_name].count(pc)) return g_symbols[t_name][pc];
-    return "???";
+    return {"???", 0};
 }
 
 bool is_pinned(int tid) {
@@ -277,7 +250,6 @@ extern "C" void kernel_monitor_tick(
     CycleSnapshot snap;
     snap.cycle = g_cycle_count;
     
-    // Auto-discover threads
     if (g_all_thread_names.size() < (size_t)n_threads) {
         for (size_t i = g_all_thread_names.size(); i < (size_t)n_threads; i++) {
             std::string name = "Thread_" + std::to_string(i);
@@ -293,7 +265,12 @@ extern "C" void kernel_monitor_tick(
         t.pc = pcs[i];
         t.active = (actives[i/32] >> (i%32)) & 1;
         t.done = (dones[i/32] >> (i%32)) & 1;
-        t.step_name = get_step_name(t.name, t.pc);
+        
+        // [修改] 获取 Step 完整信息
+        StepInfo info = get_step_info(t.name, t.pc);
+        t.step_name = info.name;
+        t.step_owner_id = info.owner_id;
+        
         snap.threads.push_back(t);
     }
     g_history.push_back(snap);
@@ -308,7 +285,6 @@ void step_simulation_cycle(VSimpleTop* top) {
     g_cycle_count++;
 }
 
-// 智能步进：直到线程状态改变 或 断点触发
 void run_until_thread_change(VSimpleTop* top, int pinned_idx) {
     if (g_history.empty() || pinned_idx >= (int)g_pinned_tids.size()) return;
     int tid = g_pinned_tids[pinned_idx];
@@ -329,15 +305,9 @@ void run_until_thread_change(VSimpleTop* top, int pinned_idx) {
     while (!changed && cycles < max_cycles && !Verilated::gotFinish()) {
         step_simulation_cycle(top);
         cycles++;
-
         if (!g_history.empty()) {
             const auto& curr = g_history.back();
-            
-            // Check Breakpoints
-            if (check_breakpoints(curr.threads)) {
-                g_breakpoint_hit = true;
-                break;
-            }
+            if (check_breakpoints(curr.threads)) { g_breakpoint_hit = true; break; }
 
             if (tid < (int)curr.threads.size()) {
                 const auto& t_curr = curr.threads[tid];
@@ -353,30 +323,17 @@ void run_until_thread_change(VSimpleTop* top, int pinned_idx) {
     nodelay(stdscr, FALSE);
 }
 
-// 连续运行：直到断点触发
 void run_continuous(VSimpleTop* top) {
     nodelay(stdscr, TRUE);
     g_breakpoint_hit = false;
-    
     while (!Verilated::gotFinish()) {
         step_simulation_cycle(top);
-
         if (!g_history.empty()) {
-             if (check_breakpoints(g_history.back().threads)) {
-                g_breakpoint_hit = true;
-                break;
-            }
+             if (check_breakpoints(g_history.back().threads)) { g_breakpoint_hit = true; break; }
         }
-
-        // Check user input to pause
         int ch = getch();
         if (ch == 'p' || ch == ' ') break; 
-
-        // Update UI every ~50ms
-        if (g_cycle_count % 100 == 0) {
-             napms(1); // yield CPU
-             // Note: We are not rendering here to keep speed up, rendering happens in main loop
-        }
+        if (g_cycle_count % 100 == 0) napms(1); 
     }
     nodelay(stdscr, FALSE);
 }
@@ -388,11 +345,14 @@ void run_continuous(VSimpleTop* top) {
 WINDOW *win_side, *win_main, *win_cmd;
 int scroll_offset = 0; 
 
-bool is_driver_step(const std::string& name) {
-    if (name.find("Reg_") == 0) return true;
-    if (name.find("Mem_") == 0) return true;
-    if (name.find("Driver") != std::string::npos) return true;
-    return false;
+// [修改] 根据 DriverID 获取颜色
+// ID 0: User (Default)
+// ID > 0: Driver
+int get_driver_color_pair(int owner_id) {
+    if (owner_id <= 0) return 0; 
+    // 定义了一组颜色: 11(Cyan), 12(Magenta), 13(Yellow), 14(Green), 15(Red)
+    int idx = (owner_id % 5); 
+    return 11 + idx;
 }
 
 void render_sidebar() {
@@ -470,6 +430,7 @@ void render_main() {
             mvwprintw(win_main, screen_y, x_pos, "| ");
             if (tid >= (int)snap.threads.size()) continue;
             const auto& t = snap.threads[tid];
+            
             if (!t.active && !t.done) {
                 wattron(win_main, A_DIM); wprintw(win_main, "."); wattroff(win_main, A_DIM);
             } else if (t.done) {
@@ -479,14 +440,24 @@ void render_main() {
                 if (prev_snap && tid < (int)prev_snap->threads.size()) {
                     if (prev_snap->threads[tid].active && prev_snap->threads[tid].pc == t.pc) is_stalled = true;
                 }
+                
                 if (is_stalled) {
                     wattron(win_main, A_DIM|COLOR_PAIR(4)); wprintw(win_main, ":"); wattroff(win_main, A_DIM|COLOR_PAIR(4));
                 } else {
                     std::string dname = t.step_name.substr(0, COL_WIDTH-3);
-                    if (is_driver_step(t.step_name)) {
-                        wattron(win_main, COLOR_PAIR(3)); wprintw(win_main, "%s", dname.c_str()); wattroff(win_main, COLOR_PAIR(3));
+                    
+                    // [修改] 渲染逻辑：检查 Owner ID
+                    if (t.step_owner_id > 0) {
+                        // 是 Driver 步进，分配特殊颜色
+                        int cp = get_driver_color_pair(t.step_owner_id);
+                        wattron(win_main, COLOR_PAIR(cp)); 
+                        wprintw(win_main, "%s", dname.c_str()); 
+                        wattroff(win_main, COLOR_PAIR(cp));
                     } else {
-                        wattron(win_main, A_BOLD); wprintw(win_main, "%s", dname.c_str()); wattroff(win_main, A_BOLD);
+                        // 普通 User 步进
+                        wattron(win_main, A_BOLD); 
+                        wprintw(win_main, "%s", dname.c_str()); 
+                        wattroff(win_main, A_BOLD);
                     }
                 }
             }
@@ -511,13 +482,22 @@ int main(int argc, char** argv) {
 
     initscr(); cbreak(); noecho(); keypad(stdscr, TRUE);
     start_color(); use_default_colors(); curs_set(0);
+    
+    // 基础颜色
     init_pair(1, COLOR_WHITE, COLOR_BLUE);
     init_pair(2, COLOR_YELLOW, -1);
     init_pair(3, COLOR_CYAN, -1);
     init_pair(4, COLOR_BLUE, -1);
     init_pair(5, COLOR_GREEN, -1);
     init_pair(6, COLOR_BLACK, COLOR_CYAN);
-    init_pair(7, COLOR_RED, COLOR_WHITE); // Breakpoint Alert
+    init_pair(7, COLOR_RED, COLOR_WHITE); 
+
+    // [新增] Driver 颜色池 (IDs: 11-15)
+    init_pair(11, COLOR_CYAN, -1);    // Driver A
+    init_pair(12, COLOR_MAGENTA, -1); // Driver B
+    init_pair(13, COLOR_YELLOW, -1);  // Driver C
+    init_pair(14, COLOR_GREEN, -1);   // Driver D (与 Done 区别在于不加粗或不同场景)
+    init_pair(15, COLOR_RED, -1);     // Driver E
 
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
@@ -540,7 +520,6 @@ int main(int argc, char** argv) {
         render_sidebar();
         render_main();
 
-        // --- Status Bar ---
         werase(win_cmd);
         if (g_breakpoint_hit) {
             wattron(win_cmd, A_BOLD | COLOR_PAIR(7));
@@ -560,25 +539,18 @@ int main(int argc, char** argv) {
         int ch = getch();
 
         if (g_breakpoint_hit) {
-            // 只允许特定键解除断点状态
             if (ch == ' ' || ch == 'r' || ch == 's') g_breakpoint_hit = false;
         }
 
         if (ch == 'q') running = false;
         else if (ch == '\t') g_focus_sidebar = !g_focus_sidebar;
-        else if (ch == 'r') {
-             run_continuous(top);
-             scroll_offset = 0;
-        }
+        else if (ch == 'r') { run_continuous(top); scroll_offset = 0; }
         else if (ch == ' ') { 
             step_simulation_cycle(top);
-            // Check breakpoints for single step too
-            if (!g_history.empty() && check_breakpoints(g_history.back().threads)) {
-                 g_breakpoint_hit = true;
-            }
+            if (!g_history.empty() && check_breakpoints(g_history.back().threads)) g_breakpoint_hit = true;
             scroll_offset = 0;
         }
-        else if (ch == 'b') { // Add Breakpoint
+        else if (ch == 'b') { 
             echo();
             wmove(win_cmd, 1, 0); wclrtobot(win_cmd);
             wprintw(win_cmd, "Expression (e.g. Thread1.pc == 2): ");
@@ -586,9 +558,7 @@ int main(int argc, char** argv) {
             noecho();
             if (cmd_buf[0] != 0) add_breakpoint(std::string(cmd_buf));
         }
-        else if (ch == 'c') { // Clear Breakpoints
-            g_breakpoints.clear();
-        }
+        else if (ch == 'c') { g_breakpoints.clear(); }
 
         if (g_focus_sidebar) {
             if (ch == KEY_UP) { if (g_sidebar_cursor > 0) g_sidebar_cursor--; }
@@ -600,10 +570,7 @@ int main(int argc, char** argv) {
             else if (ch == KEY_BACKSPACE || ch == 127 || ch == KEY_DC) {
                 if (!g_pinned_tids.empty()) toggle_pin(g_pinned_tids[g_main_cursor]);
             }
-            else if (ch == 's') { 
-                run_until_thread_change(top, g_main_cursor);
-                scroll_offset = 0;
-            }
+            else if (ch == 's') { run_until_thread_change(top, g_main_cursor); scroll_offset = 0; }
             else if (ch == KEY_UP) { if (scroll_offset < (int)g_history.size()-5) scroll_offset++; }
             else if (ch == KEY_DOWN) { if (scroll_offset > 0) scroll_offset--; }
         }
