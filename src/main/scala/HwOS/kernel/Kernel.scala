@@ -3,7 +3,7 @@ package HwOS.kernel
 import chisel3._
 import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
-
+import java.io._
 
 class Kernel {
   val secure_mode :Boolean = true
@@ -81,6 +81,26 @@ class Kernel {
   // ==============================================================================
   // 新增：全局状态监控接口 (DPI)
   // ==============================================================================
+
+
+  def dumpSymbolTable(filename: String): Unit = {
+    val file = new File(filename)
+    val bw = new BufferedWriter(new FileWriter(file))
+    
+    // 遍历所有注册的线程
+    for (t <- threads) {
+      // 遍历该线程的所有 Step
+      for ((stepName, pc) <- t.stepNames.zipWithIndex) {
+        // 格式: <ThreadName> <PC> <StepName>
+        // 为了方便区分，我们在 Driver 注入的 stepName 前面没有什么特殊标记，
+        // 但我们可以约定：用户一般用 CamelCase 或 下划线，
+        // 我们可以后续在 C++ 里根据名字特征染色。
+        bw.write(s"${t.name} $pc $stepName\n")
+      }
+    }
+    bw.close()
+    println(s"[Kernel] Symbol table dumped to $filename")
+  }
   
  def attachMonitor(): Unit = {
     val nThreads = threads.length

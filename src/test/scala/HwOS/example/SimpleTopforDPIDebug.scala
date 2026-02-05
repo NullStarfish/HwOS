@@ -3,6 +3,7 @@ package HwOS.example
 import chisel3._
 import chisel3.util._
 import HwOS.kernel._
+import HwOS.kernel.drivers._
 import _root_.circt.stage.ChiselStage // 或者 import chisel3.stage.ChiselStage，取决于你的 Chisel 版本
 
 // ==========================================
@@ -69,9 +70,27 @@ object SimpleTopMain extends App {
   // 指定生成目录为 generated
   val buildArgs = Array("--target-dir", "generated", "--full-stacktrace")
   println("Generating Verilog for SimpleTop...")
+
+  // 1. 定义一个变量用来“捕获”生成过程中的 Module 实例
+  var topCaptured: SimpleTop = null
+
   val verilog = _root_.circt.stage.ChiselStage.emitSystemVerilogFile(
-    new SimpleTop,
+    {
+      // 2. 在这里实例化 Module，此时处于 Builder Context 中，是合法的
+      val t = new SimpleTop
+      topCaptured = t // 【关键步骤】把实例传出去
+      t // 返回给 ChiselStage 去生成 Verilog
+    },
     buildArgs
   )
+
   println("Done. Files generated in ./generated/")
+
+  // 3. 此时 Elaboration 已完成，我们可以安全地访问捕获到的实例及其成员
+  if (topCaptured != null) {
+    // 调用我们在 Kernel 中新写的导出函数
+    // 注意：前提是你已经在 Kernel.scala 中实现了 dumpSymbolTable 
+    // 并且将 HardwareThread 中的 stepNames 改为了 private[kernel]
+    topCaptured.kernel.dumpSymbolTable("generated/hwos.symbols")
+  }
 }

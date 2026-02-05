@@ -51,7 +51,7 @@ class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boo
 class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Boolean = true, val isMealy: Boolean = false) extends HardwareAgent {
 
   private val steps = ArrayBuffer[() => Unit]()
-  private val stepNames = ArrayBuffer[String]()
+  val stepNames = ArrayBuffer[String]()
   private val globals = ArrayBuffer[() => Unit]()
 
   private val activeReg = RegInit(false.B)
