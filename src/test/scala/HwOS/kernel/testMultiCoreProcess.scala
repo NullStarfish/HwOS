@@ -18,7 +18,7 @@ class MultiCoreGpuModule extends Module {
   val kernel = new Kernel()
   
   // 保持 write_clients=1，确保绝对的安全性
-  val meta = DriverMeta("Global_VRAM", VectorResource(32), read_clients=4, write_clients=1, fifo_depth=0)
+  val meta = DriverMeta("Global_VRAM", VectorResource(32), read_clients=4, write_clients=2, fifo_depth=0)
   val vram = RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
   val vramDriver = new ScoreboardRegfileDriver(vram, kernel, meta, maxClients=8)
   kernel.mount(vramDriver)

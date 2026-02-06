@@ -1,38 +1,56 @@
 [0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes.bak[0m
 [0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule$CpuProcess.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	AluService.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MockRamDriver$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AluDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MultiServicePipelineTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard$SbIntent.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	LsuService.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule$$anon$2.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MockRamDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	LsuDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule$CpuProcess.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	AluService.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MockRamDriver$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	AluDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MultiServicePipelineTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard$SbIntent.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	LsuService.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule$$anon$2.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MockRamDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	LsuDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule$CpuProcess.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	AluService.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MockRamDriver$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelinedScoreboard$SbIntent.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FastLsuDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MultiServicePipelineTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard$SbIntent.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	LsuService.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	PipelineModule$$anon$2.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	FastAluDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelinedScoreboard$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	MockRamDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelinedScoreboard.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	DependencyScoreboard.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugTop.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen$delayedInit$body.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugTop.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen$delayedInit$body.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen$delayedInit$body.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugTop.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineDebugGen$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0mRemoving the temporary directory used for backing up class files: /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes.bak[0m

@@ -18,7 +18,7 @@ VSimpleTop__Syms::VSimpleTop__Syms(VerilatedContext* contextp, const char* namep
     , TOP{this, namep}
 {
     // Check resources
-    Verilated::stackCheck(1474);
+    Verilated::stackCheck(1632);
     // Configure time unit / time precision
     _vm_contextp__->timeunit(-12);
     _vm_contextp__->timeprecision(-12);

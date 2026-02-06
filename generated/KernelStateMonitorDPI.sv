@@ -3,28 +3,28 @@
 module KernelStateMonitorDPI(
   input clock,
   input reset,
-  input [159:0] pcs,
-  input [4:0]      actives,
-  input [4:0]      starts,
-  input [4:0]      aborts,
-  input [4:0]      dones
+  input [319:0] pcs,
+  input [9:0]      actives,
+  input [9:0]      starts,
+  input [9:0]      aborts,
+  input [9:0]      dones
 );
 
   // 声明 DPI-C 函数
   // 注意：在 C++ 侧，bit 向量通常映射为 svBitVecVal* 数组
   import "DPI-C" function void kernel_monitor_tick(
     input int n_threads,
-    input bit [159:0] pcs,
-    input bit [4:0]      actives,
-    input bit [4:0]      starts,
-    input bit [4:0]      aborts,
-    input bit [4:0]      dones
+    input bit [319:0] pcs,
+    input bit [9:0]      actives,
+    input bit [9:0]      starts,
+    input bit [9:0]      aborts,
+    input bit [9:0]      dones
   );
 
   always @(posedge clock) begin
     if (!reset) begin
       kernel_monitor_tick(
-        5,
+        10,
         pcs,
         actives,
         starts,

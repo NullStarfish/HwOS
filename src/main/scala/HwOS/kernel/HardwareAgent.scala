@@ -124,9 +124,15 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
         if (t != this) throw new Exception("Cannot exit another thread!")
         t.hasExit = true
       }
-      case _ => throw new Exception("exit() must be called inside a Step!")
+      // [新增] 允许在 Global/Callback 中调用 exit
+      case ThreadCtx(t) => {
+        if (t != this) throw new Exception("Cannot exit another thread!")
+        t.hasExit = true // 标记该线程拥有合法的退出路径
+      }
+      case _ => throw new Exception("exit() must be called inside a Step or Thread context!")
     }
     
+    // 硬件退出逻辑对两种情况都适用
     activeReg := false.B
     pc  := 0.U
     doneWire  := true.B
@@ -212,7 +218,9 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       }
 
 
-      globals.foreach(_()) //最后生成，覆盖全局，而且可以访问pc
+      ContextScope.withContext(ThreadCtx(this)) {
+        globals.foreach(_()) 
+      }
       
 
     } .otherwise {

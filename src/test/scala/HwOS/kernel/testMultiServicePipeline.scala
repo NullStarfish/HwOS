@@ -190,90 +190,275 @@ class MockRamDriver(kernel: Kernel) extends PhysicalDriver(
 }
 
 // ==============================================================================
-// 3. Service Layer (AluService & LsuService)
+// 1. Non-Blocking Scoreboard (High Throughput)
 // ==============================================================================
+class PipelinedScoreboard(kernel: Kernel, maxClients: Int = 32) extends PhysicalDriver(
+  DriverMeta("PpSB", VectorResource(32), 4, 2, 0)
+) {
+  // 记录寄存器是否被占用（Busy Bit Table）
+  private val busyTable = RegInit(VecInit(Seq.fill(32)(false.B)))
+  
+  // 顺序发射指针
+  val nextIssueId = RegInit(0.U(log2Ceil(maxClients).W))
 
-class AluService(rf: ScoreboardRegfileDriver, sb: DependencyScoreboard) {
-  def emitAdd(rd: UInt, rs1: UInt, rs2: UInt): Unit = {
+  class SbIntent extends Bundle {
+    val acquire = Bool()
+    val release = Bool()
+    val check   = Bool() // 新增：仅检查
+    val reg     = UInt(5.W)
+  }
+  
+  val intents = Wire(Vec(maxClients, new SbIntent))
+  
+  for (i <- 0 until maxClients) {
+    intents(i).acquire := false.B
+    intents(i).release := false.B
+    intents(i).check   := false.B
+    intents(i).reg     := 0.U
+  }
+
+  // --- 状态更新逻辑 (Update Logic) ---
+  // 必须处理同一拍既 Release 又 Acquire 的情况（Forwarding/Chain）
+  // 这里简化为：Release 优先清零，Acquire 在下一拍置位（或同拍置位保持 busy）
+  val nextBusy = WireInit(busyTable)
+  
+  // 1. Apply Releases
+  for (i <- 0 until maxClients) {
+    when (intents(i).release) { nextBusy(intents(i).reg) := false.B }
+  }
+  // 2. Apply Acquires (Overwrite release if same reg - maintaining busy)
+  for (i <- 0 until maxClients) {
+    when (intents(i).acquire) { nextBusy(intents(i).reg) := true.B }
+  }
+  busyTable := nextBusy
+
+  // Update Issue Pointer
+  when (intents(nextIssueId).acquire) {
+    nextIssueId := nextIssueId + 1.U
+  }
+
+  // --- Client ID Allocator ---
+  private var clientIdAlloc = 0
+  private def allocId(): Int = { 
+    val id = clientIdAlloc; clientIdAlloc += 1; id 
+  }
+
+  // --- API 1: Dispatch (Non-Blocking RAW) ---
+  // 只检查 WAW 和 顺序发射。RAW 留给子线程处理。
+  def dispatch(dst: UInt): Int = {
+    val myId = allocId()
     ContextScope.current match {
       case ThreadCtx(t) =>
-        val op1 = RegInit(0.U(32.W)); val op2 = RegInit(0.U(32.W)); val res = RegInit(0.U(32.W))
-        val token = sb.dispatch(dst=rd, src1=rs1, src2=Some(rs2)) // Capture Token
-        
-        rf.readAtomic(rs1) { d => op1 := d }
-        rf.readAtomic(rs2) { d => op2 := d }
-        t.Step("ALU_Execute") { res := op1 + op2 }
-        rf.writeAtomic(rd, res) { }
-        
-        sb.retire(rd, token) // Use Token
-        t.Step("Inst_Retire") { t.exit() }
+        DriverStep(s"SB_Dispatch_ID$myId", t) {
+           val isMyTurn = nextIssueId === myId.U
+           
+           // WAW Check: 只有当我要写的目标寄存器已经被别人占用了，我才需要停顿
+           // 这保证了对同一个寄存器的写入顺序
+           val waw = busyTable(dst(4,0))
+           
+           // Resource Conflict (Structural)
+           val conf = (0 until myId).map { i => 
+              intents(i).acquire && intents(i).reg === dst(4,0)
+           }.foldLeft(false.B)(_ || _)
+
+           val stall = !isMyTurn || waw || conf
+
+           t.waitAndAct(!stall) {
+              intents(myId).acquire := true.B
+              intents(myId).reg     := dst(4,0)
+           }
+        }
+      case _ =>
+    }
+    myId
+  }
+
+  // --- API 2: Retire (Release) ---
+  def retire(dst: UInt, ticket: Int): Unit = {
+    val myId = ticket
+    ContextScope.current match {
+      case ThreadCtx(t) =>
+        DriverStep(s"SB_Retire_ID$myId", t) {
+           intents(myId).release := true.B
+           intents(myId).reg     := dst(4,0)
+        }
       case _ =>
     }
   }
-  
-  def emitAddi(rd: UInt, rs1: UInt, imm: UInt): Unit = {
+
+  // --- API 3: Wait Hazard (New!) ---
+  // 子线程调用此方法来等待操作数就绪
+  def waitHazard(src: UInt): Unit = {
+    // 这一步本身不占用 ID，或者复用临时 ID，这里简化为只读操作，不需要 ID 仲裁
+    // 只要 busyTable(src) 为 true，就阻塞
     ContextScope.current match {
       case ThreadCtx(t) =>
-        val op1 = RegInit(0.U(32.W)); val res = RegInit(0.U(32.W))
-        val token = sb.dispatch(dst=rd, src1=rs1)
-        
-        rf.readAtomic(rs1) { d => op1 := d }
-        t.Step("ALU_Execute_I") { res := op1 + imm }
-        rf.writeAtomic(rd, res) { }
-        
-        sb.retire(rd, token)
-        t.Step("Inst_Retire") { t.exit() }
+        DriverStep(s"SB_Wait_${src.litValue}", t) { // 这里无法在生成时获取 src 的动态值，名字只是标识
+           val regIdx = src(4,0)
+           // 如果 busy 为 true，说明有在途指令正在写这个寄存器 -> Stall
+           // 注意：这里我们读取的是当前拍的 busyTable。
+           // 如果 writer 在这一拍 retire，busyTable 下一拍变 false，我们下一拍就能走。
+           val isBusy = busyTable(regIdx)
+           t.waitCondition(!isBusy)
+        }
       case _ =>
     }
   }
 }
 
-class LsuService(rf: ScoreboardRegfileDriver, ram: MockRamDriver, sb: DependencyScoreboard) {
-  
-  def emitStore(addrReg: UInt, dataReg: UInt): Unit = {
+// ==============================================================================
+// 2. High-Throughput ALU Driver
+// ==============================================================================
+class FastAluDriver(kernel: Kernel, rf: ScoreboardRegfileDriver, sb: PipelinedScoreboard) extends PhysicalDriver(
+  DriverMeta("FastALU", ScalarResource, 1, 1, 0)
+) {
+  private def currentThread: HardwareThread = {
+    ContextScope.current match { case ThreadCtx(t) => t; case _ => null }
+  }
+
+  def emitAdd(rd: UInt, rs1: UInt, rs2: UInt): Unit = {
     ContextScope.current match {
-      case ThreadCtx(t) =>
-        val addrVal = RegInit(0.U(32.W)); val dataVal = RegInit(0.U(32.W))
-        val token = sb.dispatch(dst=0.U, src1=addrReg, src2=Some(dataReg))
+      case ThreadCtx(parent) =>
+        // 1. Dispatch (Decode Stage): 极快，只卡 WAW，不卡 RAW
+        val token = sb.dispatch(rd) 
+
+        // 2. Fork (Execute Stage)
+        parent.fork("Ex_Add") {
+           val child = currentThread
+           val op1 = RegInit(0.U(32.W))
+           val op2 = RegInit(0.U(32.W))
+           val res = RegInit(0.U(32.W))
+
+           // [关键优化] 在读取前，先等待数据依赖解决
+           // 这会让子线程挂起，而不是阻塞父线程
+           sb.waitHazard(rs1)
+           sb.waitHazard(rs2)
+
+           // 读取操作数 (此时已保证 Safety)
+           rf.readAtomic(rs1) { d => op1 := d }
+           rf.readAtomic(rs2) { d => op2 := d }
+
+           DriverStep("ALU_Execute", child) {
+             res := op1 + op2
+           }
+
+           rf.writeAtomic(rd, res) { }
+           sb.retire(rd, token)
+           DriverStep("Ex_Term", child) { child.exit() }
+        } {
+           parent.exit() // 任务完成，父线程销毁
+        }
         
-        rf.readAtomic(addrReg) { d => addrVal := d }
-        rf.readAtomic(dataReg) { d => dataVal := d }
-        ram.access(isWrite = true, addrVal, dataVal) { _ => }
-        
-        sb.retire(0.U, token)
-        t.Step("Inst_Retire") { t.exit() }
+        // 3. Parent Continue: 父线程不等待子线程，直接退出(或者处理下一条)
+        // 在 Service Pipeline 模型中，emit 只是发射。
+        // 为了能在 HwOSgdb 中看到 parent 稍微停留一下(模拟 Decode 耗时)，可以加一拍
+        DriverStep("Decode_Done", parent) {
+           parent.waitCondition(false.B) // 这里仍然挂起等待回调，保证 io.done 正确
+           // 如果是纯流水线，父线程应该是一个死循环不断 fetch，但在测试中 parent 代表"一条指令的生命周期"
+           // 所以保持 waitCondition(false.B) 是对的：父线程代表指令本身，指令未退休前不能消失。
+           // 但因为 Dispatch 不阻塞，后续指令的父线程可以并行启动（由 CpuProcess 决定）。
+        }
       case _ =>
     }
+  }
+  
+  // emitAddi 类似实现 ...
+  def emitAddi(rd: UInt, rs1: UInt, imm: UInt): Unit = {
+    ContextScope.current match {
+      case ThreadCtx(parent) =>
+        val token = sb.dispatch(rd)
+        parent.fork("Ex_Addi") {
+           val child = currentThread
+           val op1 = RegInit(0.U(32.W)); val res = RegInit(0.U(32.W))
+           
+           sb.waitHazard(rs1) // Wait for dependency
+           
+           rf.readAtomic(rs1) { d => op1 := d }
+           DriverStep("ALU_Exec_I", child) { res := op1 + imm }
+           rf.writeAtomic(rd, res) { }
+           sb.retire(rd, token)
+           DriverStep("Ex_Term", child) { child.exit() }
+        } { parent.exit() }
+        DriverStep("Decode_Done", parent) { parent.waitCondition(false.B) }
+      case _ =>
+    }
+  }
+}
+
+
+// ==============================================================================
+// 3. High-Throughput LSU Driver (Fixed for Memory RAW)
+// ==============================================================================
+class FastLsuDriver(kernel: Kernel, rf: ScoreboardRegfileDriver, ram: MockRamDriver, sb: PipelinedScoreboard) extends PhysicalDriver(
+  DriverMeta("FastLSU", ScalarResource, 1, 1, 0)
+) {
+  private def currentThread: HardwareThread = {
+    ContextScope.current match { case ThreadCtx(t) => t; case _ => null }
   }
 
   def emitLoad(destReg: UInt, addrReg: UInt): Unit = {
     ContextScope.current match {
-      case ThreadCtx(t) =>
-        val addrVal = RegInit(0.U(32.W)); val memData = RegInit(0.U(32.W))
+      case ThreadCtx(parent) =>
+        val token = sb.dispatch(destReg)
         
-        val token = sb.dispatch(dst=destReg, src1=addrReg, src2=Some(0.U))
+        parent.fork("Ex_Load") {
+           val child = currentThread
+           val addrVal = RegInit(0.U(32.W)); val memData = RegInit(0.U(32.W))
+           
+           // [Fix] Memory RAW Hazard:
+           // 必须等待所有在途的 Store (它们持有 Reg 0 的锁) 完成后，才能进行 Load。
+           sb.waitHazard(0.U) 
+           
+           // Wait for AGU dependency
+           sb.waitHazard(addrReg) 
+           
+           rf.readAtomic(addrReg) { d => addrVal := d }
+           DriverStep("RAM_Bridge", child) {
+              ram.io.req := true.B; ram.io.isWr := false.B; ram.io.addr := addrVal
+           }
+           DriverStep("RAM_Wait", child) {
+              child.waitAndAct(ram.io.valid) { memData := ram.io.rdata }
+           }
+           rf.writeAtomic(destReg, memData) { }
+           sb.retire(destReg, token)
+           DriverStep("Ex_Term", child) { child.exit() }
+        } { parent.exit() }
+        DriverStep("Decode_Done", parent) { parent.waitCondition(false.B) }
+      case _ =>
+    }
+  }
+  
+  def emitStore(addrReg: UInt, dataReg: UInt): Unit = {
+    ContextScope.current match {
+      case ThreadCtx(parent) =>
+        // Dispatch to 0.U acts as a "Memory Write Lock"
+        // 这会序列化所有的 Store 操作，并阻塞后续的 Load (因为 Load 会 waitHazard(0))
+        val token = sb.dispatch(0.U) 
         
-        rf.readAtomic(addrReg) { d => addrVal := d }
-        
-        t.Step("RAM_Req_Bridge") {
-           ram.io.req  := true.B
-           ram.io.isWr := false.B
-           ram.io.addr := addrVal
-        }
-        t.Step("RAM_Wait_Bridge") {
-           t.waitAndAct(ram.io.valid) { memData := ram.io.rdata }
-        }
-        rf.writeAtomic(destReg, memData) { }
-        
-        sb.retire(destReg, token)
-        t.Step("Inst_Retire") { t.exit() }
+        parent.fork("Ex_Store") {
+           val child = currentThread
+           val addrVal = RegInit(0.U(32.W)); val dataVal = RegInit(0.U(32.W))
+           
+           sb.waitHazard(addrReg)
+           sb.waitHazard(dataReg)
+           
+           rf.readAtomic(addrReg) { d => addrVal := d }
+           rf.readAtomic(dataReg) { d => dataVal := d }
+           
+           // MockRamDriver handles the actual write cycle
+           ram.access(isWrite = true, addrVal, dataVal) { _ => }
+           
+           sb.retire(0.U, token) // Release Memory Lock
+           DriverStep("Ex_Term", child) { child.exit() }
+        } { parent.exit() }
+        DriverStep("Decode_Done", parent) { parent.waitCondition(false.B) }
       case _ =>
     }
   }
 }
 
 // ==============================================================================
-// 4. PipelineModule
+// 3. Updated Pipeline Module
 // ==============================================================================
 class PipelineModule extends Module {
   val io = IO(new Bundle {
@@ -293,11 +478,16 @@ class PipelineModule extends Module {
   val ramDriver = new MockRamDriver(kernel)
   kernel.mount(ramDriver)
   
-  val depSb = new DependencyScoreboard(kernel, maxClients=32)
-  kernel.mount(depSb)
 
-  val aluSvc = new AluService(rfDriver, depSb)
-  val lsuSvc = new LsuService(rfDriver, ramDriver, depSb)
+  val ppSb = new PipelinedScoreboard(kernel)
+  kernel.mount(ppSb)
+
+  // 实例化新的 Driver
+  val aluDriver = new FastAluDriver(kernel, rfDriver, ppSb)
+  kernel.mount(aluDriver)
+
+  val lsuDriver = new FastLsuDriver(kernel, rfDriver, ramDriver, ppSb)
+  kernel.mount(lsuDriver)
 
   class CpuProcess(k: Kernel) extends HwProcess("PipelineCpu", debugEnable = true, parent = None)(k) {
     val i0 = createThread("I0_Addi")
@@ -311,11 +501,12 @@ class PipelineModule extends Module {
     }
 
     override def entry(): Unit = {
-      i0.entry { aluSvc.emitAddi(1.U, 0.U, 10.U) } 
-      i1.entry { aluSvc.emitAddi(2.U, 1.U, 20.U) } 
-      i2.entry { lsuSvc.emitStore(1.U, 2.U) }      
-      i3.entry { lsuSvc.emitLoad(3.U, 1.U) }       
-      i4.entry { aluSvc.emitAdd(4.U, 3.U, 1.U) }   
+      // 现在的调用看起来和之前一样，但内部机制已经是 Fork/Async 了
+      i0.entry { aluDriver.emitAddi(1.U, 0.U, 10.U) } 
+      i1.entry { aluDriver.emitAddi(2.U, 1.U, 20.U) } 
+      i2.entry { lsuDriver.emitStore(1.U, 2.U) }      
+      i3.entry { lsuDriver.emitLoad(3.U, 1.U) }       
+      i4.entry { aluDriver.emitAdd(4.U, 3.U, 1.U) }   
     }
   }
 
@@ -326,7 +517,6 @@ class PipelineModule extends Module {
   io.r1 := phyRegs(1); io.r2 := phyRegs(2)
   io.r3 := phyRegs(3); io.r4 := phyRegs(4)
 }
-
 // ==============================================================================
 // 5. Test
 // ==============================================================================

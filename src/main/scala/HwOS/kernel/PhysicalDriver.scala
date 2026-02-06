@@ -52,14 +52,16 @@ case class DriverMeta(
 
 abstract class PhysicalDriver(val meta: DriverMeta) {
   var _driverId: Int = 0
-  protected def DriverStep(name: String)(block: => Unit): Unit = {
-    ContextScope.current match {
-      case ThreadCtx(t) => 
-        // 调用我们稍后修改过的 Step 方法，传入 driverId
-        t.Step(name, _driverId)(block) 
-      case _ => 
-        throw new Exception(s"[Driver Error] DriverStep '$name' called outside of Thread context!")
+  protected def DriverStep(name: String, t: HardwareThread = null)(block: => Unit): Unit = {
+    // 1. 优先使用显式传递的线程
+    // 2. 否则尝试从 ContextScope 获取
+    val thread = if (t != null) t else ContextScope.current match {
+      case ThreadCtx(current) => current
+      case _ => throw new Exception(s"[Driver Error] DriverStep '$name' called without explicit thread and outside of Thread context!")
     }
+
+    // 关键：将 this._driverId 传给 Step，这样调试工具就知道这一步归属于当前 Driver
+    thread.Step(name, _driverId)(block)
   }
 }
 

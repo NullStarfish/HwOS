@@ -8,6 +8,8 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/DirectWriteTestModule.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/InstThreadCpuModule$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/InstThreadCpuModule$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/FastAluDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/FastAluDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/DependencyScoreboard$SbIntent.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/DependencyScoreboard$SbIntent.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/CentralizedPpTestModule.class[0m
@@ -24,8 +26,6 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/DeepForkModule$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/ForkNonBlockingModule$TestProcess.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/ForkNonBlockingModule$TestProcess.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/AluService.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/AluService.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/AbortTestModule$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/AbortTestModule$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/ScoreboardTestModule.class[0m
@@ -44,6 +44,8 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/ComplexInstCpuModule$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/MixedSemanticsTestModule$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/MixedSemanticsTestModule$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/FastLsuDriver.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/FastLsuDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/MultiCoreProcessTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/MultiCoreProcessTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/DeepForkTest.class[0m
@@ -76,8 +78,6 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/AbortTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/BlackboxTestModule$$anon$2.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/BlackboxTestModule$$anon$2.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/LsuService.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/LsuService.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/ExecuteDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/ExecuteDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/ComplexInstCpuModule.class[0m
@@ -118,8 +118,12 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/MixedSemanticsTestModule$TestProcess.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/PipelinedTestModule$TestProcess.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/PipelinedTestModule$TestProcess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/PipelinedScoreboard.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/PipelinedScoreboard.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/RegfileDriverTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/RegfileDriverTest.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/PipelinedScoreboard$SbIntent.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/PipelinedScoreboard$SbIntent.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/BranchCpuModule$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/BranchCpuModule$$anon$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/InternalRegfileDriverDirect.class[0m
@@ -160,6 +164,8 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/MonitorDriver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/MonitorBundle.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/MonitorBundle.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/PipelinedScoreboard$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/PipelinedScoreboard$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/ForkNonBlockingTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes/HwOS/kernel/ForkNonBlockingTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HwOS/kernel/MockSlowDevice$$anon$1.class[0m
