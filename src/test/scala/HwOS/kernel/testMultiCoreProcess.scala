@@ -5,22 +5,28 @@ import chisel3.util._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel._ 
-import HwOS.kernel.drivers._ // 引用刚才固化的 Driver
+import HwOS.kernel.drivers._
 
-class MultiCoreGpuModule extends Module {
+class MultiCoreGpuModule(val numCores: Int = 4) extends Module {
   val io = IO(new Bundle {
     val launch   = Input(Bool())
     val allDone  = Output(Bool())
-    val vramCore0_0 = Output(UInt(32.W))
-    val vramCore1_0 = Output(UInt(32.W))
+    // [Dynamic IO] 使用 Vec 动态暴露出每个核心负责的第一个 VRAM 地址的值用于 Debug
+    val debugVrams = Output(Vec(numCores, UInt(32.W)))
   })
 
   val kernel = new Kernel()
   
-  // 保持 write_clients=1，确保绝对的安全性
-  val meta = DriverMeta("Global_VRAM", VectorResource(32), read_clients=4, write_clients=2, fifo_depth=0)
-  val vram = RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
-  val vramDriver = new ScoreboardRegfileDriver(vram, kernel, meta, maxClients=8)
+  // [Dynamic Config] VRAM 大小随核心数扩展，防止地址冲突 (每个核步进10)
+  // 确保至少有32个寄存器，或者根据 numCores * 10
+  val vramDepth = math.max(32, numCores * 10)
+  
+  // maxClients 设为 numCores，或者留一些余量
+  val meta = DriverMeta("Global_VRAM", VectorResource(vramDepth), read_clients=4, write_clients=2, fifo_depth=0)
+  val vram = RegInit(VecInit(Seq.fill(vramDepth)(0.U(32.W))))
+  
+  // 注意：maxClients 必须足够大以容纳所有核心
+  val vramDriver = new ScoreboardRegfileDriver(vram, kernel, meta, maxClients = numCores + 2)
   kernel.mount(vramDriver)
 
   class ComputeCore(name: String, debug: Boolean, parent: Option[HwProcess], k: Kernel, val coreId: Int) 
@@ -43,8 +49,7 @@ class MultiCoreGpuModule extends Module {
         }
         
         // Step 1: Write to VRAM
-        // [Safety Fix] 在 Scala 中预计算常量乘法，避免 Chisel 宽度推断问题
-        val multiplier = 0x100 * (coreId + 1) // Core0->0x100, Core1->0x200
+        val multiplier = 0x100 * (coreId + 1)
         val writeData  = multiplier.U + iter
         
         vramDriver.writeAtomic(baseAddr + iter, writeData) { }
@@ -70,25 +75,33 @@ class MultiCoreGpuModule extends Module {
     }
   }
 
-  class GpuDispatcher(k: Kernel) extends HwProcess("GPU_Dispatcher", true, None)(k) {
+  class GpuDispatcher(k: Kernel) extends HwProcess("GPU_Dispatcher", false, None)(k) {
     val dispatch = createThread("Scheduler")
-    val core0 = spawn("Core0") { (n, d, p, k) => new ComputeCore(n, d, p, k, 0) }
-    val core1 = spawn("Core1") { (n, d, p, k) => new ComputeCore(n, d, p, k, 1) }
+    
+    // [Dynamic Spawn] 使用 Scala 集合生成多个核心进程
+    val cores = (0 until numCores).map { i =>
+        spawn(s"Core$i") { (n, d, p, k) => new ComputeCore(n, d, p, k, i) }
+    }
 
     when(io.launch) { dispatch.start() }
 
     override def entry(): Unit = {
       dispatch.entry {
         dispatch.Step("Dispatch_Job") {
-           core0.cmdTaskCount := 3.U
-           core1.cmdTaskCount := 4.U
+           // [Dynamic Logic] 循环赋值任务数
+           // 这里简单地给偶数核分配3个任务，奇数核分配4个任务，模拟负载不均
+           cores.zipWithIndex.foreach { case (core, i) =>
+             core.cmdTaskCount := (if (i % 2 == 0) 3.U else 4.U)
+           }
         }
         dispatch.Step("Kickoff_Cores") {
-           core0.main.start()
-           core1.main.start()
+           // [Dynamic Logic] 启动所有核心
+           cores.foreach(_.main.start())
         }
         dispatch.Step("Barrier") {
-           val allFinished = core0.statusDone && core1.statusDone
+           // [Dynamic Logic] 聚合所有核心的 Done 信号
+           // VecInit(...).asUInt.andR 等价于 "所有位都为1"
+           val allFinished = VecInit(cores.map(_.statusDone)).asUInt.andR
            dispatch.waitCondition(allFinished)
         }
         dispatch.Step("Retire") {
@@ -101,15 +114,21 @@ class MultiCoreGpuModule extends Module {
   val proc = new GpuDispatcher(kernel)
   proc.build()
 
-  io.allDone     := proc.dispatch.done
-  io.vramCore0_0 := vram(0)
-  io.vramCore1_0 := vram(10)
+  io.allDone := proc.dispatch.done
+  
+  // [Dynamic IO Mapping] 将 VRAM 中对应每个核心起始位置的数据连到 IO
+  for (i <- 0 until numCores) {
+    io.debugVrams(i) := vram(i * 10)
+  }
 }
 
 class MultiCoreProcessTest extends AnyFlatSpec {
-  "GpuDispatcher" should "schedule multiple child processes and wait for them (Barrier)" in {
-    simulate(new MultiCoreGpuModule) { c =>
-      println("\n=== Multi-Core Process Scheduling Test (Final) ===")
+  "GpuDispatcher" should "schedule dynamically configured N child processes" in {
+    // 这里我们可以配置测试的核心数量，例如 4 核
+    val TEST_CORES = 16
+    
+    simulate(new MultiCoreGpuModule(numCores = TEST_CORES)) { c =>
+      println(s"\n=== Multi-Core Process Scheduling Test ($TEST_CORES Cores) ===")
 
       // 1. Init
       c.reset.poke(true.B)
@@ -124,7 +143,8 @@ class MultiCoreProcessTest extends AnyFlatSpec {
       // 3. Run
       var cycles = 0
       var done = false
-      while (cycles < 50 && !done) {
+      // 适当增加超时时间以适应更多核心竞争总线的情况
+      while (cycles < 100 && !done) {
          c.clock.step()
          cycles += 1
          if (c.io.allDone.peek().litToBoolean) {
@@ -134,17 +154,18 @@ class MultiCoreProcessTest extends AnyFlatSpec {
       }
       
       // 4. Verification
-      val res0 = c.io.vramCore0_0.peek().litValue
-      val res1 = c.io.vramCore1_0.peek().litValue
-      
-      println(s"[Result] Core 0 (Addr 0) = 0x${res0.toString(16)} (Expected 0x100)")
-      println(s"[Result] Core 1 (Addr 10)= 0x${res1.toString(16)} (Expected 0x200)")
-      
       assert(done, "GPU Timeout!")
-      assert(res0 == 0x100, s"Core 0 failed. Got 0x${res0.toString(16)}")
-      assert(res1 == 0x200, s"Core 1 failed. Got 0x${res1.toString(16)}")
 
-      println("=== Test Passed: Multi-Process Scheduling Validated ===\n")
+      // [Dynamic Check] 循环检查所有核心的结果
+      for (i <- 0 until TEST_CORES) {
+        val res = c.io.debugVrams(i).peek().litValue
+        val expected = 0x100 * (i + 1)
+        
+        println(s"[Result] Core $i (Addr ${i*10}) = 0x${res.toString(16)} (Expected 0x${expected.toHexString})")
+        assert(res == expected, s"Core $i failed. Got 0x${res.toString(16)}, expected 0x${expected.toHexString}")
+      }
+
+      println(s"=== Test Passed: $TEST_CORES-Core Scheduling Validated ===\n")
     }
   }
 }

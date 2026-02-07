@@ -23,7 +23,7 @@ class ForkNonBlockingModule extends Module {
 
   val kernel = new Kernel()
 
-  class TestProcess(k: Kernel) extends HwProcess("PipelineProc", debugEnable = true, parent = None)(k) {
+  class TestProcess(k: Kernel) extends HwProcess("PipelineProc", debugEnable = false, parent = None)(k) {
     val cpu = createThread("CPU")
     val accReg  = RegInit(0.U(32.W))
     val mainReg = RegInit(0.U(32.W))

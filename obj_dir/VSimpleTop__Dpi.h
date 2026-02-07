@@ -16,7 +16,7 @@ extern "C" {
 
 
     // DPI IMPORTS
-    // DPI import at generated/KernelStateMonitorDPI.sv:15:32
+    // DPI import at generated/KernelStateMonitorDPI.sv:16:32
     extern void kernel_monitor_tick(int n_threads, const svBitVecVal* pcs, const svBitVecVal* actives, const svBitVecVal* starts, const svBitVecVal* aborts, const svBitVecVal* dones);
 
 #ifdef __cplusplus

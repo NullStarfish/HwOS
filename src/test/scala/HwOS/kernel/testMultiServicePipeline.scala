@@ -472,7 +472,7 @@ class PipelineModule extends Module {
   
   val phyRegs = RegInit(VecInit(Seq.fill(32)(0.U(32.W))))
   val rfMeta = DriverMeta("RF", VectorResource(32), read_clients=4, write_clients=2, fifo_depth=0)
-  val rfDriver = new ScoreboardRegfileDriver(phyRegs, kernel, rfMeta, maxClients=20) 
+  val rfDriver = new ScoreboardRegfileDriver(phyRegs, kernel, rfMeta, maxClients=16) 
   kernel.mount(rfDriver)
   
   val ramDriver = new MockRamDriver(kernel)
@@ -489,7 +489,7 @@ class PipelineModule extends Module {
   val lsuDriver = new FastLsuDriver(kernel, rfDriver, ramDriver, ppSb)
   kernel.mount(lsuDriver)
 
-  class CpuProcess(k: Kernel) extends HwProcess("PipelineCpu", debugEnable = true, parent = None)(k) {
+  class CpuProcess(k: Kernel) extends HwProcess("PipelineCpu", debugEnable = false, parent = None)(k) {
     val i0 = createThread("I0_Addi")
     val i1 = createThread("I1_Addi")
     val i2 = createThread("I2_Store")

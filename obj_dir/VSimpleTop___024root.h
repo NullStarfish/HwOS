@@ -118,7 +118,7 @@ class alignas(VL_CACHE_LINE_BYTES) VSimpleTop___024root final : public Verilated
         CData/*0:0*/ SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_40;
         CData/*0:0*/ SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_41;
         CData/*0:0*/ SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_42;
-        CData/*0:0*/ SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___stall_hazard_T_146;
+        CData/*0:0*/ SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___stall_hazard_T_118;
         CData/*0:0*/ SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_43;
         CData/*0:0*/ SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_44;
         CData/*2:0*/ SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_45;

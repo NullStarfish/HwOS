@@ -149,6 +149,7 @@ class KernelStateMonitorDPI(val nThreads: Int) extends BlackBox with HasBlackBox
   // 生成 SystemVerilog 代码
   setInline("KernelStateMonitorDPI.sv",
     s"""
+       |`ifndef SYNTHESIS  // <--- 添加这一行
        |module KernelStateMonitorDPI(
        |  input clock,
        |  input reset,
@@ -184,5 +185,6 @@ class KernelStateMonitorDPI(val nThreads: Int) extends BlackBox with HasBlackBox
        |  end
        |
        |endmodule
+       |`endif // SYNTHESIS
        |""".stripMargin)
 }

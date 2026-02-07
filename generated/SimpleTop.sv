@@ -212,25 +212,13 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   reg         busyTable_4;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34
   reg  [4:0]  nextIssueId;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:202:28
   reg         activeReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_0 = activeReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        abortWire_0 = abortWire;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
   reg         activeReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_1_0 = activeReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        abortWire_1_0 = abortWire_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
   reg         activeReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_2_0 = activeReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        abortWire_2_0 = abortWire_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
   reg         activeReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_3_0 = activeReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        abortWire_3_0 = abortWire_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
   reg         activeReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_4_0 = activeReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        abortWire_4_0 = abortWire_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
   reg         activeReg_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_5_0 = activeReg_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
   reg  [31:0] res;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
   reg  [2:0]  pcReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [2:0]  pcReg_0 = pcReg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN = activeReg_5 & pcReg == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
   wire        clientIntents_1_op = ~abortWire_5 & _GEN;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :200:22, :205:24, :213:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
   wire        clientIntents_1_addr = ~abortWire_5 & _GEN;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :200:22, :205:24, :213:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :160:36
@@ -239,7 +227,6 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   wire        _GEN_1 = pcReg == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        doneWire_5 = ~abortWire_5 & activeReg_5 & _GEN_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27
   reg  [1:0]  pcReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [1:0]  pcReg_1_0 = pcReg_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_2 = pcReg_1 == 2'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        stall_2 = (|nextIssueId) | busyTable_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34, :202:28, :253:39, :264:34
   wire        _GEN_3 = activeReg & _GEN_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :205:24, :213:{21,32}, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
@@ -247,13 +234,11 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   wire        intents_0_reg =
     ~(abortWire | ~_GEN_3 | stall_2) | ~abortWire_5 & activeReg_5 & _GEN_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :200:22, :205:24, :213:{21,32}, :325:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24, :217:24, :264:34, :283:34
   wire        startWire_5 = ~abortWire & activeReg & pcReg_1 == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :159:24, :200:22, :205:24, :213:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-  wire        doneWire = ~abortWire & activeReg & doneWire_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+  wire        doneWire = ~abortWire & activeReg & doneWire_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:32, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
   reg         activeReg_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_6_0 = activeReg_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
   reg  [31:0] op1_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:29
   reg  [31:0] res_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
   reg  [2:0]  pcReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [2:0]  pcReg_2_0 = pcReg_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_4 = activeReg_6 & pcReg_2 == 3'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
   wire        clientIntents_3_op = ~abortWire_6 & _GEN_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :200:22, :205:24, :213:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
   wire        clientIntents_3_addr = ~abortWire_6 & _GEN_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :200:22, :205:24, :213:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :160:36
@@ -262,7 +247,6 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   wire        _GEN_6 = pcReg_2 == 3'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        doneWire_6 = ~abortWire_6 & activeReg_6 & _GEN_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27
   reg  [1:0]  pcReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [1:0]  pcReg_3_0 = pcReg_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_7 = pcReg_3 == 2'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        _stall_T_3 = nextIssueId != 5'h1 | busyTable_2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34, :202:28, :253:39, :264:{24,34}
   wire        _GEN_8 = activeReg_1 & _GEN_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :205:24, :213:{21,32}, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
@@ -270,13 +254,11 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   wire        intents_1_reg =
     ~(abortWire_1 | ~_GEN_8 | _stall_T_3) | ~abortWire_6 & activeReg_6 & _GEN_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :200:22, :205:24, :213:{21,32}, :325:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24, :217:24, :264:34, :283:34
   wire        startWire_6 = ~abortWire_1 & activeReg_1 & pcReg_3 == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :159:24, :200:22, :205:24, :213:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-  wire        doneWire_1 = ~abortWire_1 & activeReg_1 & doneWire_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+  wire        doneWire_1 = ~abortWire_1 & activeReg_1 & doneWire_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:32, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
   reg         activeReg_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_7_0 = activeReg_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
   reg  [31:0] addrVal;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:440:33
   reg  [31:0] dataVal;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:440:67
   reg  [3:0]  pcReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [3:0]  pcReg_4_0 = pcReg_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_9 = pcReg_4 == 4'h4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        _GEN_10 = activeReg_7 & _GEN_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :205:24, :213:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:10
   wire        _GEN_11 = ~abortWire_7 & _GEN_10;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :200:22, :205:24, :213:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:10
@@ -285,20 +267,17 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   wire        _GEN_13 = pcReg_4 == 4'h7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        doneWire_7 = ~abortWire_7 & activeReg_7 & _GEN_13;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27
   reg  [1:0]  pcReg_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [1:0]  pcReg_5_0 = pcReg_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_14 = pcReg_5 == 2'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        stall_8 =
     nextIssueId != 5'h2 | busyTable_0 | intents_0_acquire & ~intents_0_reg
     | intents_1_acquire & ~intents_1_reg;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:200:22, :205:24, :213:32, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34, :202:28, :214:24, :253:39, :261:{34,52}, :262:34, :264:{24,34,41}
   wire        intents_2_acquire = ~abortWire_2 & activeReg_2 & _GEN_14 & ~stall_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :200:22, :205:24, :213:{21,32}, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24, :262:34, :264:{34,41}, :267:37
   wire        startWire_7 = ~abortWire_2 & activeReg_2 & pcReg_5 == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :159:24, :200:22, :205:24, :213:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-  wire        doneWire_2 = ~abortWire_2 & activeReg_2 & doneWire_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+  wire        doneWire_2 = ~abortWire_2 & activeReg_2 & doneWire_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:32, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
   reg         activeReg_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_8_0 = activeReg_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
   reg  [31:0] addrVal_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:33
   reg  [31:0] memData;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:67
   reg  [3:0]  pcReg_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [3:0]  pcReg_6_0 = pcReg_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_15 = pcReg_6 == 4'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        _GEN_16 = activeReg_8 & _GEN_15;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :200:22, :205:24, :213:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:417:26
   wire        io_1_req = ~abortWire_8 & _GEN_16 | _GEN_11;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :200:22, :205:24, :213:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:140:10, :417:26
@@ -315,7 +294,6 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   wire        _GEN_20 = pcReg_6 == 4'h7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        doneWire_8 = ~abortWire_8 & activeReg_8 & _GEN_20;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27
   reg  [1:0]  pcReg_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [1:0]  pcReg_7_0 = pcReg_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_21 = pcReg_7 == 2'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        _stall_T_7 = nextIssueId != 5'h3 | busyTable_3;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34, :202:28, :253:39, :264:{24,34}
   wire        _GEN_22 = activeReg_3 & _GEN_21;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :205:24, :213:{21,32}, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
@@ -325,14 +303,12 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       ? 2'h0
       : 2'h3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :200:22, :205:24, :213:{21,32}, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24, :217:24, :264:34, :268:37, :283:34
   wire        startWire_8 = ~abortWire_3 & activeReg_3 & pcReg_7 == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :159:24, :200:22, :205:24, :213:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-  wire        doneWire_3 = ~abortWire_3 & activeReg_3 & doneWire_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+  wire        doneWire_3 = ~abortWire_3 & activeReg_3 & doneWire_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:32, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
   reg         activeReg_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-  wire        activeReg_9_0 = activeReg_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
   reg  [31:0] op1_2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:328:29
   reg  [31:0] op2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:329:29
   reg  [31:0] res_2;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:330:29
   reg  [3:0]  pcReg_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [3:0]  pcReg_8_0 = pcReg_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_23 = pcReg_8 == 4'h5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        _GEN_24 = activeReg_9 & _GEN_23;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :160:36
   wire        _GEN_25 = pcReg_8 == 4'h6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
@@ -340,7 +316,6 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   wire        _GEN_26 = pcReg_8 == 4'h7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        doneWire_9 = ~abortWire_9 & activeReg_9 & _GEN_26;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27
   reg  [1:0]  pcReg_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-  wire [1:0]  pcReg_9_0 = pcReg_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
   wire        _GEN_27 = pcReg_9 == 2'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
   wire        _stall_T_9 = nextIssueId != 5'h4 | busyTable_4;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:45:45, :65:17, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34, :202:28, :253:39, :264:{24,34}
   wire        _GEN_28 = activeReg_4 & _GEN_27;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :205:24, :213:{21,32}, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
@@ -348,7 +323,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   wire        intents_4_reg =
     ~(abortWire_4 | ~_GEN_28 | _stall_T_9) | ~abortWire_9 & activeReg_9 & _GEN_25;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :200:22, :205:24, :213:{21,32}, :325:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24, :217:24, :264:34, :283:34
   wire        startWire_9 = ~abortWire_4 & activeReg_4 & pcReg_9 == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :159:24, :200:22, :205:24, :213:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-  wire        doneWire_4 = ~abortWire_4 & activeReg_4 & doneWire_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+  wire        doneWire_4 = ~abortWire_4 & activeReg_4 & doneWire_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :193:14, :200:22, :203:16, :205:24, :213:32, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
   always @(posedge clock) begin	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
     automatic logic _GEN_29;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:153:18
     automatic logic _GEN_30;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:153:18
@@ -539,7 +514,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       automatic logic            _GEN_40;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:213:21
       automatic logic            _GEN_41;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:213:21
       automatic logic            _GEN_42;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:24, :213:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
-      automatic logic            _stall_hazard_T_146;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29
+      automatic logic            _stall_hazard_T_118;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29
       automatic logic            _GEN_43;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:213:21
       automatic logic            _GEN_44;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:205:24, :213:32, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
       automatic logic [2:0]      _GEN_45;	// src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:42:23
@@ -613,7 +588,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       _GEN_40 = pcReg == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
       _GEN_41 = pcReg_2 == 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21
       _GEN_42 = activeReg_6 & _GEN_41;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :205:24, :213:{21,32}, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :110:36
-      _stall_hazard_T_146 =
+      _stall_hazard_T_118 =
         clientIntents_1_op & clientIntents_1_addr | clientIntents_7_op
         & clientIntents_7_addr == 2'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:200:22, :205:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :27:27, :50:47, :51:38, :52:29
       _GEN_43 = pcReg_4 == 4'h2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :213:21, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:45:45, :65:17
@@ -942,11 +917,11 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
         & busyTable_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:200:22, :205:24, :213:32, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34, :214:24, :215:24, :227:{31,58}, :231:{31,58}
       if (_GEN_62[nextIssueId])	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:202:28, :236:39
         nextIssueId <= nextIssueId + 5'h1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:202:28, :237:32
-      activeReg <= ~abortWire & (activeReg ? ~doneWire_5 : startWire);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :200:22, :201:17, :203:16, :205:24, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-      activeReg_1 <= ~abortWire_1 & (activeReg_1 ? ~doneWire_6 : startWire_1);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :200:22, :201:17, :203:16, :205:24, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-      activeReg_2 <= ~abortWire_2 & (activeReg_2 ? ~doneWire_7 : startWire_2);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :200:22, :201:17, :203:16, :205:24, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-      activeReg_3 <= ~abortWire_3 & (activeReg_3 ? ~doneWire_8 : startWire_3);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :200:22, :201:17, :203:16, :205:24, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
-      activeReg_4 <= ~abortWire_4 & (activeReg_4 ? ~doneWire_9 : startWire_4);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :200:22, :201:17, :203:16, :205:24, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+      activeReg <= ~abortWire & (activeReg ? ~doneWire_5 : startWire);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :193:14, :200:22, :201:17, :203:16, :205:24, :213:32, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+      activeReg_1 <= ~abortWire_1 & (activeReg_1 ? ~doneWire_6 : startWire_1);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :193:14, :200:22, :201:17, :203:16, :205:24, :213:32, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+      activeReg_2 <= ~abortWire_2 & (activeReg_2 ? ~doneWire_7 : startWire_2);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :193:14, :200:22, :201:17, :203:16, :205:24, :213:32, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+      activeReg_3 <= ~abortWire_3 & (activeReg_3 ? ~doneWire_8 : startWire_3);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :193:14, :200:22, :201:17, :203:16, :205:24, :213:32, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
+      activeReg_4 <= ~abortWire_4 & (activeReg_4 ? ~doneWire_9 : startWire_4);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :193:14, :200:22, :201:17, :203:16, :205:24, :213:32, :227:24, :287:25, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:214:24
       activeReg_5 <= ~abortWire_5 & (activeReg_5 ? ~_GEN_1 : startWire_5);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :200:22, :201:17, :205:24, :213:{21,32}, :227:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27
       if (abortWire_5 | ~(activeReg_5 & pcReg == 3'h2)) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :72:27, :159:24, :200:22, :205:24, :213:{21,32}, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59, :377:50
       end
@@ -955,7 +930,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       if (abortWire_5)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
         pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
       else if (activeReg_5) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-        if (startWire_5 & doneWire_5 | _GEN_1)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
+        if (startWire_5 & doneWire_5 | _GEN_1)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
           pcReg <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
         else if (_GEN_40
                  & (clientIntents_1_op & ~clientIntents_1_addr | clientIntents_3_op
@@ -979,7 +954,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       else if (startWire)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28
         pcReg_1 <= 2'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
       activeReg_6 <= ~abortWire_6 & (activeReg_6 ? ~_GEN_6 : startWire_6);	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :67:28, :72:27, :136:15, :200:22, :201:17, :205:24, :213:{21,32}, :227:24, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27
-      if (abortWire_6 | ~_GEN_42 | _stall_hazard_T_146) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :200:22, :205:24, :213:32, :325:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:29
+      if (abortWire_6 | ~_GEN_42 | _stall_hazard_T_118) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27, :200:22, :205:24, :213:32, :325:18, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:26:27, :52:29, :110:36, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:29
       end
       else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:200:22, :205:24, :213:32, :325:18, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:29
         op1_1 <= phyRegs_1;	// src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:29, :473:24
@@ -990,9 +965,9 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       if (abortWire_6)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
         pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
       else if (activeReg_6) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-        if (startWire_6 & doneWire_6 | _GEN_6)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
+        if (startWire_6 & doneWire_6 | _GEN_6)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
           pcReg_2 <= 3'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
-        else if (_GEN_41 & _stall_hazard_T_146 | pcReg_2 == 3'h0 & busyTable_1) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :210:13, :213:{21,32}, :314:17, :315:15, :325:18, :326:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34
+        else if (_GEN_41 & _stall_hazard_T_118 | pcReg_2 == 3'h0 & busyTable_1) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :210:13, :213:{21,32}, :314:17, :315:15, :325:18, :326:15, src/main/scala/HwOS/kernel/drivers/ScoreboardRegfileDriver.scala:52:29, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:199:34
         end
         else	// src/main/scala/HwOS/kernel/HardwareAgent.scala:210:13, :213:32, :314:17, :315:15, :325:18, :326:15
           pcReg_2 <= pcReg_2 + 3'h1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :210:22
@@ -1021,7 +996,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       if (abortWire_7)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
         pcReg_4 <= 4'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
       else if (activeReg_7) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-        if (startWire_7 & doneWire_7 | _GEN_13)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
+        if (startWire_7 & doneWire_7 | _GEN_13)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
           pcReg_4 <= 4'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
         else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:137:9, :213:32, :216:35, :217:15
           automatic logic _GEN_63;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:210:13, :213:32, :314:17, :315:15
@@ -1059,7 +1034,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       if (abortWire_8)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
         pcReg_6 <= 4'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
       else if (activeReg_8) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-        if (startWire_8 & doneWire_8 | _GEN_20)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
+        if (startWire_8 & doneWire_8 | _GEN_20)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
           pcReg_6 <= 4'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
         else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:137:9, :213:32, :216:35, :217:15
           automatic logic _GEN_65;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:210:13, :213:32, :314:17, :315:15
@@ -1101,7 +1076,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       if (abortWire_9)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:72:27
         pcReg_8 <= 4'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
       else if (activeReg_9) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34
-        if (startWire_9 & doneWire_9 | _GEN_26)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
+        if (startWire_9 & doneWire_9 | _GEN_26)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:67:28, :137:9, :193:14, :200:22, :203:16, :205:24, :213:{21,32}, :216:{22,35}, :217:15
           pcReg_8 <= 4'h0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24
         else begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:137:9, :213:32, :216:35, :217:15
           automatic logic _GEN_67;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:210:13, :213:32, :314:17, :315:15
@@ -1277,12 +1252,12 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       `FIRRTL_BEFORE_INITIAL	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
     `endif // FIRRTL_BEFORE_INITIAL
     initial begin	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-      automatic logic [31:0] _RANDOM[0:185];	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
+      automatic logic [31:0] _RANDOM[0:175];	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       `ifdef INIT_RANDOM_PROLOG_	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
         `INIT_RANDOM_PROLOG_	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
       `endif // INIT_RANDOM_PROLOG_
       `ifdef RANDOMIZE_REG_INIT	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        for (logic [7:0] i = 8'h0; i < 8'hBA; i += 8'h1) begin
+        for (logic [7:0] i = 8'h0; i < 8'hB0; i += 8'h1) begin
           _RANDOM[i] = `RANDOM;	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
         end	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
         phyRegs_1 = _RANDOM[8'h1];	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:473:24
@@ -1435,28 +1410,28 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
         activeReg_5 = _RANDOM[8'hA3][16];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:202:28
         res = {_RANDOM[8'hA4][31:17], _RANDOM[8'hA5][16:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
         pcReg = _RANDOM[8'hA5][19:17];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
-        pcReg_1 = _RANDOM[8'hA6][25:24];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        activeReg_6 = _RANDOM[8'hA7][29];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        op1_1 = {_RANDOM[8'hA7][31:30], _RANDOM[8'hA8][29:0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:29
-        res_1 = {_RANDOM[8'hA8][31:30], _RANDOM[8'hA9][29:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:{29,59}
-        pcReg_2 = {_RANDOM[8'hA9][31:30], _RANDOM[8'hAA][0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
-        pcReg_3 = _RANDOM[8'hAB][6:5];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        activeReg_7 = _RANDOM[8'hAC][10];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        addrVal = {_RANDOM[8'hAC][31:11], _RANDOM[8'hAD][10:0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:440:33
-        dataVal = {_RANDOM[8'hAD][31:11], _RANDOM[8'hAE][10:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:440:{33,67}
-        pcReg_4 = _RANDOM[8'hAE][14:11];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:440:67
-        pcReg_5 = _RANDOM[8'hAF][21:20];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        activeReg_8 = _RANDOM[8'hB0][25];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        addrVal_1 = {_RANDOM[8'hB0][31:26], _RANDOM[8'hB1][25:0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:33
-        memData = {_RANDOM[8'hB1][31:26], _RANDOM[8'hB2][25:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:{33,67}
-        pcReg_6 = _RANDOM[8'hB2][29:26];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:67
-        pcReg_7 = _RANDOM[8'hB4][4:3];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        activeReg_9 = _RANDOM[8'hB5][8];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        op1_2 = {_RANDOM[8'hB5][31:9], _RANDOM[8'hB6][8:0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:328:29
-        op2 = {_RANDOM[8'hB6][31:9], _RANDOM[8'hB7][8:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:328:29, :329:29
-        res_2 = {_RANDOM[8'hB7][31:9], _RANDOM[8'hB8][8:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:329:29, :330:29
-        pcReg_8 = _RANDOM[8'hB8][12:9];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:330:29
-        pcReg_9 = _RANDOM[8'hB9][19:18];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
+        pcReg_1 = _RANDOM[8'hA5][21:20];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
+        activeReg_6 = _RANDOM[8'hA5][22];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
+        op1_1 = {_RANDOM[8'hA5][31:23], _RANDOM[8'hA6][22:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:{29,59}
+        res_1 = {_RANDOM[8'hA6][31:23], _RANDOM[8'hA7][22:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:{29,59}
+        pcReg_2 = _RANDOM[8'hA7][25:23];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
+        pcReg_3 = _RANDOM[8'hA7][27:26];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
+        activeReg_7 = _RANDOM[8'hA7][28];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59
+        addrVal = {_RANDOM[8'hA7][31:29], _RANDOM[8'hA8][28:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:372:59, :440:33
+        dataVal = {_RANDOM[8'hA8][31:29], _RANDOM[8'hA9][28:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:440:{33,67}
+        pcReg_4 = {_RANDOM[8'hA9][31:29], _RANDOM[8'hAA][0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:440:67
+        pcReg_5 = _RANDOM[8'hAA][2:1];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
+        activeReg_8 = _RANDOM[8'hAA][3];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
+        addrVal_1 = {_RANDOM[8'hAA][31:4], _RANDOM[8'hAB][3:0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:33
+        memData = {_RANDOM[8'hAB][31:4], _RANDOM[8'hAC][3:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:{33,67}
+        pcReg_6 = _RANDOM[8'hAC][7:4];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:67
+        pcReg_7 = _RANDOM[8'hAC][9:8];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:67
+        activeReg_9 = _RANDOM[8'hAC][10];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:406:67
+        op1_2 = {_RANDOM[8'hAC][31:11], _RANDOM[8'hAD][10:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:328:29, :406:67
+        op2 = {_RANDOM[8'hAD][31:11], _RANDOM[8'hAE][10:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:328:29, :329:29
+        res_2 = {_RANDOM[8'hAE][31:11], _RANDOM[8'hAF][10:0]};	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:329:29, :330:29
+        pcReg_8 = _RANDOM[8'hAF][14:11];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:330:29
+        pcReg_9 = _RANDOM[8'hAF][16:15];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:330:29
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
@@ -1530,7 +1505,7 @@ module SimpleTop(	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
         doneWire_3,
         doneWire_2,
         doneWire_1,
-        doneWire})	// src/main/scala/HwOS/kernel/HardwareAgent.scala:193:14, :200:22, :203:16, :205:24, :287:25, src/main/scala/HwOS/kernel/Kernel.scala:120:56
+        doneWire})	// src/main/scala/HwOS/kernel/HardwareAgent.scala:193:14, :200:22, :203:16, :205:24, :213:32, :287:25, src/main/scala/HwOS/kernel/Kernel.scala:120:56
   );	// src/main/scala/HwOS/kernel/Kernel.scala:123:25
   assign io_done = doneWire_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:193:14, :200:22, :203:16, :205:24, :287:25, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
   assign io_r1 = phyRegs_1;	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7, src/test/scala/HwOS/kernel/testMultiServicePipeline.scala:473:24

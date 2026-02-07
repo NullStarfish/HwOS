@@ -558,7 +558,7 @@ VL_ATTR_COLD void VSimpleTop___024root___ctor_var_reset(VSimpleTop___024root* vl
     vlSelf->SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_40 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 17331354212196517864ull);
     vlSelf->SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_41 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 398028079974930394ull);
     vlSelf->SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_42 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 11057910118303190930ull);
-    vlSelf->SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___stall_hazard_T_146 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 5958910752433073592ull);
+    vlSelf->SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___stall_hazard_T_118 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 1489478621205193287ull);
     vlSelf->SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_43 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 12664518556247531432ull);
     vlSelf->SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_44 = VL_SCOPED_RAND_RESET_I(1, __VscopeHash, 7556765051828334217ull);
     vlSelf->SimpleTop__DOT__unnamedblk1__DOT__unnamedblk2__DOT___GEN_45 = VL_SCOPED_RAND_RESET_I(3, __VscopeHash, 6177076430446268251ull);

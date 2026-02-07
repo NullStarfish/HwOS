@@ -22,7 +22,7 @@ class ThreadTestModule extends Module {
 
   val kernel = new Kernel()
 
-  class TestProcess(k: Kernel) extends HwProcess("TestProc", debugEnable = true, parent = None)(k) {
+  class TestProcess(k: Kernel) extends HwProcess("TestProc", debugEnable = false, parent = None)(k) {
     val counter = RegInit(0.U(32.W))
     val worker = createThread("WorkerThread")
 
