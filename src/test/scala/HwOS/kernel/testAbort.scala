@@ -5,7 +5,6 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel._ 
 
-// 辅助驱动：用于监控信号是否被 Abort 截断
 class MonitorBundle extends Bundle {
   val valid = Output(Bool())
   val data  = Output(UInt(32.W))
@@ -21,13 +20,11 @@ class MonitorDriver(io: MonitorBundle, kernel: Kernel) extends PhysicalDriver(
   def fire(value: UInt): Unit = {
     ContextScope.current match {
       case ThreadCtx(t) => 
-        // 如果在 Thread 上下文调用，自动生成一个 Step
         t.Step("Fire") {
           io.valid := true.B
           io.data  := value
         }
       case AtomicCtx(t) => 
-        // [修复] 如果在 Step 内部调用，直接注入逻辑
         io.valid := true.B
         io.data  := value
       case _ =>
@@ -74,8 +71,6 @@ class AbortTestModule extends Module {
           victim.exit()
         }
 
-        // [修复] Global 必须写在 victim.entry 内部！
-        // 这样 ContextScope 才是正确的 ThreadCtx
         victim.Global {
           when(victim.done) {
             printf("[System] Callback Triggered! (Should NOT happen if aborted)\n")

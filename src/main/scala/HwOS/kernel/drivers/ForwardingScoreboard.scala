@@ -13,7 +13,7 @@ class ForwardingScoreboardDriver(
     class ScoreboardEntry(val addrWidth: Int, val dataWidth: Int) extends Bundle {
         val op   = RegOp()
         val addr = UInt(addrWidth.W)
-        val data = UInt(dataWidth.W) // 新增：记录该 Slot 准备写入的数据
+        val data = UInt(dataWidth.W) 
     }
 
   // 1. 全局记分牌 (Intent + Data)
@@ -28,20 +28,16 @@ class ForwardingScoreboardDriver(
     clientIntents(i).data := 0.U
   }
 
-  // ==============================================================================
-  // 2. 集中式仲裁与旁路逻辑 (Forwarding Logic)
-  // ==============================================================================
+  
   for (myId <- 0 until maxClients) {
     val myIntent = clientIntents(myId)
     val op   = myIntent.op
     val addr = myIntent.addr
 
-    // A. 旁路搜索 (Forwarding Search)
     // 逻辑：寻找比我优先级高（ID更小/更老）且正在写同一个地址的最年轻（ID最大）的指令
     val bypassData = WireInit(0.U(32.W))
     val hitBypass  = WireInit(false.B)
 
-    // 从 ID=0 扫描到 myId-1，后面的覆盖前面的（保证取到最新的旧指令数据）
     for (i <- 0 until myId) {
       when (clientIntents(i).op === RegOp.Write && clientIntents(i).addr === addr) {
         bypassData := clientIntents(i).data
@@ -90,7 +86,6 @@ class ForwardingScoreboardDriver(
           
           val stall = clientStalls(myId)
           t.waitAndAct(!stall) {
-            // 重要：这里不再直接读 regs，而是读取旁路网络计算出的结果
             callback(forwardedResults(myId))
           }
         }
@@ -107,7 +102,7 @@ class ForwardingScoreboardDriver(
         t.Step(s"Reg_Write_Fwd_ID$myId") {
           clientIntents(myId).op   := RegOp.Write
           clientIntents(myId).addr := addr
-          clientIntents(myId).data := data // 将数据广播到总线上供旁路
+          clientIntents(myId).data := data 
           
           val stall = clientStalls(myId)
           t.waitAndAct(!stall) {

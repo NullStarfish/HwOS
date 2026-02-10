@@ -69,14 +69,8 @@ class ScoreboardRegfileDriver(
     stall
   }
 
-  // ==============================================================================
-  // Read APIs
-  // ==============================================================================
+ 
 
-  /**
-   * [Thread Semantic] 阻塞式读取
-   * 语法: val data = driver.read(addr)
-   */
   def read(addr: UInt): UInt = {
     val myId = allocClientId()
     ContextScope.current match {
@@ -98,10 +92,7 @@ class ScoreboardRegfileDriver(
     }
   }
 
-  /**
-   * [Atomic Semantic] 原子回调式读取
-   * 语法: driver.readAtomic(addr) { data => ... }
-   */
+
   def readAtomic(addr: UInt)(callback: UInt => Unit): Unit = {
     val myId = allocClientId()
     ContextScope.current match {
@@ -122,14 +113,7 @@ class ScoreboardRegfileDriver(
     }
   }
 
-  // ==============================================================================
-  // Write APIs
-  // ==============================================================================
 
-  /**
-   * [Thread Semantic] 阻塞式写入
-   * 语法: driver.write(addr, data)
-   */
   def write(addr: UInt, data: UInt): Unit = {
     val myId = allocClientId()
     ContextScope.current match {
@@ -148,10 +132,7 @@ class ScoreboardRegfileDriver(
     }
   }
 
-  /**
-   * [Atomic Semantic] 原子回调式写入
-   * 语法: driver.writeAtomic(addr, data) { ... }
-   */
+
   def writeAtomic(addr: UInt, data: UInt)(callback: => Unit): Unit = {
     val myId = allocClientId()
     ContextScope.current match {

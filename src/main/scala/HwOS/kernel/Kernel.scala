@@ -19,7 +19,7 @@ class Kernel {
     threads += t
     threadNameMap(name) = tid
     
-    println(s"[Kernel] Registered Thread: $name @ TID=$tid") // 编译时打印，方便看
+    println(s"[Kernel] Registered Thread: $name @ TID=$tid") 
     tid
   }
   def getTID(name: String): Option[Int] = threadNameMap.get(name)
@@ -78,18 +78,12 @@ class Kernel {
   def hasDriver(name: String): Boolean = drivers.contains(name)
 
   
-  // ==============================================================================
-  // 新增：全局状态监控接口 (DPI)
-  // ==============================================================================
-
 
   def dumpSymbolTable(filename: String): Unit = {
     val file = new File(filename)
     val bw = new BufferedWriter(new FileWriter(file))
     
-    // 遍历所有注册的线程
     for (t <- threads) {
-      // zip stepNames 和 stepOwners
       for (((stepName, ownerId), pc) <- t.stepNames.zip(t.stepOwners).zipWithIndex) {
         // 格式: <ThreadName> <PC> <StepName> <OwnerID>
         bw.write(s"${t.name} $pc $stepName $ownerId\n")
@@ -103,11 +97,7 @@ class Kernel {
     val nThreads = threads.length
     if (nThreads == 0) return
 
-    // [关键修复] 显式将每个 PC 扩展/填充为 32 位宽，确保与 DPI 接口对齐
     val pc32Seq = threads.map { t =>
-      // 如果 PC 位宽小于 32，则补零；如果大于 32（理论上不应发生），则截断
-      // pad(32) 确保最小宽度，run-time width adjustment
-      // 但最稳妥的方式是 Wire 初始化指定宽度
       val w = Wire(UInt(32.W))
       w := t.pc
       w
@@ -149,7 +139,7 @@ class KernelStateMonitorDPI(val nThreads: Int) extends BlackBox with HasBlackBox
   // 生成 SystemVerilog 代码
   setInline("KernelStateMonitorDPI.sv",
     s"""
-       |`ifndef SYNTHESIS  // <--- 添加这一行
+       |`ifndef SYNTHESIS  
        |module KernelStateMonitorDPI(
        |  input clock,
        |  input reset,

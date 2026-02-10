@@ -52,348 +52,84 @@
     `define INIT_RANDOM_PROLOG_
   `endif // RANDOMIZE
 `endif // not def INIT_RANDOM_PROLOG_
-module SimpleTop_Verification();	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
+module SimpleTop_Verification();	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
   reg       wasActive;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [2:0] lastPc;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
+  reg [3:0] lastPc;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
   reg       wasActive_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
   reg [1:0] lastPc_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
-  reg       wasActive_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [2:0] lastPc_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
-  reg       wasActive_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [1:0] lastPc_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
-  reg       wasActive_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [3:0] lastPc_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
-  reg       wasActive_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [1:0] lastPc_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
-  reg       wasActive_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [3:0] lastPc_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
-  reg       wasActive_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [1:0] lastPc_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
-  reg       wasActive_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [3:0] lastPc_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
-  reg       wasActive_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30
-  reg [1:0] lastPc_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:171:30
   `ifndef SYNTHESIS	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-    always @(posedge SimpleTop.clock) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
+    always @(posedge SimpleTop.clock) begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
       automatic logic _GEN;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
       automatic logic _GEN_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
-      automatic logic _GEN_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
-      automatic logic _GEN_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
-      automatic logic _GEN_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
-      automatic logic _GEN_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
-      automatic logic _GEN_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
-      automatic logic _GEN_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
-      automatic logic _GEN_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
-      automatic logic _GEN_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:176:42
       _GEN =
-        SimpleTop.activeReg_5_0 & SimpleTop.pcReg_0 != lastPc | SimpleTop.activeReg_5_0
+        SimpleTop.activeReg_0 & SimpleTop.pcReg_0 != lastPc | SimpleTop.activeReg_0
         & ~wasActive;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
       _GEN_0 =
-        SimpleTop.activeReg_0 & SimpleTop.pcReg_1_0 != lastPc_1 | SimpleTop.activeReg_0
-        & ~wasActive_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      _GEN_1 =
-        SimpleTop.activeReg_6_0 & SimpleTop.pcReg_2_0 != lastPc_2
-        | SimpleTop.activeReg_6_0 & ~wasActive_2;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      _GEN_2 =
-        SimpleTop.activeReg_1_0 & SimpleTop.pcReg_3_0 != lastPc_3
-        | SimpleTop.activeReg_1_0 & ~wasActive_3;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      _GEN_3 =
-        SimpleTop.activeReg_7_0 & SimpleTop.pcReg_4_0 != lastPc_4
-        | SimpleTop.activeReg_7_0 & ~wasActive_4;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      _GEN_4 =
-        SimpleTop.activeReg_2_0 & SimpleTop.pcReg_5_0 != lastPc_5
-        | SimpleTop.activeReg_2_0 & ~wasActive_5;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      _GEN_5 =
-        SimpleTop.activeReg_8_0 & SimpleTop.pcReg_6_0 != lastPc_6
-        | SimpleTop.activeReg_8_0 & ~wasActive_6;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      _GEN_6 =
-        SimpleTop.activeReg_3_0 & SimpleTop.pcReg_7_0 != lastPc_7
-        | SimpleTop.activeReg_3_0 & ~wasActive_7;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      _GEN_7 =
-        SimpleTop.activeReg_9_0 & SimpleTop.pcReg_8_0 != lastPc_8
-        | SimpleTop.activeReg_9_0 & ~wasActive_8;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      _GEN_8 =
-        SimpleTop.activeReg_4_0 & SimpleTop.pcReg_9_0 != lastPc_9
-        | SimpleTop.activeReg_4_0 & ~wasActive_9;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
-      if ((`PRINTF_COND_) & ~wasActive & SimpleTop.activeReg_5_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread_fork_Ex_Addi_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive & ~SimpleTop.activeReg_5_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread_fork_Ex_Addi_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 3'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 0] SB_Wait_0\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 3'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 1] Reg_Read_Atomic_ID0\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 3'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 2] ALU_Exec_I\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 3'h3 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 3] Reg_Write_Atomic_ID1\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 3'h4 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 4] SB_Retire_ID0\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 3'h5 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 5] Ex_Term\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~wasActive_1 & SimpleTop.activeReg_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I0_Addi_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_1 & ~SimpleTop.activeReg_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I0_Addi_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_0 & SimpleTop.pcReg_1_0 == 2'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread] EXEC [PC 0] SB_Dispatch_ID0\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_0 & SimpleTop.pcReg_1_0 == 2'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I0_Addi_thread] EXEC [PC 1] Fork_Kick_Ex_Addi\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_0 & SimpleTop.pcReg_1_0 == 2'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I0_Addi_thread] EXEC [PC 2] Decode_Done\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~SimpleTop.abortWire_0 & SimpleTop.activeReg_0
-          & SimpleTop.doneWire_5 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :72:27, :200:22, :203:16, :205:24, :287:25, :288:32, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[Ex_Addi] Child I0_Addi_thread_fork_Ex_Addi finished. Triggering Callback.\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-      if ((`PRINTF_COND_) & ~wasActive_2 & SimpleTop.activeReg_6_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread_fork_Ex_Addi_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_2 & ~SimpleTop.activeReg_6_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread_fork_Ex_Addi_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_1 & SimpleTop.pcReg_2_0 == 3'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 0] SB_Wait_1\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_1 & SimpleTop.pcReg_2_0 == 3'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 1] Reg_Read_Atomic_ID2\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_1 & SimpleTop.pcReg_2_0 == 3'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 2] ALU_Exec_I\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_1 & SimpleTop.pcReg_2_0 == 3'h3 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 3] Reg_Write_Atomic_ID3\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_1 & SimpleTop.pcReg_2_0 == 3'h4 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 4] SB_Retire_ID1\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_1 & SimpleTop.pcReg_2_0 == 3'h5 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread_fork_Ex_Addi_thread] EXEC [PC 5] Ex_Term\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~wasActive_3 & SimpleTop.activeReg_1_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I1_Addi_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_3 & ~SimpleTop.activeReg_1_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I1_Addi_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_2 & SimpleTop.pcReg_3_0 == 2'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread] EXEC [PC 0] SB_Dispatch_ID1\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_2 & SimpleTop.pcReg_3_0 == 2'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I1_Addi_thread] EXEC [PC 1] Fork_Kick_Ex_Addi\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_2 & SimpleTop.pcReg_3_0 == 2'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I1_Addi_thread] EXEC [PC 2] Decode_Done\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~SimpleTop.abortWire_1_0 & SimpleTop.activeReg_1_0
-          & SimpleTop.doneWire_6 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :72:27, :200:22, :203:16, :205:24, :287:25, :288:32, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[Ex_Addi] Child I1_Addi_thread_fork_Ex_Addi finished. Triggering Callback.\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-      if ((`PRINTF_COND_) & ~wasActive_4 & SimpleTop.activeReg_7_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_4 & ~SimpleTop.activeReg_7_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_3 & SimpleTop.pcReg_4_0 == 4'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] EXEC [PC 0] SB_Wait_1\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_3 & SimpleTop.pcReg_4_0 == 4'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] EXEC [PC 1] SB_Wait_2\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_3 & SimpleTop.pcReg_4_0 == 4'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] EXEC [PC 2] Reg_Read_Atomic_ID4\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_3 & SimpleTop.pcReg_4_0 == 4'h3 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] EXEC [PC 3] Reg_Read_Atomic_ID5\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_3 & SimpleTop.pcReg_4_0 == 4'h4 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] EXEC [PC 4] RAM_Write_Req\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_3 & SimpleTop.pcReg_4_0 == 4'h5 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] EXEC [PC 5] RAM_Wait\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_3 & SimpleTop.pcReg_4_0 == 4'h6 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] EXEC [PC 6] SB_Retire_ID2\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_3 & SimpleTop.pcReg_4_0 == 4'h7 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread_fork_Ex_Store_thread] EXEC [PC 7] Ex_Term\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~wasActive_5 & SimpleTop.activeReg_2_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I2_Store_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_5 & ~SimpleTop.activeReg_2_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I2_Store_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_4 & SimpleTop.pcReg_5_0 == 2'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread] EXEC [PC 0] SB_Dispatch_ID2\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_4 & SimpleTop.pcReg_5_0 == 2'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I2_Store_thread] EXEC [PC 1] Fork_Kick_Ex_Store\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_4 & SimpleTop.pcReg_5_0 == 2'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I2_Store_thread] EXEC [PC 2] Decode_Done\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~SimpleTop.abortWire_2_0 & SimpleTop.activeReg_2_0
-          & SimpleTop.doneWire_7 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :72:27, :200:22, :203:16, :205:24, :287:25, :288:32, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[Ex_Store] Child I2_Store_thread_fork_Ex_Store finished. Triggering Callback.\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-      if ((`PRINTF_COND_) & ~wasActive_6 & SimpleTop.activeReg_8_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_6 & ~SimpleTop.activeReg_8_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_5 & SimpleTop.pcReg_6_0 == 4'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] EXEC [PC 0] SB_Wait_0\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_5 & SimpleTop.pcReg_6_0 == 4'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] EXEC [PC 1] SB_Wait_1\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_5 & SimpleTop.pcReg_6_0 == 4'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] EXEC [PC 2] Reg_Read_Atomic_ID6\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_5 & SimpleTop.pcReg_6_0 == 4'h3 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] EXEC [PC 3] RAM_Bridge\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_5 & SimpleTop.pcReg_6_0 == 4'h4 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] EXEC [PC 4] RAM_Wait\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_5 & SimpleTop.pcReg_6_0 == 4'h5 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] EXEC [PC 5] Reg_Write_Atomic_ID7\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_5 & SimpleTop.pcReg_6_0 == 4'h6 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] EXEC [PC 6] SB_Retire_ID3\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_5 & SimpleTop.pcReg_6_0 == 4'h7 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread_fork_Ex_Load_thread] EXEC [PC 7] Ex_Term\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~wasActive_7 & SimpleTop.activeReg_3_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I3_Load_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_7 & ~SimpleTop.activeReg_3_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I3_Load_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_6 & SimpleTop.pcReg_7_0 == 2'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread] EXEC [PC 0] SB_Dispatch_ID3\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_6 & SimpleTop.pcReg_7_0 == 2'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I3_Load_thread] EXEC [PC 1] Fork_Kick_Ex_Load\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_6 & SimpleTop.pcReg_7_0 == 2'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I3_Load_thread] EXEC [PC 2] Decode_Done\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~SimpleTop.abortWire_3_0 & SimpleTop.activeReg_3_0
-          & SimpleTop.doneWire_8 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :72:27, :200:22, :203:16, :205:24, :287:25, :288:32, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[Ex_Load] Child I3_Load_thread_fork_Ex_Load finished. Triggering Callback.\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-      if ((`PRINTF_COND_) & ~wasActive_8 & SimpleTop.activeReg_9_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_8 & ~SimpleTop.activeReg_9_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_7 & SimpleTop.pcReg_8_0 == 4'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] EXEC [PC 0] SB_Wait_3\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_7 & SimpleTop.pcReg_8_0 == 4'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] EXEC [PC 1] SB_Wait_1\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_7 & SimpleTop.pcReg_8_0 == 4'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] EXEC [PC 2] Reg_Read_Atomic_ID8\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_7 & SimpleTop.pcReg_8_0 == 4'h3 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] EXEC [PC 3] Reg_Read_Atomic_ID9\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_7 & SimpleTop.pcReg_8_0 == 4'h4 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] EXEC [PC 4] ALU_Execute\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_7 & SimpleTop.pcReg_8_0 == 4'h5 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] EXEC [PC 5] Reg_Write_Atomic_ID10\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_7 & SimpleTop.pcReg_8_0 == 4'h6 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] EXEC [PC 6] SB_Retire_ID4\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_7 & SimpleTop.pcReg_8_0 == 4'h7 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread_fork_Ex_Add_thread] EXEC [PC 7] Ex_Term\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~wasActive_9 & SimpleTop.activeReg_4_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I4_Add_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & wasActive_9 & ~SimpleTop.activeReg_4_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I4_Add_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_8 & SimpleTop.pcReg_9_0 == 2'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread] EXEC [PC 0] SB_Dispatch_ID4\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_8 & SimpleTop.pcReg_9_0 == 2'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[PipelineCpu/I4_Add_thread] EXEC [PC 1] Fork_Kick_Ex_Add\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & _GEN_8 & SimpleTop.pcReg_9_0 == 2'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002, "[PipelineCpu/I4_Add_thread] EXEC [PC 2] Decode_Done\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
-      if ((`PRINTF_COND_) & ~SimpleTop.abortWire_4_0 & SimpleTop.activeReg_4_0
-          & SimpleTop.doneWire_9 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :72:27, :200:22, :203:16, :205:24, :287:25, :288:32, src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-        $fwrite(32'h80000002,
-                "[Ex_Add] Child I4_Add_thread_fork_Ex_Add finished. Triggering Callback.\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
+        SimpleTop.activeReg_1_0 & SimpleTop.pcReg_1_0 != lastPc_1
+        | SimpleTop.activeReg_1_0 & ~wasActive_1;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :159:24, :170:30, :171:30, :173:13, :175:32, :176:{21,30,42}
+      if ((`PRINTF_COND_) & ~wasActive & SimpleTop.activeReg_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & wasActive & ~SimpleTop.activeReg_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 0] Init\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 1] Count_1\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 2] Count_2\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h3 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 3] Count_3\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h4 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 4] Count_4\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h5 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 5] Count_5\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h6 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 6] Count_6\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h7 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 7] Count_7\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h8 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 8] Count_8\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN & SimpleTop.pcReg_0 == 4'h9 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Producer_thread] EXEC [PC 9] Exit\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & ~wasActive_1 & SimpleTop.activeReg_1_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :173:{13,24}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Consumer_thread] --- ONLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & wasActive_1 & ~SimpleTop.activeReg_1_0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :59:34, :170:30, :174:{23,26}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Consumer_thread] --- OFFLINE ---\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN_0 & SimpleTop.pcReg_1_0 == 2'h0 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Consumer_thread] EXEC [PC 0] Wait_For_5\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN_0 & SimpleTop.pcReg_1_0 == 2'h1 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Consumer_thread] EXEC [PC 1] Action\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      if ((`PRINTF_COND_) & _GEN_0 & SimpleTop.pcReg_1_0 == 2'h2 & ~SimpleTop.reset)	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :159:24, :176:42, :178:{23,34}, src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+        $fwrite(32'h80000002, "[DemoProc/Consumer_thread] EXEC [PC 2] Exit\n");	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
     end // always @(posedge)
   `endif // not def SYNTHESIS
-  always @(posedge SimpleTop.clock) begin	// src/test/scala/HwOS/example/PipelineDebugGen.scala:10:7
-    wasActive <= SimpleTop.activeReg_5_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
+  always @(posedge SimpleTop.clock) begin	// src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala:12:7
+    wasActive <= SimpleTop.activeReg_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
     lastPc <= SimpleTop.pcReg_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_1 <= SimpleTop.activeReg_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
+    wasActive_1 <= SimpleTop.activeReg_1_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
     lastPc_1 <= SimpleTop.pcReg_1_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_2 <= SimpleTop.activeReg_6_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
-    lastPc_2 <= SimpleTop.pcReg_2_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_3 <= SimpleTop.activeReg_1_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
-    lastPc_3 <= SimpleTop.pcReg_3_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_4 <= SimpleTop.activeReg_7_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
-    lastPc_4 <= SimpleTop.pcReg_4_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_5 <= SimpleTop.activeReg_2_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
-    lastPc_5 <= SimpleTop.pcReg_5_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_6 <= SimpleTop.activeReg_8_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
-    lastPc_6 <= SimpleTop.pcReg_6_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_7 <= SimpleTop.activeReg_3_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
-    lastPc_7 <= SimpleTop.pcReg_7_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_8 <= SimpleTop.activeReg_9_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
-    lastPc_8 <= SimpleTop.pcReg_8_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
-    wasActive_9 <= SimpleTop.activeReg_4_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:59:34, :170:30
-    lastPc_9 <= SimpleTop.pcReg_9_0;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:159:24, :171:30
   end // always @(posedge)
-  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-      `FIRRTL_BEFORE_INITIAL	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
+  `ifdef ENABLE_INITIAL_REG_	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+    `ifdef FIRRTL_BEFORE_INITIAL	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      `FIRRTL_BEFORE_INITIAL	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
     `endif // FIRRTL_BEFORE_INITIAL
-    initial begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-      automatic logic [31:0] _RANDOM[0:185];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-        `INIT_RANDOM_PROLOG_	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
+    initial begin	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      automatic logic [31:0] _RANDOM[0:2];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      `ifdef INIT_RANDOM_PROLOG_	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+        `INIT_RANDOM_PROLOG_	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
       `endif // INIT_RANDOM_PROLOG_
-      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-        for (logic [7:0] i = 8'h0; i < 8'hBA; i += 8'h1) begin
-          _RANDOM[i] = `RANDOM;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-        end	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-        wasActive = _RANDOM[8'hA5][20];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc = _RANDOM[8'hA5][23:21];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_1 = _RANDOM[8'hA6][26];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_1 = _RANDOM[8'hA6][28:27];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_2 = _RANDOM[8'hAA][1];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_2 = _RANDOM[8'hAA][4:2];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_3 = _RANDOM[8'hAB][7];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_3 = _RANDOM[8'hAB][9:8];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_4 = _RANDOM[8'hAE][15];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_4 = _RANDOM[8'hAE][19:16];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_5 = _RANDOM[8'hAF][22];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_5 = _RANDOM[8'hAF][24:23];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_6 = _RANDOM[8'hB2][30];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_6 = {_RANDOM[8'hB2][31], _RANDOM[8'hB3][2:0]};	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_7 = _RANDOM[8'hB4][5];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_7 = _RANDOM[8'hB4][7:6];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_8 = _RANDOM[8'hB8][13];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_8 = _RANDOM[8'hB8][17:14];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
-        wasActive_9 = _RANDOM[8'hB9][20];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :288:32
-        lastPc_9 = _RANDOM[8'hB9][22:21];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:170:30, :171:30, :288:32
+      `ifdef RANDOMIZE_REG_INIT	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+        for (logic [1:0] i = 2'h0; i < 2'h3; i += 2'h1) begin
+          _RANDOM[i] = `RANDOM;	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+        end	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+        wasActive = _RANDOM[2'h1][6];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :170:30
+        lastPc = _RANDOM[2'h1][10:7];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :170:30, :171:30
+        wasActive_1 = _RANDOM[2'h2][13];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :170:30
+        lastPc_1 = _RANDOM[2'h2][15:14];	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13, :170:30, :171:30
       `endif // RANDOMIZE_REG_INIT
     end // initial
-    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
-      `FIRRTL_AFTER_INITIAL	// src/main/scala/HwOS/kernel/HardwareAgent.scala:288:32
+    `ifdef FIRRTL_AFTER_INITIAL	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
+      `FIRRTL_AFTER_INITIAL	// src/main/scala/HwOS/kernel/HardwareAgent.scala:22:13
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
 endmodule

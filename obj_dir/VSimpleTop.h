@@ -13,7 +13,6 @@
 
 class VSimpleTop__Syms;
 class VSimpleTop___024root;
-class VerilatedVcdC;
 
 // This class is the main interface to the Verilated model
 class alignas(VL_CACHE_LINE_BYTES) VSimpleTop VL_NOT_FINAL : public VerilatedModel {
@@ -25,7 +24,7 @@ class alignas(VL_CACHE_LINE_BYTES) VSimpleTop VL_NOT_FINAL : public VerilatedMod
 
     // CONSTEXPR CAPABILITIES
     // Verilated with --trace?
-    static constexpr bool traceCapable = true;
+    static constexpr bool traceCapable = false;
 
     // PORTS
     // The application code writes and reads these signals to
@@ -34,10 +33,6 @@ class alignas(VL_CACHE_LINE_BYTES) VSimpleTop VL_NOT_FINAL : public VerilatedMod
     VL_IN8(&reset,0,0);
     VL_IN8(&io_start,0,0);
     VL_OUT8(&io_done,0,0);
-    VL_OUT(&io_r1,31,0);
-    VL_OUT(&io_r2,31,0);
-    VL_OUT(&io_r3,31,0);
-    VL_OUT(&io_r4,31,0);
 
     // CELLS
     // Public to allow access to /* verilator public */ items.
@@ -89,7 +84,6 @@ class alignas(VL_CACHE_LINE_BYTES) VSimpleTop VL_NOT_FINAL : public VerilatedMod
     /// Re-init after cloning the model at the process level (e.g. fork in Linux)
     /// Re-allocate necessary resources. Called after cloning.
     void atClone() const;
-    std::unique_ptr<VerilatedTraceConfig> traceConfig() const override final;
   private:
     // Internal functions - trace registration
     void traceBaseModel(VerilatedTraceBaseC* tfp, int levels, int options);

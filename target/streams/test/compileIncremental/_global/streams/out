@@ -1,50 +1,6 @@
 [0m[[0m[0mdebug[0m] [0m[0m[zinc] IncrementalCompile -----------[0m
 [0m[[0m[0mdebug[0m] [0m[0mIncrementalCompile.incrementalCompile[0m
-[0m[[0m[0mdebug[0m] [0m[0mprevious = Stamps for: 106 products, 21 sources, 6 libraries[0m
-[0m[[0m[0mdebug[0m] [0m[0mcurrent source = Set(${BASE}/src/test/scala/HwOS/kernel/testRegfile.scala, ${BASE}/src/test/scala/HwOS/kernel/testScoreboard.scala, ${BASE}/src/test/scala/HwOS/kernel/testDeepFork.scala, ${BASE}/src/test/scala/HwOS/kernel/testMultiCoreProcess.scala, ${BASE}/src/test/scala/HwOS/kernel/testPipelinedScoreboardRegfileDriver.scala, ${BASE}/src/test/scala/HwOS/kernel/testAbort.scala, ${BASE}/src/test/scala/HwOS/kernel/testFork.scala, ${BASE}/src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala, ${BASE}/src/test/scala/HwOS/synth/synthThread.scala, ${BASE}/src/test/scala/HwOS/kernel/testMultiServicePipeline.scala, ${BASE}/src/test/scala/HwOS/kernel/testForwarding.scala, ${BASE}/src/test/scala/HwOS/kernel/testInstFlow.scala, ${BASE}/src/test/scala/HwOS/kernel/testComplexInstFlow.scala, ${BASE}/src/test/scala/HwOS/kernel/testInternalRegfileDriver.scala, ${BASE}/src/test/scala/HwOS/kernel/testMixedSemantic.scala, ${BASE}/src/test/scala/HwOS/kernel/SimpleRegVecTest.scala, ${BASE}/src/test/scala/HwOS/example/PipelineDebugGen.scala, ${BASE}/src/test/scala/HwOS/kernel/testCentralizedPpScoreboardRegfileDriver.scala, ${BASE}/src/test/scala/HwOS/kernel/testBranchPrediction.scala, ${BASE}/src/test/scala/HwOS/kernel/testBlackboxDriver.scala, ${BASE}/src/test/scala/HwOS/kernel/testThread.scala)[0m
-[0m[[0m[0mdebug[0m] [0m[0m> initialChanges = InitialChanges(Changes(added = Set(), removed = Set(), changed = Set(), unmodified = ...),Set(),Set(),API Changes: Set(NamesChange(HwOS.kernel.drivers.CentralizedScoreboardDriver$,ModifiedNames(changes = UsedName(DriverStep,[Default]), UsedName(DriverStep$default$2,[Default]))), NamesChange(HwOS.kernel.drivers.RegfileDriver,ModifiedNames(changes = UsedName(DriverStep$default$2,[Default]), UsedName(DriverStep,[Default]))), NamesChange(HwOS.kernel.drivers.PipelinedScoreboardDriver,ModifiedNames(changes = UsedName(DriverStep$default$2,[Default]), UsedName(DriverStep,[Default]))), NamesChange(HwOS.kernel.drivers.ForwardingScoreboardDriver,ModifiedNames(changes = UsedName(DriverStep$default$2,[Default]), UsedName(DriverStep,[Default]))), NamesChange(HwOS.kernel.drivers.CentralizedScoreboardDriver,ModifiedNames(changes = UsedName(DriverStep,[Default]), UsedName(DriverStep$default$2,[Default])))))[0m
-[0m[[0m[0mdebug[0m] [0m[0mThe HwOS.kernel.drivers.CentralizedScoreboardDriver$ has the following regular definitions changed:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	UsedName(DriverStep,[Default]), UsedName(DriverStep$default$2,[Default]).[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll member reference dependencies will be considered within this context.[0m
-[0m[[0m[0mdebug[0m] [0m[0mFiles invalidated by inheriting from (external) HwOS.kernel.drivers.CentralizedScoreboardDriver$: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mNow invalidating by inheritance (internally).[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting direct dependencies of all classes transitively invalidated by inheritance.[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting classes that directly depend on (external) HwOS.kernel.drivers.CentralizedScoreboardDriver$.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.CentralizedPpTestModule. This dependency is not being considered for invalidation.[0m
-[0m[[0m[0mdebug[0m] [0m[0mThe HwOS.kernel.drivers.RegfileDriver has the following regular definitions changed:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	UsedName(DriverStep$default$2,[Default]), UsedName(DriverStep,[Default]).[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll member reference dependencies will be considered within this context.[0m
-[0m[[0m[0mdebug[0m] [0m[0mFiles invalidated by inheriting from (external) HwOS.kernel.drivers.RegfileDriver: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mNow invalidating by inheritance (internally).[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting direct dependencies of all classes transitively invalidated by inheritance.[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting classes that directly depend on (external) HwOS.kernel.drivers.RegfileDriver.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.RegfileTestModule. This dependency is not being considered for invalidation.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.RegfileTestModule.TestProcess. This dependency is not being considered for invalidation.[0m
-[0m[[0m[0mdebug[0m] [0m[0mThe HwOS.kernel.drivers.PipelinedScoreboardDriver has the following regular definitions changed:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	UsedName(DriverStep$default$2,[Default]), UsedName(DriverStep,[Default]).[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll member reference dependencies will be considered within this context.[0m
-[0m[[0m[0mdebug[0m] [0m[0mFiles invalidated by inheriting from (external) HwOS.kernel.drivers.PipelinedScoreboardDriver: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mNow invalidating by inheritance (internally).[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting direct dependencies of all classes transitively invalidated by inheritance.[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting classes that directly depend on (external) HwOS.kernel.drivers.PipelinedScoreboardDriver.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.PipelinedTestModule.TestProcess. This dependency is not being considered for invalidation.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.PipelinedTestModule. This dependency is not being considered for invalidation.[0m
-[0m[[0m[0mdebug[0m] [0m[0mThe HwOS.kernel.drivers.ForwardingScoreboardDriver has the following regular definitions changed:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	UsedName(DriverStep$default$2,[Default]), UsedName(DriverStep,[Default]).[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll member reference dependencies will be considered within this context.[0m
-[0m[[0m[0mdebug[0m] [0m[0mFiles invalidated by inheriting from (external) HwOS.kernel.drivers.ForwardingScoreboardDriver: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mNow invalidating by inheritance (internally).[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting direct dependencies of all classes transitively invalidated by inheritance.[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting classes that directly depend on (external) HwOS.kernel.drivers.ForwardingScoreboardDriver.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.ForwardingTestModule.TestProcess. This dependency is not being considered for invalidation.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.ForwardingTestModule. This dependency is not being considered for invalidation.[0m
-[0m[[0m[0mdebug[0m] [0m[0mThe HwOS.kernel.drivers.CentralizedScoreboardDriver has the following regular definitions changed:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	UsedName(DriverStep,[Default]), UsedName(DriverStep$default$2,[Default]).[0m
-[0m[[0m[0mdebug[0m] [0m[0mAll member reference dependencies will be considered within this context.[0m
-[0m[[0m[0mdebug[0m] [0m[0mFiles invalidated by inheriting from (external) HwOS.kernel.drivers.CentralizedScoreboardDriver: Set()[0m
-[0m[[0m[0mdebug[0m] [0m[0mNow invalidating by inheritance (internally).[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting direct dependencies of all classes transitively invalidated by inheritance.[0m
-[0m[[0m[0mdebug[0m] [0m[0mGetting classes that directly depend on (external) HwOS.kernel.drivers.CentralizedScoreboardDriver.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.CentralizedPpTestModule.TestProcess. This dependency is not being considered for invalidation.[0m
-[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of HwOS.kernel.CentralizedPpTestModule. This dependency is not being considered for invalidation.[0m
+[0m[[0m[0mdebug[0m] [0m[0mprevious = Stamps for: 116 products, 24 sources, 6 libraries[0m
+[0m[[0m[0mdebug[0m] [0m[0mcurrent source = Set(${BASE}/src/test/scala/HwOS/kernel/testRegfile.scala, ${BASE}/src/test/scala/HwOS/synth/synthMultiService.scala, ${BASE}/src/test/scala/HwOS/kernel/testScoreboard.scala, ${BASE}/src/test/scala/HwOS/kernel/testDeepFork.scala, ${BASE}/src/test/scala/HwOS/synth/synthFork.scala, ${BASE}/src/test/scala/HwOS/kernel/testMultiCoreProcess.scala, ${BASE}/src/test/scala/HwOS/kernel/testPipelinedScoreboardRegfileDriver.scala, ${BASE}/src/test/scala/HwOS/kernel/testAbort.scala, ${BASE}/src/test/scala/HwOS/kernel/testFork.scala, ${BASE}/src/test/scala/HwOS/example/SimpleTopforDPIDebug.scala, ${BASE}/src/test/scala/HwOS/synth/synthThread.scala, ${BASE}/src/test/scala/HwOS/kernel/testMultiServicePipeline.scala, ${BASE}/src/test/scala/HwOS/kernel/testForwarding.scala, ${BASE}/src/test/scala/HwOS/kernel/testInstFlow.scala, ${BASE}/src/test/scala/HwOS/kernel/testComplexInstFlow.scala, ${BASE}/src/test/scala/HwOS/synth/synthMultiCore.scala, ${BASE}/src/test/scala/HwOS/kernel/testInternalRegfileDriver.scala, ${BASE}/src/test/scala/HwOS/kernel/testMixedSemantic.scala, ${BASE}/src/test/scala/HwOS/kernel/SimpleRegVecTest.scala, ${BASE}/src/test/scala/HwOS/example/PipelineDebugGen.scala, ${BASE}/src/test/scala/HwOS/kernel/testCentralizedPpScoreboardRegfileDriver.scala, ${BASE}/src/test/scala/HwOS/kernel/testBranchPrediction.scala, ${BASE}/src/test/scala/HwOS/kernel/testBlackboxDriver.scala, ${BASE}/src/test/scala/HwOS/kernel/testThread.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0m> initialChanges = InitialChanges(Changes(added = Set(), removed = Set(), changed = Set(), unmodified = ...),Set(),Set(),API Changes: Set())[0m
 [0m[[0m[0mdebug[0m] [0m[0mNo changes[0m

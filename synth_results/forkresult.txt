@@ -1,0 +1,200 @@
+=== ForkNonBlockingModule_SV ===
+
+   Number of wires:                 82
+   Number of wire bits:            466
+   Number of public wires:          14
+   Number of public wire bits:     173
+   Number of ports:                  7
+   Number of port bits:            100
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                281
+     BUFG                            1
+     CARRY4                         16
+     FDRE                           73
+     IBUF                            3
+     INV                             3
+     LUT1                            3
+     LUT2                            1
+     LUT4                           65
+     LUT5                            4
+     LUT6                            6
+     MUXF7                           6
+     MUXF8                           3
+     OBUF                           97
+
+   Estimated number of LCs:         75
+
+
+   yosys> sta
+
+3. Executing STA pass (static timing analysis).
+Warning: Module 'MUXF7' has no timing arcs!
+Warning: Module 'MUXF8' has no timing arcs!
+Warning: Module 'CARRY4' has no timing arcs!
+Latest arrival time in 'ForkNonBlockingModule_SV' is 1150:
+    1150 $auto$ff.cc:266:slice$2137 (FDRE.CE)
+           $abc$2704$auto$opt_dff.cc:219:make_patterns_logic$1436
+    1041 $abc$2704$auto$blifparse.cc:535:parse_blif$2708 (LUT6.I0->O)
+           \parent_pc [0]
+     399 $auto$ff.cc:266:slice$2169 (FDRE.C->Q)
+           $iopadmap$clock
+      96 $auto$clkbufmap.cc:261:execute$2958 (BUFG.I->O)
+           $auto$clkbufmap.cc:262:execute$2959
+       0 $iopadmap$ForkNonBlockingModule_SV.clock (IBUF.I->O)
+       0   \clock (<primary input>)
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [31] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [30] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [29] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [28] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [27] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [26] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [25] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [24] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [23] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [22] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [21] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [20] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [19] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [18] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [17] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [16] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [15] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [14] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [13] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [12] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [11] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [10] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [9] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [8] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [7] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [6] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [5] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [4] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule_SV.\io_parentPC [3] has no (* sta_arrival *) value.
+
+Arrival histogram:
+ legend: * represents 1 endpoint(s)
+         + represents [1,1) endpoint(s)
+(  1159,   1121] |+
+(  1121,   1083] | 
+(  1083,   1045] | 
+(  1045,   1007] |****+
+(  1007,    969] |+
+(   969,    931] | 
+(   931,    893] |+
+(   893,    855] |****************************+
+(   855,    817] | 
+(   817,    779] |***************************+
+(   779,    741] | 
+(   741,    703] | 
+(   703,    665] | 
+(   665,    627] | 
+(   627,    589] | 
+(   589,    551] | 
+(   551,    513] | 
+(   513,    475] | 
+(   475,    437] | 
+(   437,    399] |************************************************************ 
+
+
+
+
+
+=== ForkNonBlockingModule ===
+
+   Number of wires:                121
+   Number of wire bits:            651
+   Number of public wires:          25
+   Number of public wire bits:     371
+   Number of ports:                  7
+   Number of port bits:            100
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                275
+     BUFG                            1
+     CARRY4                         18
+     FDRE                           72
+     IBUF                            3
+     INV                             5
+     LUT2                            1
+     LUT3                           34
+     LUT4                            6
+     LUT5                           36
+     LUT6                            2
+     OBUF                           97
+
+   Estimated number of LCs:         78
+
+
+
+3. Executing STA pass (static timing analysis).
+Warning: Module 'CARRY4' has no timing arcs!
+Latest arrival time in 'ForkNonBlockingModule' is 1452:
+    1452 $auto$ff.cc:266:slice$2181 (FDRE.CE)
+           $abc$2510$auto$opt_dff.cc:219:make_patterns_logic$1383
+    1343 $abc$2510$auto$blifparse.cc:535:parse_blif$2515 (LUT6.I2->O)
+           $techmap2709$abc$2510$auto$blifparse.cc:535:parse_blif$2529.A [2]
+     871 $abc$2510$auto$blifparse.cc:535:parse_blif$2513 (LUT4.I0->O)
+           \pcReg [2]
+     399 $auto$ff.cc:266:slice$2180 (FDRE.C->Q)
+           $iopadmap$clock
+      96 $auto$clkbufmap.cc:261:execute$2756 (BUFG.I->O)
+           $auto$clkbufmap.cc:262:execute$2757
+       0 $iopadmap$ForkNonBlockingModule.clock (IBUF.I->O)
+       0   \clock (<primary input>)
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [31] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [30] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [29] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [28] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [27] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [26] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [25] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [24] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [23] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [22] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [21] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [20] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [19] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [18] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [17] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [16] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [15] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [14] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [13] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [12] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [11] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [10] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [9] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [8] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [7] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [6] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [5] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [4] has no (* sta_arrival *) value.
+Warning: Endpoint ForkNonBlockingModule.\io_parentPC [3] has no (* sta_arrival *) value.
+
+Arrival histogram:
+ legend: * represents 1 endpoint(s)
+         + represents [1,1) endpoint(s)
+(  1459,   1406] |+
+(  1406,   1353] |+
+(  1353,   1300] |*+
+(  1300,   1247] |+
+(  1247,   1194] | 
+(  1194,   1141] |+
+(  1141,   1088] |+
+(  1088,   1035] |+
+(  1035,    982] |***********************************************************+
+(   982,    929] |+
+(   929,    876] | 
+(   876,    823] |+
+(   823,    770] | 
+(   770,    717] | 
+(   717,    664] | 
+(   664,    611] | 
+(   611,    558] | 
+(   558,    505] | 
+(   505,    452] | 
+(   452,    399] |************************************************************ 

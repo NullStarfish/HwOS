@@ -1,0 +1,200 @@
+=== ThreadTestModule ===
+
+   Number of wires:                 76
+   Number of wire bits:            342
+   Number of public wires:          20
+   Number of public wire bits:     177
+   Number of ports:                  9
+   Number of port bits:             71
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                169
+     BUFG                            1
+     CARRY4                         11
+     FDRE                           36
+     IBUF                            5
+     INV                             2
+     LUT1                            1
+     LUT2                            2
+     LUT4                            1
+     LUT5                           35
+     LUT6                            8
+     MUXF7                           1
+     OBUF                           66
+
+   Estimated number of LCs:         45
+
+yosys> sta
+
+3. Executing STA pass (static timing analysis).
+Warning: Module 'MUXF7' has no timing arcs!
+Warning: Module 'CARRY4' has no timing arcs!
+Latest arrival time in 'ThreadTestModule' is 1041:
+    1041 (<unknown>)
+Warning: Critical-path does not terminate in a recognised endpoint.
+           $lt$ThreadTestModule.sv:71$6.P [1]
+    1041 $abc$2505$auto$blifparse.cc:535:parse_blif$2550 (LUT6.I0->O)
+           \counter [2]
+     399 $auto$ff.cc:266:slice$2196 (FDRE.C->Q)
+           $iopadmap$clock
+      96 $auto$clkbufmap.cc:261:execute$2642 (BUFG.I->O)
+           $auto$clkbufmap.cc:262:execute$2643
+       0 $iopadmap$ThreadTestModule.clock (IBUF.I->O)
+       0   \clock (<primary input>)
+Warning: Endpoint ThreadTestModule.\io_pcValue [31] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [30] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [29] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [28] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [27] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [26] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [25] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [24] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [23] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [22] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [21] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [20] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [19] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [18] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [17] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [16] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [15] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [14] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [13] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [12] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [11] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [10] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [9] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [8] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [7] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [6] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [5] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [4] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule.\io_pcValue [3] has no (* sta_arrival *) value.
+
+Arrival histogram:
+ legend: * represents 1 endpoint(s)
+         + represents [1,1) endpoint(s)
+(  1039,   1007] |********************************** 
+(  1007,    975] |* 
+(   975,    943] | 
+(   943,    911] | 
+(   911,    879] | 
+(   879,    847] |*** 
+(   847,    815] | 
+(   815,    783] | 
+(   783,    751] | 
+(   751,    719] | 
+(   719,    687] | 
+(   687,    655] | 
+(   655,    623] | 
+(   623,    591] | 
+(   591,    559] | 
+(   559,    527] | 
+(   527,    495] | 
+(   495,    463] | 
+(   463,    431] | 
+(   431,    399] |************************************* 
+
+
+
+
+
+
+
+=== ThreadTestModule_Baseline ===
+
+   Number of wires:                 62
+   Number of wire bits:            316
+   Number of public wires:          12
+   Number of public wire bits:     107
+   Number of ports:                  9
+   Number of port bits:             71
+   Number of memories:               0
+   Number of memory bits:            0
+   Number of processes:              0
+   Number of cells:                164
+     BUFG                            1
+     CARRY4                         10
+     FDRE                           36
+     IBUF                            5
+     INV                             1
+     LUT2                            2
+     LUT3                            1
+     LUT4                            2
+     LUT5                            1
+     LUT6                           39
+     OBUF                           66
+
+   Estimated number of LCs:         43
+
+
+
+yosys> sta
+
+3. Executing STA pass (static timing analysis).
+Warning: Module 'CARRY4' has no timing arcs!
+Latest arrival time in 'ThreadTestModule_Baseline' is 1041:
+    1041 $auto$ff.cc:266:slice$2216 (FDRE.D)
+           $auto$xilinx_dffopt.cc:347:execute$2815
+    1041 $auto$xilinx_dffopt.cc:341:execute$2814 (LUT6.I0->O)
+           \counter [0]
+     399 $auto$ff.cc:266:slice$2216 (FDRE.C->Q)
+           $iopadmap$clk
+      96 $auto$clkbufmap.cc:261:execute$2816 (BUFG.I->O)
+           $auto$clkbufmap.cc:262:execute$2817
+       0 $iopadmap$ThreadTestModule_Baseline.clk (IBUF.I->O)
+       0   \clk (<primary input>)
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [31] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [30] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [29] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [28] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [27] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [26] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [25] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [24] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [23] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [22] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [21] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [20] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [19] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [18] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [17] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [16] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [15] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [14] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [13] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [12] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [11] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [10] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [9] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [8] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [7] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [6] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [5] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [4] has no (* sta_arrival *) value.
+Warning: Endpoint ThreadTestModule_Baseline.\pcValue [3] has no (* sta_arrival *) value.
+
+Arrival histogram:
+ legend: * represents 1 endpoint(s)
+         + represents [1,1) endpoint(s)
+(  1059,   1026] |********************************* 
+(  1026,    993] | 
+(   993,    960] | 
+(   960,    927] | 
+(   927,    894] |* 
+(   894,    861] | 
+(   861,    828] | 
+(   828,    795] |**** 
+(   795,    762] | 
+(   762,    729] | 
+(   729,    696] | 
+(   696,    663] | 
+(   663,    630] | 
+(   630,    597] | 
+(   597,    564] | 
+(   564,    531] | 
+(   531,    498] | 
+(   498,    465] | 
+(   465,    432] | 
+(   432,    399] |************************************* 

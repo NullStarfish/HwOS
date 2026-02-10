@@ -141,9 +141,7 @@ class BranchCpuModule extends Module {
   io.wrongPathKilled:= proc.killedFlag
 }
 
-// ==============================================================================
-// 2. 测试用例
-// ==============================================================================
+
 class BranchPredictionTest extends AnyFlatSpec {
   "BranchUnit" should "speculatively execute paths and abort the wrong one before side-effects" in {
     simulate(new BranchCpuModule) { c =>

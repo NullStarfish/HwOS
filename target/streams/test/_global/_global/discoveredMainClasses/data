@@ -1,1 +1,1 @@
-["HwOS.example.PipelineDebugGen","HwOS.example.SimpleTopMain","HwOS.synth.Threadtest"]
+["HwOS.example.PipelineDebugGen","HwOS.example.SimpleTopMain","HwOS.synth.PipelineGen","HwOS.synth.Threadtest","HwOS.synth.synthFork","HwOS.synth.synthMultiCore"]
