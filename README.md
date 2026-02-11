@@ -3,7 +3,7 @@
 
 [![Scala](https://img.shields.io/badge/Language-Scala%2FChisel-red)](https://www.chisel-lang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-
+[![DOI](https://zenodo.org/badge/1145070977.svg)](https://doi.org/10.5281/zenodo.18608985)
 
 
 
