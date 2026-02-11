@@ -2,11 +2,10 @@
 # HwOS: A Thread-Level RTL Abstraction for Composable and Observable Hardware Design
 
 [![Scala](https://img.shields.io/badge/Language-Scala%2FChisel-red)](https://www.chisel-lang.org/)
-[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-<p align="center">
-  <strong>🇺🇸 English</strong> | <a href="README_zh.md">🇨🇳 中文</a>
-</p>
+
+
 
 **HwOS** is a hardware construction framework based on [Chisel](https://www.chisel-lang.org/), designed to introduce operating system abstractions into the RTL design domain. Its core philosophy is: **"Hardware is an Operating System, Everything is a Thread."**
 
@@ -52,7 +51,7 @@ HwOS/
 │       └── ...
 ├── src/test/scala/HwOS/           # Tests and Examples
 │   ├── example/                   # Comprehensive Examples (App objects)
-│   │   ├── SimpleTopforDPIDebug.scala # Top-level wrapper for DPI Debugging
+│   │   ├── SimpleTopforDPIDebug.scala 
 │   │   └── PipelineDebugGen.scala
 │   ├── kernel/                    # Unit Tests (Fork, Abort, MultiCore, etc.)
 │   └── synth/                     # Synthesis Benchmarks (Micro-benchmarks) 
@@ -156,15 +155,8 @@ sbt "test:runMain HwOS.synth.synthThread"
 
 The output verilog files will be located in the `generated/` directory.
 
----
 
-## 📝 Citation
 
-If you use HwOS in your research, please cite the following paper:
-
-**HwOS: A Thread-Level RTL Abstraction for Composable and Observable Hardware Design**
-
-> Kaixin Chen, Department of Electrical Engineering, Zhejiang University.
 
 ---
 

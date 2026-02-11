@@ -1,2 +1,0 @@
-verification/SimpleTop_Verification.sv
-SimpleTop.sv
