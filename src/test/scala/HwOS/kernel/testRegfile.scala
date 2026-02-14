@@ -58,7 +58,7 @@ class RegfileTestModule extends Module {
   val proc = new TestProcess(kernel)
   proc.build()
   io.pc     := proc.worker.pc
-  io.active := proc.worker.isRunning
+  io.active := proc.worker.active
   io.done      := proc.worker.done
   io.debugReg5 := phyRegs(5)
   io.debugReadVal := proc.debugReadReg 

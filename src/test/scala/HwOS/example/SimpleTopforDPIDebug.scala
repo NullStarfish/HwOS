@@ -74,6 +74,6 @@ object SimpleTopMain extends App {
   println("Done. Files generated in ./generated/")
 
   if (topCaptured != null) {
-    topCaptured.kernel.dumpSymbolTable("generated/hwos.symbols")
+    //topCaptured.kernel.dumpSymbolTable("generated/hwos.symbols")
   }
 }

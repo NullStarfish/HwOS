@@ -85,7 +85,7 @@ class AbortTestModule extends Module {
   proc.build()
 
   io.threadPC    := proc.victim.pc
-  io.isActive    := proc.victim.isRunning
+  io.isActive    := proc.victim.active
   io.monitorVal  := monitorWire.valid
   io.callbackHit := proc.callbackFlag
 }

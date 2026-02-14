@@ -61,7 +61,7 @@ abstract class PhysicalDriver(val meta: DriverMeta) {
     }
 
     // 关键：将 this._driverId 传给 Step，这样调试工具就知道这一步归属于当前 Driver
-    thread.Step(name, _driverId)(block)
+    thread.Step(name )(block)
   }
 }
 

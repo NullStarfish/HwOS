@@ -79,19 +79,19 @@ class Kernel {
 
   
 
-  def dumpSymbolTable(filename: String): Unit = {
-    val file = new File(filename)
-    val bw = new BufferedWriter(new FileWriter(file))
+  // def dumpSymbolTable(filename: String): Unit = {
+  //   val file = new File(filename)
+  //   val bw = new BufferedWriter(new FileWriter(file))
     
-    for (t <- threads) {
-      for (((stepName, ownerId), pc) <- t.stepNames.zip(t.stepOwners).zipWithIndex) {
-        // 格式: <ThreadName> <PC> <StepName> <OwnerID>
-        bw.write(s"${t.name} $pc $stepName $ownerId\n")
-      }
-    }
-    bw.close()
-    println(s"[Kernel] Symbol table dumped to $filename")
-  }
+  //   for (t <- threads) {
+  //     for (((stepName, ownerId), pc) <- t.n.zip(t.stepOwners).zipWithIndex) {
+  //       // 格式: <ThreadName> <PC> <StepName> <OwnerID>
+  //       bw.write(s"${t.name} $pc $stepName $ownerId\n")
+  //     }
+  //   }
+  //   bw.close()
+  //   println(s"[Kernel] Symbol table dumped to $filename")
+  // }
   
  def attachMonitor(): Unit = {
     val nThreads = threads.length
@@ -104,7 +104,7 @@ class Kernel {
     }.toSeq
 
     val pcVec     = VecInit(pc32Seq).asUInt                // [32*N] packed
-    val activeVec = VecInit(threads.map(_.isRunning).toSeq).asUInt 
+    val activeVec = VecInit(threads.map(_.active).toSeq).asUInt 
     val startVec  = VecInit(threads.map(_.startWire).toSeq).asUInt 
     val abortVec  = VecInit(threads.map(_.abortWire).toSeq).asUInt 
     val doneVec   = VecInit(threads.map(_.done).toSeq).asUInt      

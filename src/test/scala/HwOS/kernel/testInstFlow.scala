@@ -100,7 +100,7 @@ class InstThreadCpuModule extends Module {
         fetch.Step("Fetch_Loop") {
            // Greedy Issue Logic
            slots.foreach { slot =>
-             when (!slot.isRunning) {
+             when (!slot.active) {
                 slot.start()
              }
            }
@@ -120,7 +120,7 @@ class InstThreadCpuModule extends Module {
   proc.build()
 
   // Outputs
-  io.activeSlots := VecInit(proc.slots.map(_.isRunning)).asUInt
+  io.activeSlots := VecInit(proc.slots.map(_.active)).asUInt
   io.retiredCount := proc.retiredCounter
 }
 

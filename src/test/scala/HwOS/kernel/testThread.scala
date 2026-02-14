@@ -84,7 +84,7 @@ class ThreadTestModule extends Module {
   proc.build()
 
   io.counterValue := proc.counter
-  io.isRunning    := proc.worker.isRunning
+  io.isRunning    := proc.worker.active
   io.isDone       := proc.worker.done
 }
 

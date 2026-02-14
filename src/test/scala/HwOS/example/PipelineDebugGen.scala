@@ -34,7 +34,7 @@ object PipelineDebugGen extends App {
 
   if (topCaptured != null) {
     new java.io.File("generated").mkdirs()
-    topCaptured.kernel.dumpSymbolTable("generated/hwos.symbols")
+    //topCaptured.kernel.dumpSymbolTable("generated/hwos.symbols")
     println("[Success] Symbol table dumped to generated/hwos.symbols")
   }
 

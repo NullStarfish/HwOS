@@ -148,13 +148,13 @@ class ComplexInstCpuModule extends Module {
              // 简单的发射逻辑：只要 Slot 空闲就发射
              
              // 发射 Slot 0 (Producer)
-             when (!slot0.isRunning) {
+             when (!slot0.active) {
                  slot0.start()
                  printf("[Fetch] Issued Slot 0 (Producer)\n")
              }
 
              // 发射 Slot 1 (Consumer)
-             when (!slot1.isRunning) {
+             when (!slot1.active) {
                  slot1.start()
                  printf("[Fetch] Issued Slot 1 (Consumer)\n")
              }
@@ -171,8 +171,8 @@ class ComplexInstCpuModule extends Module {
   val proc = new ComplexCpuProcess(kernel)
   proc.build()
 
-  io.slot0Active := proc.slot0.isRunning
-  io.slot1Active := proc.slot1.isRunning
+  io.slot0Active := proc.slot0.active
+  io.slot1Active := proc.slot1.active
   io.finishedCount := proc.finishedCounter
   io.resultReg   := phyRegs(7) // 监控 R7
 }
