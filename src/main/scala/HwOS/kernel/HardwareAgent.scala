@@ -127,6 +127,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   private val globals = ArrayBuffer[() => Unit]()
 
   private val activeReg = RegInit(false.B)
+  private val doneReg = RegInit(false.B)
 
   private var pcEntity :UInt = _
   private var _generated = false
@@ -168,7 +169,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
 
   def active: Bool = if (isMealy) (activeReg || startWire) else activeReg
-  def done: Bool = doneWire
+  def done: Bool = doneWire || doneReg
 
 
   def start(): Unit = {
@@ -301,17 +302,22 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       activeReg := false.B
       pc := 0.U
       doneWire := false.B
+      doneReg := false.B
     }
     .elsewhen (active) {
       execAllowed := true.B
       if (isMealy) {
         activeReg := true.B //维持状态
+        doneReg := false.B //保证在mealy的时候，doneReg也能被下拉
       }
 
       when(doneWire) {
         when (startWire) {
           activeReg := true.B
+          doneReg   := false.B // <--- 关键！重启时，强制清除 Done 状态
+          pc := 0.U
         } .otherwise {
+          doneReg := true.B//维持状态
           activeReg := false.B
         }
       }
@@ -321,7 +327,8 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       }
     } .otherwise {
       when (startWire) {
-        activeReg := true.B 
+        activeReg := true.B
+        doneReg := false.B
         pcReg     := 0.U
       }
     }
@@ -341,40 +348,20 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
   
 
-  def prepareThread(name: String)(childBody: => Unit)(callback: => Unit): HardwareThread = {
-    // 1. 检查上下文：必须在 entry 内部定义 (ThreadCtx)
+
+  def fork(name: String)(childBody: HardwareThread => Unit): HardwareThread = {
     ContextScope.current match {
       case ThreadCtx(t) if t == this => // OK
-      case _ => throw new Exception(s"[prepareThread] must be called inside thread entry! (Thread: ${this.name})")
+      case _ => throw new Exception(s"[fork] must be called inside entry! (Thread: ${this.name})")
     }
-
-    // 2. 创建子线程
     val childName = s"${this.name.split("/").last}_fork_$name"
-    val child = owner.createThread(childName) // 需确保 createThread 可见性已改为 private[kernel]
+    val child = owner.createThread(childName) 
 
-    // 3. 注入子线程逻辑
     child.entry {
-      childBody
+      childBody(child)
     }
 
-    // 4. 注册回调 (Global/Interrupt)
-    // 依然保留强大的回调机制
-    this.Global {
-      when (child.done) {
-        if (debugEnable) printf(p"[$name] Child $childName finished. Triggering Callback.\n")
-        callback
-      }
-    }
-    
-    // 5. 返回句柄，不生成 Step
     child
-  }
-
-  def fork(name: String)(childBody: => Unit)(callback: => Unit): Unit = {
-    val child = prepareThread(name)(childBody)(callback)
-    this.Step(s"Fork_Kick_$name") {
-      child.start()
-    }
   }
 
 
@@ -411,5 +398,5 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       case _ => {agentPrint("Do not use Global outside entry!!!"); throw new Exception("global outside entry")}
     }
     globals += { () => block } 
-  } //可以用来写全局中断
+  } 
 }
