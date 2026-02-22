@@ -23,7 +23,7 @@ class FunctionHijackModule extends Module {
     val finalRes = RegInit(0.U(32.W))
 
     // 定义使用 Hijack 的硬件函数
-    def FastAlu(op1: UInt, op2: UInt): HwFunction[UInt] = HwFunction[UInt]("FastAlu") { t =>
+    def FastAlu(op1: UInt, op2: UInt): HwFunction[UInt] = HwFunction.thread("FastAlu") { t =>
       val retWire = Wire(UInt(32.W))
       retWire := 0.U 
 

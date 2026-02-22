@@ -3,102 +3,81 @@ package HwOS.stdlib
 import chisel3._
 import chisel3.util._
 import HwOS.kernel._
-import HwOS.kernel.HwOSLanguage._
 
 object sync {
 
-  def Lock(locked: Bool): HwFunction[Unit] = HwFunction[Unit]("Mutex_Lock") { agent =>
-    ContextScope.current match {
-      case AtomicCtx(t) =>
-        t.waitCondition(!locked)
-        when(!locked) {
-          locked <== true.B
-          t.Next.hijack()
-        }
-        () // [修复] 显式返回 Unit，压制 when 产生的 WhenContext
-
-      case _ => throw new Exception(s"[stdlib.sync] Lock() 必须在 Step (AtomicCtx) 中调用。Caller: ${agent.name}")
-    }
-  }
-
-  def Unlock(locked: Bool): HwFunction[Unit] = HwFunction[Unit]("Mutex_Unlock") { agent =>
-    ContextScope.current match {
-      case AtomicCtx(t) =>
-        locked <== false.B
-        t.Next.hijack()
-        () // [修复] 显式返回 Unit
-        
-      case LogicCtx(l) =>
-        locked <== false.B
-        () // [修复] 显式返回 Unit
-        
-      case _ => throw new Exception(s"[stdlib.sync] Unlock() 上下文错误。Caller: ${agent.name}")
-    }
-  }
-
-  def Acquire(count: UInt): HwFunction[Unit] = HwFunction[Unit]("Sem_Acquire") { agent =>
-    ContextScope.current match {
-      case AtomicCtx(t) =>
-        t.waitCondition(count > 0.U)
-        when(count > 0.U) {
-          count <== count - 1.U
-          t.Next.hijack()
-        }
-        () // [修复] 显式返回 Unit
-        
-      case _ => throw new Exception(s"[stdlib.sync] Acquire() 必须在 Step 中调用。Caller: ${agent.name}")
-    }
-  }
-
-  def Release(count: UInt): HwFunction[Unit] = HwFunction[Unit]("Sem_Release") { agent =>
-    ContextScope.current match {
-      case AtomicCtx(t) =>
-        count <== count + 1.U
-        t.Next.hijack()
-        () // [修复] 显式返回 Unit
-        
-      case LogicCtx(l) =>
-        count <== count + 1.U
-        () // [修复] 显式返回 Unit
-        
-      case _ => throw new Exception(s"[stdlib.sync] Release() 上下文错误。Caller: ${agent.name}")
-    }
-  }
-
-  // Add, Done, Wait 等逻辑也是同样的修改模式，在末尾加上 () 即可
-  def Add(wgCounter: UInt, delta: UInt): HwFunction[Unit] = HwFunction[Unit]("WG_Add") { agent =>
-    ContextScope.current match {
-      case AtomicCtx(t) =>
-        wgCounter <== wgCounter + delta
-        t.Next.hijack()
-        ()
-      case LogicCtx(l) =>
-        wgCounter <== wgCounter + delta
-        ()
-      case _ => throw new Exception("...")
-    }
-  }
-
-  // 对于带有明确返回值的 HwFunction (比如 Select 返回 UInt)，则不需要加 ()
-  def Select(readySignals: Seq[Bool]): HwFunction[UInt] = HwFunction[UInt]("Select") { agent =>
-    val selectedIdx = WireInit(0.U(log2Ceil(readySignals.length max 2).W))
-
-    ContextScope.current match {
-      case AtomicCtx(t) =>
-        val anyReady = readySignals.reduce(_ || _)
-        t.waitCondition(anyReady)
-        when(anyReady) {
-          selectedIdx := PriorityEncoder(readySignals)
-          t.Next.hijack()
-        }
-        // 这里不需要 ()，因为最后一行要返回 selectedIdx
-
-      case LogicCtx(l) =>
-        selectedIdx := PriorityEncoder(readySignals)
-
-      case _ => throw new Exception("...")
-    }
+  // ==========================================
+  // 1. 硬件 Mutex (内建优先级仲裁器)
+  // ==========================================
+  class Mutex(val maxClients: Int) {
+    private val locked = RegInit(false.B)
     
-    selectedIdx // 最后一行为返回值 UInt，类型匹配，编译通过
+    // 分布式请求线与释放线
+    private val reqs = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
+    private val unlocks = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
+
+    // 组合逻辑结算中心 (Arbiter)
+    private val anyUnlock = unlocks.reduce(_ || _)
+    private val anyReq    = reqs.reduce(_ || _)
+    private val winnerIdx = PriorityEncoder(reqs) // 优先级仲裁
+
+    // 状态机流转
+    when(anyUnlock) {
+      locked := false.B
+    } .elsewhen(anyReq && !locked) {
+      locked := true.B
+    }
+
+    // Client 调用的 HwFunction：传入自己唯一的 ID 以接入仲裁线
+    def Lock(id: Int): HwFunction[Unit] = HwFunction.atomic(s"Mutex_Lock_$id") { t =>
+      reqs(id) := true.B
+      // 核心：锁不仅要空闲，我还必须是仲裁胜出者！
+      val canAcquire = !locked && (winnerIdx === id.U)
+      
+      t.waitCondition(canAcquire)
+      when(canAcquire) {
+        t.Next.hijack()
+      }
+      ()
+    }
+
+    def Unlock(id: Int): HwFunction[Unit] = HwFunction.stateless(s"Mutex_Unlock_$id") { _ =>
+      unlocks(id) := true.B
+    }
+  }
+
+  // ==========================================
+  // 2. 硬件 WaitGroup (内建当拍加法树)
+  // ==========================================
+  class WaitGroup(val maxClients: Int) {
+    private val count = RegInit(0.U(32.W))
+    
+    // 每条线程有独立的加减通道，彻底解决 lastConnect 数据践踏
+    private val adds  = WireInit(VecInit(Seq.fill(maxClients)(0.U(32.W))))
+    private val dones = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
+
+    // 当拍结算中心 (加法树与 PopCount)
+    private val totalAdd  = adds.reduce(_ + _)
+    private val totalDone = PopCount(dones)
+    
+    // 窥探下一拍的值，保证当拍归零时能立刻解锁
+    private val nextCount = count + totalAdd - totalDone
+    count := nextCount
+
+    def Add(id: Int, delta: UInt): HwFunction[Unit] = HwFunction.stateless(s"WG_Add_$id") { _ =>
+      adds(id) := delta
+    }
+
+    def Done(id: Int): HwFunction[Unit] = HwFunction.stateless(s"WG_Done_$id") { _ =>
+      dones(id) := true.B
+    }
+
+    def Wait(): HwFunction[Unit] = HwFunction.atomic("WG_Wait") { t =>
+      t.waitCondition(nextCount === 0.U)
+      when(nextCount === 0.U) {
+        t.Next.hijack()
+      }
+      ()
+    }
   }
 }

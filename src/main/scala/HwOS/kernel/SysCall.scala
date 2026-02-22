@@ -1,6 +1,7 @@
 package HwOS.kernel
 
 import chisel3._
+import scala.util.Try // 引入 Try
 
 object SysCall {
 
@@ -78,8 +79,14 @@ object SysCall {
   // ==========================================
   // 内部鉴权方法 (纯粹基于 HwOwner 模型)
   // ==========================================
-  private def checkLifecyclePermission(target: HardwareThread, action: String): Unit = {
-    // 获取当前试图执行控制流的执行者 (HwOwner 身份)
+  def checkLifecyclePermission(target: HardwareThread, action: String): Unit = {
+    val contextOpt = Try(ContextScope.current).toOption
+
+    // 顶层 Module 或 Testbench 的上帝视角，直接放行
+    if (contextOpt.isEmpty) {
+      return
+    }
+
     val currentActor: HwOwner = ContextScope.current match {
       case ThreadCtx(t) => t
       case AtomicCtx(t) => t
@@ -87,14 +94,12 @@ object SysCall {
       case _ => throw new Exception(s"[HwOS Security] Cannot $action outside of a valid Agent context.")
     }
 
-    // 鉴权逻辑变得极其纯粹：
-    // 1. currentActor 是否是目标线程的领主？(比如 Process 实例本身)
-    val isOwner = (target.owner == currentActor)
-    // 2. currentActor 是否被显式授予了生命周期控制权？(包含 Fork 带来的授权)
+    // 鉴权逻辑变得极其纯粹，仅需一次 Set 查找 O(1)
     val isGranted = target.grantedLifecycle.contains(currentActor)
 
-    if (!isOwner && !isGranted) {
+    if (!isGranted) {
       throw new Exception(s"[HwOS SegFault] Access Denied! Agent '${currentActor.name}' lacks lifecycle permission to $action Thread '${target.name}'. Requires explicit grantLifecycle().")
     }
+
   }
 }

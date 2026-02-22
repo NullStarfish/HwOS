@@ -20,10 +20,12 @@ class FunctionReturnTestModule extends Module {
     // --- 定义一个带返回值的 HwFunction ---
     // 输入：n (计算第几项)
     // 输出：HwFunction[UInt] (返回一个 32位 UInt，指向结果寄存器)
-    def Fibonacci(n: Int): HwFunction[UInt] = HwFunction[UInt](s"Fib$n") { t =>
+    def Fibonacci(n: Int): HwFunction[UInt] = HwFunction.thread(s"Fib$n") { t =>
       
       // 在函数内部定义局部硬件资源
       // 这些资源只会在 Call 的时候被实例化
+
+
       val a = RegInit(0.U(32.W))
       val b = RegInit(1.U(32.W))
       val count = RegInit(0.U(32.W))

@@ -11,26 +11,17 @@ trait HwOwner {
   def name: String 
 
   // 资源授权表：我拥有的某个信号 -> 允许谁来写
+  private[kernel] val ownedSignals = scala.collection.mutable.Set[Data]()
   private[kernel] val grantedSignals = mutable.Map[Data, mutable.Set[HwOwner]]()
-  
-  // 生命周期授权表：允许谁来杀我/启动我 (如果是 Thread 的话)
   private[kernel] val grantedLifecycle = mutable.Set[HwOwner]()
 
-  /**
-   * 声明资源所有权
-   * @param signal 裸的 Chisel Data (Wire/Reg/IO)
-   * @return 原样返回，方便链式调用
-   */
   def own[T <: Data](signal: T): T = {
+    ownedSignals += signal
     ResourceManager.registerOwner(signal, this)
     signal
   }
+  private[kernel] def getAllOwnedSignals(): Iterable[Data] = ownedSignals
 
-  /**
-   * 数据写入授权
-   * @param signal 必须是我 own 的信号
-   * @param target 被授权的实体 (如某个 Thread)
-   */
   def grant(signal: Data, target: HwOwner): Unit = {
     val currentGrants = grantedSignals.getOrElseUpdate(signal, mutable.Set[HwOwner]())
     currentGrants += target
