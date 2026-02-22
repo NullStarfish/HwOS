@@ -5,7 +5,7 @@ import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
 
 //命名永远让上一级来命名
-abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val parent: Option[HwProcess])(kernel: Kernel) {
+abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val parent: Option[HwProcess])(kernel: Kernel) extends HwOwner {
   
   private val threads = ArrayBuffer[HardwareThread]()
   private val logics  = ArrayBuffer[HardwareLogic]()

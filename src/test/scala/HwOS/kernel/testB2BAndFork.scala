@@ -50,7 +50,7 @@ class ForkAndB2BModule extends Module {
         // --- 阶段 1: 测试 Fork ---
         // 我们在这里 fork 一个子线程，让它把 sharedReg + 10
         // 注意：fork 返回的是 child 的句柄
-        val child = main.fork("Adder") { t => 
+        val child = SysCall.fork("Adder") { t => 
           t.Step("Add10") {
             sharedReg := sharedReg + 10.U
             t.exit()

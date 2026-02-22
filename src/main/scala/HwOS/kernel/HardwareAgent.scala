@@ -5,7 +5,7 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
 
-trait HardwareAgent {
+trait HardwareAgent extends HwOwner {
   val owner: HwProcess
   val name: String
   val debugEnable: Boolean
@@ -48,7 +48,8 @@ class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boo
   }
 }
 
-class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Boolean = true, val isMealy: Boolean = false) extends HardwareAgent {
+class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Boolean = true, val isMealy: Boolean = false) extends HardwareAgent  {
+  val tls = scala.collection.mutable.Map[String, Any]()
 
   class StepNode(val name: String, val block: () => Unit) {
     var prev: StepNode = _
@@ -345,27 +346,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       }
     }
   }
-
-  
-
-
-  def fork(name: String)(childBody: HardwareThread => Unit): HardwareThread = {
-    ContextScope.current match {
-      case ThreadCtx(t) if t == this => // OK
-      case _ => throw new Exception(s"[fork] must be called inside entry! (Thread: ${this.name})")
-    }
-    val childName = s"${this.name.split("/").last}_fork_$name"
-    val child = owner.createThread(childName) 
-
-    child.entry {
-      childBody(child)
-    }
-
-    child
-  }
-
-
-
 
 
   def waitCondition(cond: Bool): Unit = { 
