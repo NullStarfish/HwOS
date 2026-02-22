@@ -56,26 +56,13 @@ class Kernel {
     override def entry(): Unit = { /* 系统进程不需要跑普通指令，它是逻辑容器 */ }
   }
 
-  private var driverIdAlloc = 1 //0 for users
-  private val drivers = new HashMap[String, PhysicalDriver]()
 
 
 
 
 
-  def mount(driver: PhysicalDriver): Unit = {
-    drivers(driver.meta.name) = driver
 
 
-    driver._driverId = driverIdAlloc
-    println(s"[Kernel] Mounted Driver: ${driver.meta.name} @ ID=${driver._driverId}")
-    driverIdAlloc += 1
-    
-
-
-  }
-
-  def hasDriver(name: String): Boolean = drivers.contains(name)
 
   
 

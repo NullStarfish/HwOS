@@ -10,7 +10,6 @@ trait HardwareAgent extends HwOwner {
   val name: String
   val debugEnable: Boolean
 
-  protected val managedSignals = LinkedHashMap[Data, (Data, Data)]()
 
   def agentPrint(p:Printable): Unit = {
     if (debugEnable) {
@@ -23,26 +22,12 @@ trait HardwareAgent extends HwOwner {
     }
   }
 
-  def driveManaged[T <: Data](target: T, idle: T, default: T): T = {
-    val proxy = Wire(chiselTypeOf(target))
-    managedSignals(proxy) = (idle, default) 
-    
-    if (this.isInstanceOf[HardwareThread]) {
-        val t = this.asInstanceOf[HardwareThread]
-        target := Mux(t.active, proxy, idle)
-    } else {
-        target := proxy
-    }
-    proxy
-  }
 
-  def driveManaged[T <: Data](target: T, default: T): T = driveManaged(target, default, default)
 }
 
 class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boolean = true) extends HardwareAgent {
   def run(block: => Unit): Unit = {
     ContextScope.withContext(LogicCtx(this)) {
-      managedSignals.foreach { case (proxy, (_, default)) => proxy := default }
       block
     }
   }
@@ -151,20 +136,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     pcEntity
   }
   
-  override def driveManaged[T <: Data](target: T, idle: T, default: T): T = {
-    val proxy = Wire(chiselTypeOf(target))
-    managedSignals(proxy) = (idle, default) 
-    
-    if (this.isInstanceOf[HardwareThread]) {
-        val t = this.asInstanceOf[HardwareThread]
-        // 只有在 (Running AND !Abort) 时，才允许输出 proxy
-        // 如果 abortWire 拉高，强制输出 idle (通常是 false/0)
-        target := Mux(t.active && !t.abortWire, proxy, idle)
-    } else {
-        target := proxy
-    }
-    proxy
-  }
+
 
 
 
@@ -264,7 +236,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
 
 
-    managedSignals.foreach { case (proxy, (_, default)) => proxy := default }
 
 
 
@@ -345,6 +316,9 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
         this.pc := this.pc
       }
     }
+
+
+
   }
 
 

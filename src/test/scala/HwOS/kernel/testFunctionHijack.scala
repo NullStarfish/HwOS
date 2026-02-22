@@ -46,7 +46,7 @@ class FunctionHijackModule extends Module {
 
         // --- 调用 FastAlu ---
         // 这将生成 "CalcAndForward" Step，并吞噬下一个 Step
-        val result = SysCall.Call(main, FastAlu(10.U, 20.U))
+        val result = SysCall.Call(FastAlu(10.U, 20.U))
 
         // --- WriteBack Step ---
         // 正常情况下这是独立的 PC，但被 hijack 后，它通过组合逻辑直接连接到了 CalcAndForward

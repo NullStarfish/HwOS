@@ -12,7 +12,7 @@ trait HwFunction[T] {
    * @param self 这段代码将在哪个线程上展开 (Target Thread)
    * @return 生成的硬件结果 (The hardware artifact created by this function)
    */
-  def emit(self: HardwareThread): T 
+  def emit(self: HardwareAgent): T 
 }
 
 // 伴生对象：提供语法糖
@@ -21,10 +21,10 @@ object HwFunction {
    * 定义带返回值的函数
    * val myTask = HwFunction("MyTask") { t => ...; resultReg }
    */
-  def apply[T](funcName: String)(block: HardwareThread => T): HwFunction[T] = {
+  def apply[T](funcName: String)(block: HardwareAgent => T): HwFunction[T] = {
     new HwFunction[T] {
       override def name: String = funcName
-      override def emit(self: HardwareThread): T = block(self)
+      override def emit(self: HardwareAgent): T = block(self)
     }
   }
 }

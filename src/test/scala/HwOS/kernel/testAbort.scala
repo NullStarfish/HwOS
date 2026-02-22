@@ -3,134 +3,121 @@ package HwOS.kernel
 import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
-import HwOS.kernel._ 
+import HwOS.kernel._
+import HwOS.kernel.HwOSLanguage._ // 引入 <== 安全赋值操作符
 
-class MonitorBundle extends Bundle {
-  val valid = Output(Bool())
-  val data  = Output(UInt(32.W))
-}
-
-class MonitorDriver(io: MonitorBundle, kernel: Kernel) extends PhysicalDriver(
-  DriverMeta("Monitor", ScalarResource, 1, 1, 0)
-) {
-  io.valid := false.B
-  io.data  := 0.U
-  /*这个默认值是必须的，每个驱动都必须赋默认值*/
-
-  def fire(value: UInt): Unit = {
-    ContextScope.current match {
-      case ThreadCtx(t) => 
-        t.Step("Fire") {
-          io.valid := true.B
-          io.data  := value
-        }
-      case AtomicCtx(t) => 
-        io.valid := true.B
-        io.data  := value
-      case _ =>
-    }
-  }
-}
-
-class AbortTestModule extends Module {
+class AbortSafetyTestModule extends Module {
   val io = IO(new Bundle {
-    val start      = Input(Bool())
-    val kill       = Input(Bool())
-    val threadPC   = Output(UInt(32.W))
-    val isActive   = Output(Bool())
-    val monitorVal = Output(Bool())
-    val callbackHit= Output(Bool())
+    val start     = Input(Bool())
+    val doAbort   = Input(Bool())
+    val outSignal = Output(UInt(32.W))
+    val isAlive   = Output(Bool())
   })
 
   val kernel = new Kernel()
-  val monitorWire = Wire(new MonitorBundle)
-  val monitor     = new MonitorDriver(monitorWire, kernel)
-  kernel.mount(monitor)
 
-  class TestProcess(k: Kernel) extends HwProcess("AbortProc", debugEnable = true, parent = None)(k) {
-    val victim = createThread("Victim")
-    val callbackFlag = RegInit(false.B)
+  class TestProc(k: Kernel) extends HwProcess("Proc", debugEnable = true, parent = None)(k) {
+    val manager = createThread("Manager")
+    val worker  = createThread("Worker")
 
-    when(io.start) { victim.start() }
-    when(io.kill)  { victim.abort() }
+    // 使用 Wire 作为外部信号，以观测当拍的组合逻辑坍缩
+    val extSignal = Wire(UInt(32.W))
+    extSignal := 0.U // 默认挂起值为 0
+
+    // 1. 数据所有权声明与授权
+    manager.own(extSignal)
+    manager.grant(extSignal, worker)
+    
+    // 2. 生命周期授权：允许 Manager 跨线程处决 Worker
+    worker.grantLifecycle(manager)
 
     override def entry(): Unit = {
-      victim.entry {
-        // [Step 0] Run
-        victim.Step("Run_0") {
-          // just running
+      manager.entry {
+        manager.Step("StartWorker") {
+           worker.start()
         }
-
-        // [Step 1] Fire (这里我们会尝试杀掉它)
-        victim.Step("Run_1_Fire") {
-          monitor.fire(0xDEAD.U)
+        manager.Step("Monitor") {
+           // 当外部输入 doAbort 拉高时，执行处决
+           manager.waitAndAct(io.doAbort) {
+              SysCall.kill(worker)
+              manager.exit()
+           }
         }
+      }
 
-        // [Step 2] Exit
-        victim.Step("Run_2_Exit") {
-          victim.exit()
+      worker.entry {
+        worker.Step("Working") {
+           // 这里的 <== 会被展开为：
+           // extSignal := Mux(worker.active && !worker.abortWire, 42.U, 0.U)
+           extSignal <== 42.U
+           
+           // 故意卡死，模拟长周期的独占输出
+           worker.waitCondition(false.B) 
         }
-
-        victim.Global {
-          when(victim.done) {
-            printf("[System] Callback Triggered! (Should NOT happen if aborted)\n")
-            callbackFlag := true.B
-          }
+        worker.Step("exit") {
+          worker.exit()
         }
       }
     }
   }
-
-  val proc = new TestProcess(kernel)
+  
+  val proc = new TestProc(kernel)
   proc.build()
 
-  io.threadPC    := proc.victim.pc
-  io.isActive    := proc.victim.active
-  io.monitorVal  := monitorWire.valid
-  io.callbackHit := proc.callbackFlag
+  when(io.start) { proc.manager.start() }
+
+  io.outSignal := proc.extSignal
+  io.isAlive   := proc.worker.active
 }
 
-class AbortTest extends AnyFlatSpec {
-  "HardwareThread" should "abort immediately and suppress outputs" in {
-    simulate(new AbortTestModule) { c =>
-      println("\n=== Abort Test Start ===")
+class AbortSafetySpec extends AnyFlatSpec {
+  "HwOS <==" should "immediately pull down external signals in the same cycle upon abort" in {
+    simulate(new AbortSafetyTestModule) { c =>
+      println("\n=== Abort Safety & Signal Collapse Test ===")
       
       c.reset.poke(true.B)
       c.clock.step()
       c.reset.poke(false.B)
 
-      // 1. Start
+      // 1. 发送启动脉冲
       c.io.start.poke(true.B)
       c.clock.step()
       c.io.start.poke(false.B)
+
+      // 2. 等待 Worker 进入 Working 状态 (大概需要 2 拍)
+      c.clock.step(2)
       
-      // Step 0
-      c.io.isActive.expect(true.B)
-      c.io.threadPC.expect(0.U)
+      // 此时 Worker 应该活跃，且输出 42
+      println(s"[Phase 1] Worker isAlive: ${c.io.isAlive.peek().litValue}")
+      println(s"[Phase 1] ExtSignal Out:  ${c.io.outSignal.peek().litValue}")
+      c.io.isAlive.expect(true.B)
+      c.io.outSignal.expect(42.U)
+
+      // 3. 触发 Abort (纯组合逻辑观察)
+      println("\n[Phase 2] Asserting doAbort (Combinational Test)...")
+      c.io.doAbort.poke(true.B)
+      
+      // 【核心断言】我们不跨越时钟边界 (不执行 c.clock.step())，直接 peek
+      // 由于 Manager 监控到了 doAbort 并执行 SysCall.kill(worker)
+      // worker.abortWire 会在当拍立即被拉高。
+      // <== 操作符里的 Mux(t.active && !t.abortWire, ...) 会立刻将输出切断回 0。
+      val signalDuringAbort = c.io.outSignal.peek().litValue
+      println(s"[Phase 2] ExtSignal Output in the SAME CYCLE: $signalDuringAbort")
+      
+      c.io.outSignal.expect(0.U) // 必须立刻跌回 0，不能有哪怕一拍的毛刺
+
+      // 4. 步进时钟，观察寄存器状态的结算
       c.clock.step()
+      c.io.doAbort.poke(false.B)
+      
+      println(s"\n[Phase 3] Next Cycle isAlive: ${c.io.isAlive.peek().litValue}")
+      println(s"[Phase 3] Next Cycle ExtSignal Out: ${c.io.outSignal.peek().litValue}")
+      
+      // Worker 应该已经彻底下线，信号继续保持为 0
+      c.io.isAlive.expect(false.B)
+      c.io.outSignal.expect(0.U)
 
-      // 2. Step 1 (Attempt Fire) + KILL
-      println("[Test] Step 1 Running... KILLING IT NOW!")
-      c.io.threadPC.expect(1.U)
-      
-      // 在这一拍同时拉高 Kill
-      c.io.kill.poke(true.B)
-      
-      // 检查：monitorVal 应该被 driveManaged 强制拉低为 false
-      // 尽管代码里写了 io.valid := true.B
-      c.io.monitorVal.expect(false.B) 
-      
-      c.clock.step()
-
-      // 3. Check Dead
-      c.io.kill.poke(false.B)
-      c.io.isActive.expect(false.B) // 应该变回 idle
-      c.io.threadPC.expect(0.U)     // PC 归零
-
-      // 4. Check No Callback
-      c.io.callbackHit.expect(false.B)
-      
-      println("=== Abort Test Passed ===\n")
+      println("=== Test Passed: Strict Cycle-Level Abort Safety Verified ===\n")
     }
   }
 }

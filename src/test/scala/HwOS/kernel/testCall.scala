@@ -60,7 +60,7 @@ class FunctionReturnTestModule extends Module {
         // --- 调用函数并捕获返回值 ---
         // fibRes 就是 Fibonacci 函数内部定义的 `result` 寄存器
         // 这一步是 "编译期" 链接，直接拿到了那个寄存器的引用
-        val fibRes: UInt = SysCall.Call(main, Fibonacci(5))
+        val fibRes: UInt = SysCall.Call(Fibonacci(5))
 
         // 在后续的 Step 中使用返回值
         main.Step("ReadResult") {

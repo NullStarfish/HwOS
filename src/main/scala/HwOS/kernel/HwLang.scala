@@ -29,15 +29,10 @@ object HwOSLanguage {
       }
 
       // 3. 执行物理连线 (依然是由 currentActor 来施加 active/abort 保护)
-      val idleValue = 0.U.asTypeOf(target)
       ContextScope.getCurrentAgent() match {
         case t: HardwareThread =>
-          if (ownerOpt.contains(currentActor)) {
-             target := Mux(t.active, data, idleValue) // 内部资源：省 Mux
-          } else {
-             if (reqAbort) target := Mux(t.active && !t.abortWire, data, idleValue)
-             else          target := Mux(t.active, data, idleValue)
-          }
+          val valid = if (reqAbort) (t.active && !t.abortWire) else t.active
+          when (valid) {target := data}
         case l: HardwareLogic =>
           target := data
       }

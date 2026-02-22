@@ -12,10 +12,10 @@ object SysCall {
    * 硬件函数调用：纯粹的代码内联展开，不涉及生命周期权限。
    * 目标线程在此过程中直接获取生成的逻辑所属权。
    */
-  def Call[T](t: HardwareThread, func: HwFunction[T]): T = {
+  def Call[T](func: HwFunction[T]): T = {
     CallStack.push(func.name)
     try {
-      func.emit(t)
+      func.emit(ContextScope.getCurrentThread())
     } finally {
       CallStack.pop()
     }
