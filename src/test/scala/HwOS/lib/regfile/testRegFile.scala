@@ -1,0 +1,152 @@
+package HwOS.lib.regfile
+
+import chisel3._
+import chisel3.simulator.EphemeralSimulator._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import HwOS.kernel._
+import HwOS.kernel.HwOSLanguage._
+import HwOS.lib.regfile.RegfileLib._
+// ---------------------------------------------------------
+// 1. 客户端微服务 (模拟乱序/流水线访问)
+// ---------------------------------------------------------
+class PipelineClientProcess(n: String, d: Boolean, p: Option[HwProcess], k: Kernel) extends HwProcess(n, d, p)(k) {
+
+  // 1. 孵化 Scoreboard 记分板寄存器堆
+  val regfile = spawn("ScoreboardRF") { (cn, cd, cp, ck) =>
+    new ScoreboardRegfileProcess(depth = 32, width = 32, maxWriters = 2, zeroReg = true, cn, cd, cp, ck)
+  }
+
+  val producer = createThread("ProducerInstr")
+  val consumer = createThread("ConsumerInstr")
+
+  // 业务状态与统计
+  val resultReg    = RegInit(0.U(32.W))
+  val stallCounter = RegInit(0.U(32.W)) // 记录 Consumer 被阻塞的拍数
+  val flagReserved = RegInit(false.B)   // 用于同步：确保 Producer 先占位
+
+  this.own(resultReg); this.grant(resultReg, consumer)
+  this.own(stallCounter)
+  this.own(flagReserved); this.grant(flagReserved, producer)
+
+  producer.grantLifecycle(this)
+  consumer.grantLifecycle(this)
+
+  override def entry(): Unit = {
+    // 守护进程：当 Consumer 处于活跃且正在等待时，累加 Stall 计数
+    val stallTracker = createLogic("StallTracker")
+    this.grant(stallCounter, stallTracker)
+    stallTracker.run {
+      // .active 表示线程未 exit，flagReserved 表示已经过了握手阶段开始尝试读
+      when(consumer.active && flagReserved) {
+        stallCounter <== stallCounter + 1.U
+      }
+    }
+
+    // --- 生产者：预约 -> 延迟 -> 写回 ---
+    producer.entry {
+      producer.Step("Issue_Reserve") {
+        SysCall.Call(regfile.Reserve(portIdx = 0, addr = 5.U))
+        flagReserved <== true.B 
+      }
+      producer.Step("EX_Cycle1") { /* ALU */ }
+      producer.Step("EX_Cycle2") { /* ALU */ }
+      producer.Step("EX_Cycle3") { /* ALU */ }
+      producer.Step("WB_Writeback") {
+        SysCall.Call(regfile.WritebackAndClear(portIdx = 0, addr = 5.U, data = 123.U))
+      }
+      // [修复]：提供一个独立的着陆点供 hijack 跳转
+      producer.Step("Retire") {
+        producer.exit()
+      }
+    }
+
+    // --- 消费者：等待预约 -> 尝试读取 (阻塞) -> 成功读取 -> 退出 ---
+    consumer.entry {
+      consumer.Step("WaitIssue") {
+        consumer.waitCondition(flagReserved)
+        when(flagReserved) { consumer.Next.hijack() }
+      }
+      consumer.Step("ReadOperand") {
+        // GuardedRead 内部的 hijack 现在会安全地跳向下面的 "Retire"
+        val rdata = SysCall.Call(regfile.GuardedRead(addr = 5.U))
+        resultReg <== rdata 
+      }
+      // [修复]：提供一个独立的着陆点
+      consumer.Step("Retire") {
+        consumer.exit()
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------
+// 2. 顶层包装与单元测试
+// ---------------------------------------------------------
+class RegfileIntegrationModule extends Module {
+  val io = IO(new Bundle {
+    val start  = Input(Bool())
+    val result = Output(UInt(32.W))
+    val stalls = Output(UInt(32.W))
+    val done   = Output(Bool())
+  })
+  val kernel = new Kernel()
+  
+  val client = new PipelineClientProcess("PipelineClient", true, None, kernel)
+  client.build()
+
+  when(io.start) {
+    SysCall.start(client.producer)
+    SysCall.start(client.consumer)
+  }
+
+  io.result := client.resultReg
+  io.stalls := client.stallCounter
+  io.done   := client.consumer.done
+}
+
+class ScoreboardSpec extends AnyFlatSpec with Matchers {
+  "ScoreboardRegfileProcess" should "stall consumer thread during RAW hazard and resume after Writeback" in {
+    simulate(new RegfileIntegrationModule) { c =>
+      println("\n=== Scoreboard RAW Hazard Interlock Test ===")
+      
+      c.reset.poke(true.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      // 发射 start 脉冲
+      c.io.start.poke(true.B)
+      c.clock.step()
+      c.io.start.poke(false.B)
+
+      var cycles = 0
+      // 循环等待 done 信号拉高
+      while (c.io.done.peek().litValue == 0 && cycles < 20) {
+        c.clock.step()
+        cycles += 1
+      }
+
+      // 【核心修复】：done 拉高说明最后一步的赋值已经发起，
+      // 但我们需要再步进 1 拍，让 resultReg <== 123.U 真正打入 D 触发器！
+      c.clock.step()
+      cycles += 1
+
+      println(s"Test finished in $cycles cycles.")
+      
+      val readResult = c.io.result.peek().litValue
+      val stallTicks = c.io.stalls.peek().litValue
+      
+      println(s"Consumer Read Result: $readResult (Expected: 123)")
+      println(s"Consumer Stall Cycles: $stallTicks (Expected: ~3)")
+
+      // 断言：现在你一定能读出 123 了！
+      c.io.result.expect(123.U)
+      
+      // 只要 stallTicks > 2，就说明 Consumer 被流水线计分板完美死锁拦截了
+      assert(stallTicks > 2, "Consumer was not stalled by the Scoreboard!")
+      c.io.done.expect(true.B)
+
+      println("=== Test Passed: Scoreboard successfully handled RAW Hazard! ===\n")
+    }
+  }
+}
