@@ -6,7 +6,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel._
 import HwOS.kernel.HwOSLanguage._
 
-class SyncProcess(k: Kernel) extends HwProcess("SyncProc", debugEnable = true, parent = None)(k) {
+class SyncProcess(name: String, debugEnable: Boolean, parent: Option[HwProcess])(k: Kernel) extends HwProcess(name, debugEnable, parent)(k) {
   val main    = createThread("Main")
   val worker1 = createThread("Worker1")
   val worker2 = createThread("Worker2")
@@ -85,7 +85,7 @@ class SyncIntegrationModule extends Module {
     this.own(io.finalCount); this.own(io.allDone)
 
 
-    val sync = spawn("Sync")((n, d, p, k) => new SyncProcess(k))
+    val sync = spawn("Sync")((n, d, p, k) => new SyncProcess(n, d, p)(k))
 
     val daemon = createLogic("daemon")
     grant(io.finalCount, daemon); grant(io.allDone, daemon)
