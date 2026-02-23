@@ -150,11 +150,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   val OP_EXIT  = this.own(WireInit(false.B))
 
 
-  def grantLifecycle(target: HwOwner): Unit = {
-    this.grant(OP_ABORT, target)
-    this.grant(OP_START, target)
-    this.grant(OP_EXIT, target)
-  }
 
 
   def start(): Unit = {
@@ -255,27 +250,27 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
 
 
-    // if (debugEnable) {
-    //   val wasActive = RegNext(active)
-    //   val lastPc    = RegNext(pcReg)
-    //   val watchDog  = RegInit(0.U(32.W))
-    //   when (!wasActive && active) { agentPrint("--- ONLINE ---") }
-    //   when (wasActive && !active) { agentPrint("--- OFFLINE ---") }
-    //   val justStarted = active && !wasActive
-    //   when ((active && pcReg =/= lastPc) || justStarted) {
-    //     for ((name, idx) <- stepNames.zipWithIndex) {
-    //       when (pcReg === idx.U) { agentPrint(s"EXEC [PC $idx] $name") }
-    //     }
-    //   }
-    //   when (active && (pc === lastPc)) {
-    //     watchDog := watchDog + 1.U
-    //   } .otherwise {
-    //     watchDog := 0.U
-    //   }
-    //   when(watchDog >= 1000.U) {
-    //     //assert (false.B, "Detected dead lock! ")
-    //   }
-    // }
+    if (debugEnable) {
+      val wasActive = RegNext(active)
+      val lastPc    = RegNext(pcReg)
+      val watchDog  = RegInit(0.U(32.W))
+      when (!wasActive && active) { agentPrint("--- ONLINE ---") }
+      when (wasActive && !active) { agentPrint("--- OFFLINE ---") }
+      val justStarted = active && !wasActive
+      when ((active && pcReg =/= lastPc) || justStarted) {
+        for ((name, idx) <- nodes.map(_.name).zipWithIndex) {
+          when (pcReg === idx.U) { agentPrint(s"EXEC [PC $idx] $name") }
+        }
+      }
+      when (active && (pc === lastPc)) {
+        watchDog := watchDog + 1.U
+      } .otherwise {
+        watchDog := 0.U
+      }
+      when(watchDog >= 1000.U) {
+        //assert (false.B, "Detected dead lock! ")
+      }
+    }
 
 
 

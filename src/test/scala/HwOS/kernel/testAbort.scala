@@ -29,7 +29,7 @@ class AbortSafetyTestModule extends Module {
     manager.grant(extSignal, worker)
     
     // 2. 生命周期授权：允许 Manager 跨线程处决 Worker
-    worker.grantLifecycle(manager)
+    worker.grantLifecycle(worker, manager)
 
     override def entry(): Unit = {
       manager.entry {

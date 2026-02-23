@@ -90,18 +90,41 @@ class RegfileIntegrationModule extends Module {
     val done   = Output(Bool())
   })
   val kernel = new Kernel()
+  io.result := DontCare; io.stalls := DontCare; io.done := DontCare
   
-  val client = new PipelineClientProcess("PipelineClient", true, None, kernel)
-  client.build()
 
-  when(io.start) {
-    SysCall.start(client.producer)
-    SysCall.start(client.consumer)
+  object Init extends HwProcess("Init", true, None)(kernel) {
+    this.own(io.result)
+    this.own(io.stalls)
+    this.own(io.done)
+    val daemon = createLogic("Init")
+
+    val client = spawn("ClientProc") { (n, d, p, kr) => 
+      new PipelineClientProcess(n, d, p, kr) 
+    }
+
+    override def entry(): Unit = {
+
+      this.grant(io.result, daemon)
+      this.grant(io.stalls, daemon)
+      this.grant(io.done, daemon)
+      this.grantLifecycle(client.producer, daemon)
+      this.grantLifecycle(client.consumer, daemon)
+      daemon.run {
+        when(io.start) {
+          SysCall.start(client.producer)
+          SysCall.start(client.consumer)
+        }
+
+        io.result <== client.resultReg
+        io.stalls <== client.stallCounter
+        io.done <== client.consumer.done
+      }
+    }
   }
 
-  io.result := client.resultReg
-  io.stalls := client.stallCounter
-  io.done   := client.consumer.done
+
+  Init.build()
 }
 
 class ScoreboardSpec extends AnyFlatSpec with Matchers {
