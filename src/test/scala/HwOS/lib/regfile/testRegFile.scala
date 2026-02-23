@@ -10,12 +10,12 @@ import HwOS.lib.regfile.RegfileLib._
 // ---------------------------------------------------------
 // 1. 客户端微服务 (模拟乱序/流水线访问)
 // ---------------------------------------------------------
-class PipelineClientProcess(n: String, d: Boolean, p: Option[HwProcess], k: Kernel) extends HwProcess(n, d, p)(k) {
+class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
 
   // 1. 孵化 Scoreboard 记分板寄存器堆
-  val regfile = spawn("ScoreboardRF") { (cn, cd, cp, ck) =>
-    new ScoreboardRegfileProcess(depth = 32, width = 32, maxWriters = 2, zeroReg = true, cn, cd, cp, ck)
-  }
+  val regfile = spawn(
+    new ScoreboardRegfileProcess(depth = 32, width = 32, maxWriters = 2, zeroReg = true, localName = "ScoreBoard")
+  )
 
   val producer = createThread("ProducerInstr")
   val consumer = createThread("ConsumerInstr")
@@ -89,19 +89,19 @@ class RegfileIntegrationModule extends Module {
     val stalls = Output(UInt(32.W))
     val done   = Output(Bool())
   })
-  val kernel = new Kernel()
+  implicit val kernel: Kernel = new Kernel()
   io.result := DontCare; io.stalls := DontCare; io.done := DontCare
   
-
-  object Init extends HwProcess("Init", true, None)(kernel) {
+  
+  object Init extends HwProcess("Init") {
     this.own(io.result)
     this.own(io.stalls)
     this.own(io.done)
     val daemon = createLogic("Init")
 
-    val client = spawn("ClientProc") { (n, d, p, kr) => 
-      new PipelineClientProcess(n, d, p, kr) 
-    }
+    val client = spawn(
+      new PipelineClientProcess("PpClient")
+    )
 
     override def entry(): Unit = {
 
@@ -122,7 +122,6 @@ class RegfileIntegrationModule extends Module {
       }
     }
   }
-
 
   Init.build()
 }

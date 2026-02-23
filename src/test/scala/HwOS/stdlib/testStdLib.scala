@@ -6,7 +6,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel._
 import HwOS.kernel.HwOSLanguage._
 
-class SyncProcess(name: String, debugEnable: Boolean, parent: Option[HwProcess])(k: Kernel) extends HwProcess(name, debugEnable, parent)(k) {
+class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val main    = createThread("Main")
   val worker1 = createThread("Worker1")
   val worker2 = createThread("Worker2")
@@ -25,8 +25,8 @@ class SyncProcess(name: String, debugEnable: Boolean, parent: Option[HwProcess])
   // 注意：spawn 内部已经自动将 mutex 和 wg 的访问权 grant 给 SyncProcess 了！
   // 构造函数完整传递 n, d, p, kr 以维护进程树
   // ===================================================================
-  val mutex = spawn("MyMutex") { (n, d, p, kr) => new sync.MutexProcess(maxClients = 2, n, d, p, kr) }
-  val wg    = spawn("MyWG")    { (n, d, p, kr) => new sync.WaitGroupProcess(maxClients = 3, n, d, p, kr) }
+  val mutex = spawn( new sync.MutexProcess(maxClients = 2, "Mutex") )
+  val wg    = spawn( new sync.WaitGroupProcess(maxClients = 3, "WG") )
 
   override def entry(): Unit = {
     
@@ -79,13 +79,14 @@ class SyncIntegrationModule extends Module {
 
   io.finalCount := DontCare; io.allDone := DontCare
 
-  val kernel = new Kernel()
+  implicit val kernel: Kernel = new Kernel()
 
-  object Init extends HwProcess("Init", true, None)(kernel) {
+
+  object Init extends HwProcess("Init") {
     this.own(io.finalCount); this.own(io.allDone)
 
 
-    val sync = spawn("Sync")((n, d, p, k) => new SyncProcess(n, d, p)(k))
+    val sync = spawn(new SyncProcess("Sync"))
 
     val daemon = createLogic("daemon")
     grant(io.finalCount, daemon); grant(io.allDone, daemon)

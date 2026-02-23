@@ -11,7 +11,7 @@ object RegfileLib {
   // Layer 1: 基础寄存器堆 (纯物理数据通路)
   // 提供多端口的并发读写，无任何调度与阻塞逻辑
   // ==========================================
-  class BaseRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean = true, n: String, d: Boolean, p: Option[HwProcess], k: Kernel) extends HwProcess(n, d, p)(k) {
+  class BaseRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     
     // 1. 物理核心资产 (整体 own)
     private val regs = this.own(RegInit(VecInit(Seq.fill(depth)(0.U(width.W)))))
@@ -69,10 +69,10 @@ object RegfileLib {
   // Layer 2: 记分板寄存器堆 (带调度拦截器)
   // 组装 BaseRegfile，提供 RAW/WAW/WAR 冲突拦截
   // ==========================================
-  class ScoreboardRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean = true, n: String, d: Boolean, p: Option[HwProcess], k: Kernel) extends HwProcess(n, d, p)(k) {
+  class ScoreboardRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
 
     // 1. 孵化 L1 数据通路 (权限会自动 grant 给当前进程)
-    val baseReg = spawn("Base") { (cn, cd, cp, ck) => new BaseRegfileProcess(depth, width, maxWriters, zeroReg, cn, cd, cp, ck) }
+    val baseReg = spawn(new BaseRegfileProcess(depth, width, maxWriters, zeroReg, "Base"))
 
     // 2. Scoreboard 资产：Busy 表
     private val busyTable = this.own(RegInit(VecInit(Seq.fill(depth)(false.B))))

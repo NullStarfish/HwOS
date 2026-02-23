@@ -11,7 +11,7 @@ object sync {
   // 1. 硬件互斥锁 (Mutex Process)
   // 内建基于优先级编码器的分布式仲裁器
   // ==========================================
-  class MutexProcess(val maxClients: Int, n: String, d: Boolean, p: Option[HwProcess], k: Kernel) extends HwProcess(n, d, p)(k) {
+  class MutexProcess(val maxClients: Int, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     
     private val locked = this.own(RegInit(false.B))
     
@@ -66,7 +66,7 @@ object sync {
   // 2. 硬件信号量 (Semaphore Process)
   // 支持多 Client 并发 Release，但单拍只允许 1 个 Client Acquire 成功
   // ==========================================
-  class SemaphoreProcess(val maxClients: Int, val initialCount: Int, n: String, d: Boolean, p: Option[HwProcess], k: Kernel) extends HwProcess(n, d, p)(k) {
+  class SemaphoreProcess(val maxClients: Int, val initialCount: Int,  localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     
     private val count = this.own(RegInit(initialCount.U(32.W)))
     
@@ -118,7 +118,7 @@ object sync {
   // 3. 硬件等待组 (WaitGroup Process)
   // 内建并发加法树，完美解决多 Worker 同拍 Done 的数据践踏问题
   // ==========================================
-  class WaitGroupProcess(val maxClients: Int, n: String, d: Boolean, p: Option[HwProcess], k: Kernel) extends HwProcess(n, d, p)(k) {
+  class WaitGroupProcess(val maxClients: Int, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     
     private val count = this.own(RegInit(0.U(32.W)))
     

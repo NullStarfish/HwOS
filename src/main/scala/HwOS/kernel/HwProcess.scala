@@ -5,7 +5,44 @@ import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
 
 //命名永远让上一级来命名
-abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val parent: Option[HwProcess])(kernel: Kernel) extends HwOwner {
+
+object ProcessBuilder {
+  private val stack = scala.collection.mutable.Stack[HwProcess]()
+  def push(p: HwProcess): Unit = stack.push(p)
+  def pop(): Unit = stack.pop()
+  def currentParent: Option[HwProcess] = stack.headOption
+}
+
+
+
+
+
+case class ProcEnv(kernel: Kernel, parent: Option[HwProcess], debugEnable: Boolean)
+abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] = None )(implicit val kernel: Kernel) extends HwOwner {
+
+
+
+  val parent: Option[HwProcess] = ProcessBuilder.currentParent
+
+  val debugEnable: Boolean = overrideDebug.getOrElse {
+    parent.map(_.debugEnable).getOrElse(true)
+  }
+
+  // 2. 完美的递归名称生成
+  val name: String = parent match {
+    case Some(p) => if (p.name.isEmpty) localName else s"${p.name}/$localName"
+    case None => localName
+  }
+
+
+  
+  kernel.registerProcess(name, this)
+
+
+  
+
+
+
   
   val threads = ArrayBuffer[HardwareThread]()
   val logics  = ArrayBuffer[HardwareLogic]()
@@ -29,27 +66,30 @@ abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val 
   }
 
 
-  def spawn[T <: HwProcess](name: String)(constructor: (String, Boolean, Option[HwProcess], Kernel) => T): T = {
-    val childFullName = if (this.name.isEmpty) name else s"${this.name}/$name"
-    val child = constructor(childFullName, this.debugEnable, Some(this), kernel)
+  def spawn[T <: HwProcess](child: => T): T = {
+
+    ProcessBuilder.push(this)
+
+
+    val c = child
+
+    ProcessBuilder.pop()
     
-    kernel.registerProcess(childFullName, child)
-    this.children += child
+    this.children += c
+    c.build()
     
-    // 展开子进程的内部逻辑
-    child.build()
-    
-    child.getAllOwnedSignals().foreach { sig =>
-      child.grant(sig, this)
+    // 自动向上兼容的权限二次分发
+    c.getAllOwnedSignals().foreach { sig =>
+      c.grant(sig, this)
     }
 
-    child.threads.foreach { t =>
+    c.threads.foreach { t =>
       t.grant(t.OP_START, this)
       t.grant(t.OP_ABORT, this)
       t.grant(t.OP_EXIT, this)
     }
 
-    child
+    c
   }
   
 

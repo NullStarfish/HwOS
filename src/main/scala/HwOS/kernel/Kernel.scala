@@ -52,9 +52,7 @@ class Kernel {
 
 
 
-  val systemProcess = new HwProcess("KernelSystem", debugEnable=false, parent=None)(this) {
-    override def entry(): Unit = { /* 系统进程不需要跑普通指令，它是逻辑容器 */ }
-  }
+
 
 
 
