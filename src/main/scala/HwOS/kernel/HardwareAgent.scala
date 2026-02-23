@@ -4,6 +4,7 @@ package HwOS.kernel
 import chisel3._
 import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
+import HwOS.kernel.HwOSLanguage.SecureAssign
 
 trait HardwareAgent extends HwOwner {
   val owner: HwProcess
@@ -144,8 +145,20 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   def active: Bool = if (isMealy) (activeReg || startWire) else activeReg
   def done: Bool = doneWire || doneReg
 
+  val OP_START = this.own(WireInit(false.B))
+  val OP_ABORT = this.own(WireInit(false.B))
+  val OP_EXIT  = this.own(WireInit(false.B))
+
+
+  def grantLifecycle(target: HwOwner): Unit = {
+    this.grant(OP_ABORT, target)
+    this.grant(OP_START, target)
+    this.grant(OP_EXIT, target)
+  }
+
 
   def start(): Unit = {
+    OP_START <== true.B
     startWire := true.B
     if (isMealy) {
       assert(pc === 0.U, "mealy should ensure start with pc = 0!")
@@ -153,11 +166,13 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   }
 
   def abort(): Unit = {
+    OP_ABORT <== true.B
     abortWire := true.B
     if (debugEnable) printf(p"[$name] *** ABORT SIGNAL RECEIVED ***\n")
   }
   
   def exit(): Unit = {
+    OP_EXIT <== true.B
     ContextScope.current match {
       case AtomicCtx(t) => {
         if (t != this) throw new Exception("Cannot exit another thread!")

@@ -16,14 +16,15 @@ abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val 
     val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable)
     kernel.registerThread(s"${this.name}/${name}_thread", t)
     threads += t
-    t.grantLifecycle(this) 
+    t.grant(t.OP_START, this)
+    t.grant(t.OP_ABORT, this)
+    t.grant(t.OP_EXIT, this)
     t
   }
   
   protected def createLogic(name: String = "Daemon"): HardwareLogic = {
     val l = new HardwareLogic(s"${this.name}/${name}_logic", this, debugEnable)
     logics += l
-    l.grantLifecycle(this)
     l
   }
 
@@ -42,11 +43,11 @@ abstract class HwProcess(val name: String, val debugEnable: Boolean = true, val 
       child.grant(sig, this)
     }
 
-    // 同样，允许父进程跨越生命周期杀死/控制子进程
-    child.grantLifecycle(this)
-    child.threads.foreach(_.grantLifecycle(this))
-    child.logics.foreach(_.grantLifecycle(this))
-    child.children.foreach(_.grantLifecycle(this))
+    child.threads.foreach { t =>
+      t.grant(t.OP_START, this)
+      t.grant(t.OP_ABORT, this)
+      t.grant(t.OP_EXIT, this)
+    }
 
     child
   }

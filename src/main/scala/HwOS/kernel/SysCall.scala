@@ -38,7 +38,6 @@ object SysCall {
    * 远程杀手：强制中止目标线程 (他杀)
    */
   def kill(target: HardwareThread): Unit = {
-    checkLifecyclePermission(target, "kill")
     target.abort()
   }
 
@@ -46,7 +45,6 @@ object SysCall {
    * 远程启动：唤醒目标线程
    */
   def start(target: HardwareThread): Unit = {
-    checkLifecyclePermission(target, "start")
     target.start()
   }
 
@@ -63,7 +61,9 @@ object SysCall {
     
     // 2. 核心魔法：所有权注册 (Ownership Registration)
     // 父线程显式获得子线程的生命周期控制权，取代隐式的“父子血缘”逻辑
-    child.grantLifecycle(parent)
+    child.grant(child.OP_START, parent)
+    child.grant(child.OP_ABORT, parent)
+    child.grant(child.OP_EXIT, parent)
 
     // 3. 注入逻辑
     child.entry {
@@ -76,30 +76,5 @@ object SysCall {
   }
 
 
-  // ==========================================
-  // 内部鉴权方法 (纯粹基于 HwOwner 模型)
-  // ==========================================
-  def checkLifecyclePermission(target: HardwareThread, action: String): Unit = {
-    val contextOpt = Try(ContextScope.current).toOption
 
-    // 顶层 Module 或 Testbench 的上帝视角，直接放行
-    if (contextOpt.isEmpty) {
-      return
-    }
-
-    val currentActor: HwOwner = ContextScope.current match {
-      case ThreadCtx(t) => t
-      case AtomicCtx(t) => t
-      case LogicCtx(l)  => l
-      case _ => throw new Exception(s"[HwOS Security] Cannot $action outside of a valid Agent context.")
-    }
-
-    // 鉴权逻辑变得极其纯粹，仅需一次 Set 查找 O(1)
-    val isGranted = target.grantedLifecycle.contains(currentActor)
-
-    if (!isGranted) {
-      throw new Exception(s"[HwOS SegFault] Access Denied! Agent '${currentActor.name}' lacks lifecycle permission to $action Thread '${target.name}'. Requires explicit grantLifecycle().")
-    }
-
-  }
 }

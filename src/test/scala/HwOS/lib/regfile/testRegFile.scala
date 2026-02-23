@@ -29,8 +29,7 @@ class PipelineClientProcess(n: String, d: Boolean, p: Option[HwProcess], k: Kern
   this.own(stallCounter)
   this.own(flagReserved); this.grant(flagReserved, producer)
 
-  producer.grantLifecycle(this)
-  consumer.grantLifecycle(this)
+
 
   override def entry(): Unit = {
     // 守护进程：当 Consumer 处于活跃且正在等待时，累加 Stall 计数
