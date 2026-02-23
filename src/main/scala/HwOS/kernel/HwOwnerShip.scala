@@ -39,10 +39,32 @@ private[kernel] object ResourceManager {
   val signalOwners = mutable.Map[Data, HwOwner]()
   
   def registerOwner(signal: Data, owner: HwOwner): Unit = {
-    signalOwners(signal) = owner
+    signalOwners.get(signal) match {
+      case Some(existingOwner) if existingOwner != owner =>
+        throw new Exception(s"[HwOS Ownership Error] Signal ${signal} is already owned by '${existingOwner.name}'. " +
+          s"Cannot be owned by '${owner.name}' simultaneously.")
+      case _ =>
+        signalOwners(signal) = owner
+    }
   }
   
   def getOwner(signal: Data): Option[HwOwner] = {
     signalOwners.get(signal)
+  }
+
+
+  private val driverRegistry = mutable.Map[Data, mutable.Set[HwOwner]]()
+  def recordDrive(signal: Data, actor: HwOwner): Unit = {
+    val drivers = driverRegistry.getOrElseUpdate(signal, mutable.Set[HwOwner]())
+    
+    // 如果已经有别人驱动过这根线，且不是当前这个 actor
+    if (drivers.nonEmpty && !drivers.contains(actor)) {
+      println(s"\u001b[33m[HwOS Warning] lastConnect detected on signal '${signal}'!\u001b[0m")
+      println(s"  Current Actor: ${actor.name}")
+      println(s"  Previous Actor(s): ${drivers.map(_.name).mkString(", ")}")
+      println(s"  Note: The value from '${actor.name}' will override others due to lastConnect priority.")
+    }
+    
+    drivers += actor
   }
 }

@@ -16,6 +16,7 @@ object HwOSLanguage {
         case LogicCtx(l)  => l
         case _ => throw new Exception("[HwOS] <== must be used inside a Thread or Logic entry!")
       }
+      ResourceManager.recordDrive(target, currentActor)
 
       // 2. 编译期鉴权
       val ownerOpt = ResourceManager.getOwner(target)
