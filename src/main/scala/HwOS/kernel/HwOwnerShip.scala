@@ -2,6 +2,7 @@ package HwOS.kernel
 
 import chisel3._
 import scala.collection.mutable
+import HwOS.kernel.HwFunction.apply
 
 // ---------------------------------------------------------
 // 任何可以拥有硬件资源的实体，都必须混入此特质
@@ -11,6 +12,7 @@ trait HwOwner {
 
   // 资源授权表：只认 Data (Signal)，彻底抹除对 Thread/Lifecycle 的特判
   private[kernel] val ownedSignals = mutable.Set[Data]()
+  private[kernel] val signalAccesses = mutable.Set[Data]()
 
   // 宣誓主权
   def own[T <: Data](signal: T): T = {
@@ -25,6 +27,7 @@ trait HwOwner {
   // 注意：我们不禁止一个资源被 grant 给多个实体
   def grant(signal: Data, target: HwOwner): Unit = {
     ResourceManager.delegatePermission(signal, this, target)
+    target.signalAccesses += signal
   }
 
 
@@ -32,6 +35,17 @@ trait HwOwner {
     grant(thread.OP_ABORT, target)
     grant(thread.OP_EXIT, target)
     grant(thread.OP_START, target)
+  }
+}
+
+class HwContext(val self: HwOwner) {
+  val owns = self.ownedSignals
+  val granteds = self.signalAccesses
+}
+
+object HwContext {
+  def apply(self: HwOwner) : HwContext = {
+    new HwContext(self)
   }
 }
 

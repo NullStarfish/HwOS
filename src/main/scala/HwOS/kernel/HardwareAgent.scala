@@ -35,7 +35,7 @@ class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boo
 }
 
 class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Boolean = true, val isMealy: Boolean = false) extends HardwareAgent  {
-  val tls = scala.collection.mutable.Map[String, Any]()
+  val tls = scala.collection.mutable.Map[String, HwContext]() //used for visibility
 
   class StepNode(val name: String, val block: () => Unit) {
     var prev: StepNode = _
