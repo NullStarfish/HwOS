@@ -12,25 +12,20 @@ object sync {
   // 内建基于优先级编码器的分布式仲裁器
   // ==========================================
   class MutexProcess(val maxClients: Int, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-    
+  
     private val locked = this.own(RegInit(false.B))
-    
-    // 分布式请求线与释放线
     private val reqs = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
     private val unlocks = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
 
-    // 1. 进程在实例化时对自己内部的线缆宣誓主权
     for (i <- 0 until maxClients) {
       this.own(reqs(i))
       this.own(unlocks(i))
     }
 
-    // 仲裁结算中心 (纯组合逻辑)
     private val anyUnlock = unlocks.reduce(_ || _)
     private val anyReq    = reqs.reduce(_ || _)
     private val winnerIdx = PriorityEncoder(reqs)
 
-    // 状态机流转
     override def entry(): Unit = {
       val main = createLogic("Main")
       this.grant(locked, main)
@@ -43,23 +38,57 @@ object sync {
       }
     }
 
+    // ==========================================
+    // 发行内核级租约 (Mutex Lease)
+    // ==========================================
+    class MutexLease(val id: Int) extends HwLease {
+      val isHeld = RegInit(false.B)
+      MutexProcess.this.own(isHeld) // 所有权归 MutexProcess
 
-    // --- 高阶 HwFunction 接口 ---
-    def Lock(id: Int): HwFunction[Unit] = HwFunction.atomic(s"Lock_$id") { t =>
-      this.grant(reqs(id), t) 
-      reqs(id) <== true.B // 安全写入
-      val canAcquire = !locked && (winnerIdx === id.U)
-      t.waitCondition(canAcquire)
-      when(canAcquire) {
-        t.Next.hijack() // 时序坍缩
+      override def isActive: Bool = isHeld
+
+      // 1. 获取锁：原来在 MutexProcess 里的逻辑，现在移到这里
+      def Lock(): HwFunction[Unit] = HwFunction.atomic(s"Lock_$id") { t =>
+        MutexProcess.this.grant(reqs(id), t) 
+        reqs(id) <== true.B 
+        val canAcquire = !locked && (winnerIdx === id.U)
+        t.waitCondition(canAcquire)
+
+        when(canAcquire) {
+          MutexProcess.this.grant(isHeld, t)
+          isHeld <== true.B 
+          
+        }
+        
+        // 【核心】：在硬件线程上下文 (PCB) 中注册契约本身
+        t.ctx.registerLease(this)
       }
-      ()
+
+      // 2. 正常释放
+      def Unlock(): HwFunction[Unit] = HwFunction.stateless(s"Unlock_$id") { agent =>
+        MutexProcess.this.grant(unlocks(id), agent)
+        MutexProcess.this.grant(isHeld, agent)
+        
+        unlocks(id) <== true.B 
+        isHeld <== false.B
+      }
+
+      // 3. 内核强杀回收
+      override def forceReclaim(agent: HardwareAgent): Unit = {
+        MutexProcess.this.grant(unlocks(id), agent)
+        MutexProcess.this.grant(isHeld, agent)
+        
+        unlocks(id) <==! true.B   
+        isHeld <==! false.B
+      }
     }
 
-    def Unlock(id: Int): HwFunction[Unit] = HwFunction.stateless(s"Unlock_$id") { agent =>
-      this.grant(unlocks(id), agent) 
-      unlocks(id) <== true.B
-    }
+    // 静态实例化所有锁句柄
+    private val leases = Array.tabulate(maxClients)(i => new MutexLease(i))
+
+    // 对外提供简洁的句柄获取语法糖 ( mutex(id) )
+    def apply(id: Int): MutexLease = leases(id)
+
   }
 
   // ==========================================

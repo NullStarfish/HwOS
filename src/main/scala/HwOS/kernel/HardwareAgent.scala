@@ -181,7 +181,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     }
     
     // 硬件退出逻辑对两种情况都适用
-    pc  := 0.U
     doneWire  := true.B
   }
   
@@ -285,6 +284,10 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       pc := 0.U
       doneWire := false.B
       doneReg := false.B
+
+      ContextScope.withContext(ThreadCtx(this)) {
+        ctx.tearDownLeases()
+      }
     }
     .elsewhen (active) {
       execAllowed := true.B

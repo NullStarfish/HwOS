@@ -3,12 +3,60 @@ package HwOS.kernel
 import chisel3._
 import scala.collection.mutable
 import HwOS.kernel.HwFunction.apply
+import scala.collection.mutable.ArrayBuffer
+
+// ==========================================
+// 核心抽象：硬件租约 (Hardware Lease)
+// 任何有状态的独占性资源，都必须实现此契约
+// ==========================================
+trait HwLease {
+  // 动态状态：当前契约是否正被持有
+  def isActive: Bool 
+  // 内核强杀兜底：硬件上下文在线程 abort 时调用的无条件释放逻辑
+  private[kernel] def forceReclaim(agent: HardwareAgent): Unit 
+}
+
+// ==========================================
+// 升级 HwContext：成为真正的 PCB (进程控制块)
+// ==========================================
+class HwContext(val self: HwOwner) {
+  private[kernel] val owns = scala.collection.mutable.Set[Data]()
+  private[kernel] val granteds = scala.collection.mutable.Set[Data]()
+
+  // 运行时状态契约表 (类似操作系统的文件描述符表)
+  private[kernel] val activeLeases = ArrayBuffer[HwLease]()
+
+  def registerLease(lease: HwLease): Unit = {
+    activeLeases += lease
+  }
+
+  // 内核钩子：展开所有契约的硬件级强制回收连线
+  private[kernel] def tearDownLeases(): Unit = {
+    self match {
+      case agent: HardwareAgent =>
+        activeLeases.foreach { lease =>
+          // 只有当运行时确实持有该锁时，才触发强制释放
+          when(lease.isActive) {
+            lease.forceReclaim(agent)
+          }
+        }
+      case _ =>
+    }
+  }
+}
+
+
+
+
+
 
 // ---------------------------------------------------------
 // 任何可以拥有硬件资源的实体，都必须混入此特质
 // ---------------------------------------------------------
 trait HwOwner {
   def name: String 
+
+  val ctx = new HwContext(this)
 
   // 资源授权表：只认 Data (Signal)，彻底抹除对 Thread/Lifecycle 的特判
   private[kernel] val ownedSignals = mutable.Set[Data]()
@@ -38,16 +86,7 @@ trait HwOwner {
   }
 }
 
-class HwContext(val self: HwOwner) {
-  val owns = self.ownedSignals
-  val granteds = self.signalAccesses
-}
 
-object HwContext {
-  def apply(self: HwOwner) : HwContext = {
-    new HwContext(self)
-  }
-}
 
 // ---------------------------------------------------------
 // 统一安全网关 (Security Enclave & Resource Manager)
