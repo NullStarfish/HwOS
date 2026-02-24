@@ -28,7 +28,7 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
     // ---------------------------------------------------------
     victim.entry {
       // 静态获取专属于自己的锁句柄 (能力/Capability)
-      val myLock = mutex(0) 
+      val myLock = SysCall.Call(mutex.RequestLease(0)) 
       
       victim.Step("AcquireLock") {
         SysCall.Call(myLock.Lock()) // 直接通过句柄上锁
@@ -46,7 +46,7 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
     // 2. Observer 线程：尝试抢锁。如果 OS 没回收，它会卡死在这里
     // ---------------------------------------------------------
     observer.entry {
-      val myLock = mutex(1)
+      val myLock = SysCall.Call(mutex.RequestLease(1))
 
       observer.Step("TryAcquireLock") {
         SysCall.Call(myLock.Lock())

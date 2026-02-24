@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 import HwOS.kernel._
 import HwOS.kernel.HwOSLanguage._
+import HwOS.stdlib.sync._
 
 object RegfileLib {
 
@@ -71,38 +72,54 @@ object RegfileLib {
   // ==========================================
   class ScoreboardRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
 
-    // 1. 孵化 L1 数据通路 
+    // 1. 孵化 L1 数据通路 (BaseRegfile)
     val baseReg = spawn(new BaseRegfileProcess(depth, width, maxWriters, zeroReg, "Base"))
     
-    // 2. 孵化 Stdlib 通用记分板控制器
-    val scoreboard = spawn(new HwOS.stdlib.sync.ScoreboardProcess(resourceCount = depth, maxConcurrentPorts = maxWriters, zeroAlwaysFree = zeroReg, "Control"))
+    // 2. 孵化 L2 操作系统控制通路 (Stdlib.Scoreboard)
+    val scoreboard = spawn(new ScoreboardProcess(resourceCount=depth, maxConcurrentPorts = maxWriters, zeroAlwaysFree = zeroReg, "Control"))
 
-    // Entry 现在不需要 Daemon 了，业务全部交由子 Process 处理
     override def entry(): Unit = {}
 
-    // --- L2 暴露的被护盾包裹的 HwFunction 接口 ---
-
-    // 操作 1：安全读取 (组合 Stdlib 的 Guard 和 Base 的 Read)
+    // ==========================================
+    // 消费者接口：安全读取 (RAW 护盾)
+    // ==========================================
     def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("GuardedRead") { t =>
-      // 先让 Stdlib 帮我们挂起等待 (RAW冲突自动阻塞)
-      SysCall.Call(scoreboard.Guard(addr))
+      // 1. 获取 Stdlib 记分板的就绪信号 (如果冲突，当前线程 pc 会在此挂起)
+      val ready = SysCall.Call(scoreboard.Guard(addr))
       
-      // 不拥堵了，调用基础寄存器的纯组合逻辑读
-      SysCall.Call(baseReg.Read(addr))
+      val rdata = this.own(WireInit(0.U(width.W)))
+      grant(rdata, t)
+      
+      // 2. 只有当 ready (无 RAW 冲突) 时，才执行物理读取
+      when(ready) {
+        rdata <== SysCall.Call(baseReg.Read(addr))
+      }
+      rdata
     }
 
-    // 操作 2：指令发射时预约寄存器 
-    def Reserve(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
-      // 直接委托给 Stdlib
-      SysCall.Call(scoreboard.Reserve(portIdx, addr))
+    // ==========================================
+    // 生产者接口：写端口智能句柄 (RegWritePort)
+    // ==========================================
+    class RegWritePort(val portIdx: Int) {
+      // 预约占位：底层的 ScoreboardLease 在 Reserve 时，会自动把契约挂载到 t.ctx (PCB) 中！
+      def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
+        val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
+        SysCall.Call(sbLease.Reserve(addr))
+      }
+
+      // 写回并释放资源：将 BaseReg 的数据写入与 Lease 的释放绑定在一起
+      def WritebackAndClear(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"WB_$portIdx") { agent =>
+        val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
+        SysCall.Call(baseReg.Write(portIdx, addr, data))
+        SysCall.Call(sbLease.Release())
+      }
     }
 
-    // 操作 3：写回并解锁 
-    def WritebackAndClear(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"WB_$portIdx") { agent =>
-      // 1. 写入物理数据
-      SysCall.Call(baseReg.Write(portIdx, addr, data))
-      // 2. 释放 Stdlib 的控制锁
-      SysCall.Call(scoreboard.Release(portIdx, addr))
+    private val writePorts = Array.tabulate(maxWriters)(i => new RegWritePort(i))
+
+    // 显式接口：向 Regfile 申请一个写端口的控制权
+    def RequestWritePort(portIdx: Int): HwFunction[RegWritePort] = HwFunction.bindings(s"ReqRegPort_$portIdx") { _ =>
+      writePorts(portIdx)
     }
-  } 
+  }
 }

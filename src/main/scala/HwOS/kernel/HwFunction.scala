@@ -55,4 +55,8 @@ object HwFunction {
       case _ => throw new Exception(s"[HwOS] 违规调用！'$funcName' 只能在 Step 或 LogicCtx 中作为组合逻辑执行。")
     }
   }
+
+  def bindings[T](funcName: String)(block: HardwareAgent => T): HwFunction[T] = apply(funcName) {
+    agent => block(agent)
+  }
 }

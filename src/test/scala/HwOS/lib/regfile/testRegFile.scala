@@ -44,15 +44,17 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
 
     // --- 生产者：预约 -> 延迟 -> 写回 ---
     producer.entry {
+      val regfileLease = SysCall.Call(regfile.RequestWritePort(portIdx = 0))
       producer.Step("Issue_Reserve") {
-        SysCall.Call(regfile.Reserve(portIdx = 0, addr = 5.U))
+        
+        SysCall.Call(regfileLease.Reserve( addr = 5.U))
         flagReserved <== true.B 
       }
       producer.Step("EX_Cycle1") { /* ALU */ }
       producer.Step("EX_Cycle2") { /* ALU */ }
       producer.Step("EX_Cycle3") { /* ALU */ }
       producer.Step("WB_Writeback") {
-        SysCall.Call(regfile.WritebackAndClear(portIdx = 0, addr = 5.U, data = 123.U))
+        SysCall.Call(regfileLease.WritebackAndClear(addr = 5.U, data = 123.U))
       }
       // [修复]：提供一个独立的着陆点供 hijack 跳转
       producer.Step("Retire") {

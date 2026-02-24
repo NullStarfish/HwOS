@@ -86,8 +86,9 @@ object sync {
     // 静态实例化所有锁句柄
     private val leases = Array.tabulate(maxClients)(i => new MutexLease(i))
 
-    // 对外提供简洁的句柄获取语法糖 ( mutex(id) )
-    def apply(id: Int): MutexLease = leases(id)
+    def RequestLease(id: Int): HwFunction[MutexLease] = HwFunction.bindings(s"ReqMutexLease_$id") { _ =>
+      leases(id) // 无状态返回预分配的句柄
+    }
 
   }
 
@@ -127,19 +128,44 @@ object sync {
     }
 
     // --- 高阶 HwFunction 接口 ---
-    def Acquire(id: Int): HwFunction[Unit] = HwFunction.atomic(s"Sem_Acq_$id") { t =>
-      this.grant(acquires(id), t)
-      acquires(id) <== true.B
-      
-      val canAcquire = (count > 0.U) && (winnerAcqIdx === id.U)
-      t.waitCondition(canAcquire)
-      when(canAcquire) { t.Next.hijack() }
-      ()
+    class SemaphoreLease(val id: Int) extends HwLease {
+      val isHeld = RegInit(false.B)
+      SemaphoreProcess.this.own(isHeld)
+      override def isActive: Bool = isHeld
+
+      def Acquire(): HwFunction[Unit] = HwFunction.atomic(s"Acquire_$id") { t =>
+        SemaphoreProcess.this.grant(acquires(id), t)
+        acquires(id) <== true.B
+        val canAcquire = (count > 0.U) && (winnerAcqIdx === id.U)
+        t.waitCondition(canAcquire)
+
+        when(canAcquire) {
+          SemaphoreProcess.this.grant(isHeld, t)
+          isHeld <== true.B
+        }
+        t.ctx.registerLease(this)
+      }
+
+      def Release(): HwFunction[Unit] = HwFunction.stateless(s"Release_$id") { agent =>
+        SemaphoreProcess.this.grant(releases(id), agent)
+        SemaphoreProcess.this.grant(isHeld, agent)
+        releases(id) <== true.B
+        isHeld <== false.B
+      }
+
+      override def forceReclaim(agent: HardwareAgent): Unit = {
+        SemaphoreProcess.this.grant(releases(id), agent)
+        SemaphoreProcess.this.grant(isHeld, agent)
+        releases(id) <==! true.B
+        isHeld <==! false.B
+      }
     }
 
-    def Release(id: Int): HwFunction[Unit] = HwFunction.stateless(s"Sem_Rel_$id") { agent =>
-      this.grant(releases(id), agent)
-      releases(id) <== true.B
+    private val leases = Array.tabulate(maxClients)(i => new SemaphoreLease(i))
+
+    // 显式接口
+    def RequestLease(id: Int): HwFunction[SemaphoreLease] = HwFunction.bindings(s"ReqSemLease_$id") { _ =>
+      leases(id)
     }
   }
 
@@ -263,32 +289,65 @@ object sync {
     // --- 高阶 HwFunction 接口 ---
 
     // 纯阻塞守卫：只等不占 (适用于 RAW 冲突场景)
-    def Guard(addr: UInt): HwFunction[Unit] = HwFunction.atomic("Guard") { t =>
+    def Guard(addr: UInt): HwFunction[Bool] = HwFunction.atomic("Guard") { t =>
       val isBusy = busyTable.at(addr)
       t.waitCondition(!isBusy)
-      when(!isBusy) { t.Next.hijack() } // 资源空闲时当拍放行
-      ()
+      when(!isBusy) { t.Next.hijack() } // 纯组合逻辑前递，hijack 完全合法
+      !isBusy 
     }
 
-    // 预约占位：阻塞等待直至空闲，然后锁定 (适用于 WAW 冲突/指令发射场景)
-    def Reserve(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
-      val isBusy = busyTable.at(addr)
-      t.waitCondition(!isBusy)
-      
-      when(!isBusy) {
-        this.grant(setIdx(portIdx), t); this.grant(setEn(portIdx), t)
-        setIdx(portIdx) <== addr
-        setEn(portIdx)  <== true.B
-        t.Next.hijack()
+    class ScoreboardLease(val portIdx: Int) extends HwLease {
+      val isReserved = RegInit(false.B)
+      // 【核心】：必须记录当前契约锁定了哪个地址！
+      val reservedAddr = RegInit(0.U(log2Ceil(resourceCount).W)) 
+
+      ScoreboardProcess.this.own(isReserved)
+      ScoreboardProcess.this.own(reservedAddr)
+      override def isActive: Bool = isReserved
+
+      def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
+        val isBusy = busyTable.at(addr)
+        t.waitCondition(!isBusy)
+        
+        when(!isBusy) {
+          ScoreboardProcess.this.grant(setIdx(portIdx), t); ScoreboardProcess.this.grant(setEn(portIdx), t)
+          ScoreboardProcess.this.grant(isReserved, t);      ScoreboardProcess.this.grant(reservedAddr, t)
+
+          setIdx(portIdx) <== addr
+          setEn(portIdx)  <== true.B
+          isReserved    <== true.B
+          reservedAddr  <== addr // 锁存动态地址，供未来释放用
+        }
+        t.ctx.registerLease(this)
       }
-      ()
+
+      def Release(): HwFunction[Unit] = HwFunction.stateless(s"Release_$portIdx") { agent =>
+        ScoreboardProcess.this.grant(clrIdx(portIdx), agent)
+        ScoreboardProcess.this.grant(clrEn(portIdx), agent)
+        ScoreboardProcess.this.grant(isReserved, agent)
+
+        // 释放锁存的地址
+        clrIdx(portIdx) <== reservedAddr
+        clrEn(portIdx)  <== true.B
+        isReserved    <== false.B
+      }
+
+      override def forceReclaim(agent: HardwareAgent): Unit = {
+        ScoreboardProcess.this.grant(clrIdx(portIdx), agent)
+        ScoreboardProcess.this.grant(clrEn(portIdx), agent)
+        ScoreboardProcess.this.grant(isReserved, agent)
+
+        clrIdx(portIdx) <==! reservedAddr
+        clrEn(portIdx)  <==! true.B
+        isReserved    <==! false.B
+      }
     }
 
-    // 释放资源：无状态，一拍到底 (适用于写回/Commit阶段)
-    def Release(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"Release_$portIdx") { agent =>
-      this.grant(clrIdx(portIdx), agent); this.grant(clrEn(portIdx), agent)
-      clrIdx(portIdx) <== addr
-      clrEn(portIdx)  <== true.B
+
+    private val leases = Array.tabulate(maxConcurrentPorts)(i => new ScoreboardLease(i))
+
+    def RequestLease(portIdx: Int): HwFunction[ScoreboardLease] = HwFunction.bindings(s"ReqSBLease_$portIdx") { _ =>
+      leases(portIdx)
     }
   }
 }

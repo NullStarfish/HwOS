@@ -48,7 +48,7 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
 
     // Worker 模板逻辑：抢锁 -> 执行关键区 -> 释放并汇报 -> 退出
     def workerLogic(t: HardwareThread, lockId: Int, wgId: Int): Unit = {
-      val lease = mutex(lockId)
+      val lease = SysCall.Call(mutex.RequestLease(lockId))
       t.Step("AcquireLock") {
         SysCall.Call(lease.Lock())
       }
