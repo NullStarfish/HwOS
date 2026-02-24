@@ -27,4 +27,28 @@ object HwOSLanguage {
       }
     }
   }
+
+  implicit class SecureVecAccess[T <: Data](val vec: Vec[T]) extends AnyVal {
+    // 支持动态索引 (UInt) 和静态索引 (Int)
+    def at(idx: UInt): T = propagateOwnership(vec(idx))
+    def at(idx: Int): T  = propagateOwnership(vec(idx))
+
+    private def propagateOwnership(childNode: T): T = {
+      // 只有当子节点尚未被注册时，才执行所有权继承 (防止重复注册报错)
+      if (ResourceManager.getOwner(childNode).isEmpty) {
+        ResourceManager.getOwner(vec).foreach { owner =>
+          // 1. 继承父辈的主权
+          ResourceManager.registerOwner(childNode, owner)
+          
+          // 2. 继承父辈的授权名单 (ACL)
+          ResourceManager.getAllowedActors(vec).foreach { actor =>
+            if (actor != owner) {
+              ResourceManager.delegatePermission(childNode, owner, actor)
+            }
+          }
+        }
+      }
+      childNode
+    }
+  }
 }

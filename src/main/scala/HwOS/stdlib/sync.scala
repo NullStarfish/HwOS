@@ -188,4 +188,78 @@ object sync {
     }
     selectedIdx // 返回硬件线缆引用
   }
+
+
+
+
+  // ==========================================
+  // 5. 硬件通用记分板 (Generic Scoreboard Process)
+  // 用于管理一组资源的预约与释放，支持 RAW/WAW 冲突拦截，适用于 Regfile、缓存行或多Bank外设
+  // ==========================================
+  class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+    
+    // 核心资产：Busy 状态表
+    private val busyTable = this.own(RegInit(VecInit(Seq.fill(resourceCount)(false.B))))
+
+    // 交互线缆：支持多端口并发 set/clear
+    val setIdx = WireInit(VecInit(Seq.fill(maxConcurrentPorts)(0.U(log2Ceil(resourceCount).W))))
+    val setEn  = WireInit(VecInit(Seq.fill(maxConcurrentPorts)(false.B)))
+    
+    val clrIdx = WireInit(VecInit(Seq.fill(maxConcurrentPorts)(0.U(log2Ceil(resourceCount).W))))
+    val clrEn  = WireInit(VecInit(Seq.fill(maxConcurrentPorts)(false.B)))
+
+    for(i <- 0 until maxConcurrentPorts) {
+      this.own(setIdx(i)); this.own(setEn(i))
+      this.own(clrIdx(i)); this.own(clrEn(i))
+    }
+
+    // 守护进程：处理 Busy 表翻转
+    override def entry(): Unit = {
+      val sbDaemon = createLogic("SBDaemon")
+      this.grant(busyTable, sbDaemon)
+      
+      sbDaemon.run {
+        // 先 clear 后 set，支持单拍内的 Bypassing
+        for(i <- 0 until maxConcurrentPorts) {
+          when(clrEn(i)) { busyTable.at(clrIdx(i)) <== false.B }
+        }
+        for(i <- 0 until maxConcurrentPorts) {
+          when(setEn(i)) { busyTable.at(setIdx(i)) <== true.B }
+        }
+        // 若某些资源（如 RISC-V 0号寄存器）免预约
+        if (zeroAlwaysFree) { busyTable.at(0) <== false.B }
+      }
+    }
+
+    // --- 高阶 HwFunction 接口 ---
+
+    // 纯阻塞守卫：只等不占 (适用于 RAW 冲突场景)
+    def Guard(addr: UInt): HwFunction[Unit] = HwFunction.atomic("Guard") { t =>
+      val isBusy = busyTable.at(addr)
+      t.waitCondition(!isBusy)
+      when(!isBusy) { t.Next.hijack() } // 资源空闲时当拍放行
+      ()
+    }
+
+    // 预约占位：阻塞等待直至空闲，然后锁定 (适用于 WAW 冲突/指令发射场景)
+    def Reserve(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
+      val isBusy = busyTable.at(addr)
+      t.waitCondition(!isBusy)
+      
+      when(!isBusy) {
+        this.grant(setIdx(portIdx), t); this.grant(setEn(portIdx), t)
+        setIdx(portIdx) <== addr
+        setEn(portIdx)  <== true.B
+        t.Next.hijack()
+      }
+      ()
+    }
+
+    // 释放资源：无状态，一拍到底 (适用于写回/Commit阶段)
+    def Release(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"Release_$portIdx") { agent =>
+      this.grant(clrIdx(portIdx), agent); this.grant(clrEn(portIdx), agent)
+      clrIdx(portIdx) <== addr
+      clrEn(portIdx)  <== true.B
+    }
+  }
 }

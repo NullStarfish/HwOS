@@ -84,7 +84,9 @@ private[kernel] object ResourceManager {
     allowedActors += target
   }
 
-
+  def getAllowedActors(signal: Data): Iterable[HwOwner] = {
+    acl.getOrElse(signal, mutable.Set[HwOwner]())
+  }
 
 
   // 2. 动态检测并警告多重驱动 (lastconnect warning)

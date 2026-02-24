@@ -37,7 +37,7 @@ object RegfileLib {
           when(wEnables(i)) {
             // 如果开启了 zeroReg 特性，强制保护 0 号寄存器不被修改 (RISC-V 必备)
             if (zeroReg) {
-              when(wAddrs(i) =/= 0.U) { regs(wAddrs(i)) := wDatas(i) }
+              when(wAddrs(i) =/= 0.U) { regs.at(wAddrs(i)) <== wDatas(i) }
             } else {
               regs(wAddrs(i)) := wDatas(i)
             }
@@ -65,88 +65,44 @@ object RegfileLib {
     }
   }
 
-  // ==========================================
-  // Layer 2: 记分板寄存器堆 (带调度拦截器)
-  // 组装 BaseRegfile，提供 RAW/WAW/WAR 冲突拦截
+ // ==========================================
+  // Layer 2: 记分板寄存器堆 (带调度拦截器) - 重构版
+  // 组装 BaseRegfile 和 Stdlib.Scoreboard
   // ==========================================
   class ScoreboardRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
 
-    // 1. 孵化 L1 数据通路 (权限会自动 grant 给当前进程)
+    // 1. 孵化 L1 数据通路 
     val baseReg = spawn(new BaseRegfileProcess(depth, width, maxWriters, zeroReg, "Base"))
-
-    // 2. Scoreboard 资产：Busy 表
-    private val busyTable = this.own(RegInit(VecInit(Seq.fill(depth)(false.B))))
-
-    // 拦截器交互线缆
-    val setBusyAddr = WireInit(VecInit(Seq.fill(maxWriters)(0.U(log2Ceil(depth).W))))
-    val setBusyEn   = WireInit(VecInit(Seq.fill(maxWriters)(false.B)))
     
-    val clearBusyAddr = WireInit(VecInit(Seq.fill(maxWriters)(0.U(log2Ceil(depth).W))))
-    val clearBusyEn   = WireInit(VecInit(Seq.fill(maxWriters)(false.B)))
+    // 2. 孵化 Stdlib 通用记分板控制器
+    val scoreboard = spawn(new HwOS.stdlib.sync.ScoreboardProcess(resourceCount = depth, maxConcurrentPorts = maxWriters, zeroAlwaysFree = zeroReg, "Control"))
 
-    for(i <- 0 until maxWriters) {
-      this.own(setBusyAddr(i));   this.own(setBusyEn(i))
-      this.own(clearBusyAddr(i)); this.own(clearBusyEn(i))
-    }
-
-    // 3. 记分板守护进程：处理 Busy 表的状态翻转
-    override def entry(): Unit = {
-      val sbDaemon = createLogic("ScoreboardDaemon")
-      this.grant(busyTable, sbDaemon)
-      
-      sbDaemon.run {
-        // 解锁优先级高于加锁 (支持单拍内的 Forwarding / Bypassing 逻辑)
-        for(i <- 0 until maxWriters) {
-          when(clearBusyEn(i)) { busyTable(clearBusyAddr(i)) := false.B }
-        }
-        for(i <- 0 until maxWriters) {
-          when(setBusyEn(i)) { busyTable(setBusyAddr(i)) := true.B }
-        }
-        // 如果是 0 号寄存器，永远保持非 Busy
-        if (zeroReg) { busyTable(0) := false.B }
-      }
-    }
+    // Entry 现在不需要 Daemon 了，业务全部交由子 Process 处理
+    override def entry(): Unit = {}
 
     // --- L2 暴露的被护盾包裹的 HwFunction 接口 ---
 
-    // 操作 1：安全读取 (发生 RAW 冲突时自动阻塞)
+    // 操作 1：安全读取 (组合 Stdlib 的 Guard 和 Base 的 Read)
     def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("GuardedRead") { t =>
-      val isBusy = busyTable(addr)
-      t.waitCondition(!isBusy)
+      // 先让 Stdlib 帮我们挂起等待 (RAW冲突自动阻塞)
+      SysCall.Call(scoreboard.Guard(addr))
       
-      val rdata = WireInit(0.U(width.W))
-      when(!isBusy) {
-        // 内联调用 L1 的读取逻辑
-        rdata := SysCall.Call(baseReg.Read(addr))
-        t.Next.hijack() // 读到的当拍放行
-      }
-      rdata
+      // 不拥堵了，调用基础寄存器的纯组合逻辑读
+      SysCall.Call(baseReg.Read(addr))
     }
 
-    // 操作 2：指令发射时预约寄存器 (发生 WAW 冲突时自动阻塞)
+    // 操作 2：指令发射时预约寄存器 
     def Reserve(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
-      val isBusy = busyTable(addr)
-      t.waitCondition(!isBusy)
-      
-      when(!isBusy) {
-        this.grant(setBusyAddr(portIdx), t)
-        this.grant(setBusyEn(portIdx), t)
-        setBusyAddr(portIdx) <== addr
-        setBusyEn(portIdx)   <== true.B
-        t.Next.hijack()
-      }
-      ()
+      // 直接委托给 Stdlib
+      SysCall.Call(scoreboard.Reserve(portIdx, addr))
     }
 
-    // 操作 3：写回并解锁 (流水线 Commit 阶段调用，属于无状态的一拍到底)
+    // 操作 3：写回并解锁 
     def WritebackAndClear(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"WB_$portIdx") { agent =>
-      // 同时驱动 L1 的写端口和 L2 的清零端口
+      // 1. 写入物理数据
       SysCall.Call(baseReg.Write(portIdx, addr, data))
-
-      this.grant(clearBusyAddr(portIdx), agent)
-      this.grant(clearBusyEn(portIdx), agent)
-      clearBusyAddr(portIdx) <== addr
-      clearBusyEn(portIdx)   <== true.B
+      // 2. 释放 Stdlib 的控制锁
+      SysCall.Call(scoreboard.Release(portIdx, addr))
     }
-  }
+  } 
 }
