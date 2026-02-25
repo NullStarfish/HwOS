@@ -4,6 +4,7 @@ import chisel3._
 import scala.collection.mutable
 import HwOS.kernel.HwFunction.apply
 import scala.collection.mutable.ArrayBuffer
+import HwOS.kernel.HwOSLanguage._
 
 // ==========================================
 // 核心抽象：硬件租约 (Hardware Lease)
@@ -41,10 +42,10 @@ class HwContext(val self: HwOwner) {
     // 在安全网关眼里，依然必须算作是该 thread 在进行合法的资源交接。
     ContextScope.withContext(ThreadCtx(thread)) {
       when(kernelKillSignal) {
-        // 物理切断 (使用 := 绕过用户态安全检查)
-        thread.activeReg := false.B
-        thread.pc        := 0.U
-        thread.doneReg   := false.B
+        // 物理切断 (使用 <==! 绕过用户态安全检查)
+        thread.activeReg <==! false.B
+        thread.pc        <==! 0.U
+        thread.doneReg   <==! false.B
 
         // 撕毁所有契约
         activeLeases.foreach { lease =>

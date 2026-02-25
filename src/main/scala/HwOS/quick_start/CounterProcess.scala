@@ -1,0 +1,48 @@
+package HwOS.quick_start
+
+import chisel3._
+import HwOS.kernel._
+import HwOS.kernel.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
+
+    // 必须隐式传入 Kernel 以注册全局资源
+class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+
+  // 1. 声明物理资源，并宣誓主权 (Ownership)
+  val counter  = this.own(RegInit(0.U(32.W)))
+  val isDone   = this.own(WireInit(false.B))
+
+  // 2. 创建一个硬件线程 (HardwareThread)
+  val mainThread = createThread("MainThread")
+
+  override def entry(): Unit = {
+    // 3. 授权 (Grant)：赋予 mainThread 修改 counter 和 isDone 的权限
+    this.grant(counter, mainThread)
+    this.grant(isDone, mainThread)
+
+    // 4. 定义线程的时序逻辑 (Step-by-Step)
+    mainThread.entry {
+      
+      mainThread.Step("Init") {
+        // 使用 <== 进行安全赋值，受线程 isActive 状态的物理保护
+        counter <== 0.U 
+        isDone  <== false.B
+      }
+
+      mainThread.Step("CountUp") {
+        counter <== counter + 1.U
+        
+        // 硬件级阻塞：如果条件不满足，PC 寄存器将在此挂起
+        mainThread.waitCondition(counter >= 10.U) 
+        
+        when(counter === 10.U) {
+          mainThread.Next.hijack() // 零气泡 (Zero-Bubble) 抢占下一步逻辑
+        }
+      }
+
+      mainThread.Step("Finish") {
+        isDone <== true.B
+        mainThread.exit() // 终结当前线程的生命周期
+      }
+    }
+  }
+}
