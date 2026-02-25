@@ -78,35 +78,35 @@ class Kernel {
   //   println(s"[Kernel] Symbol table dumped to $filename")
   // }
   
- def attachMonitor(): Unit = {
-    val nThreads = threads.length
-    if (nThreads == 0) return
+//  def attachMonitor(): Unit = {
+//     val nThreads = threads.length
+//     if (nThreads == 0) return
 
-    val pc32Seq = threads.map { t =>
-      val w = Wire(UInt(32.W))
-      w := t.pc
-      w
-    }.toSeq
+//     val pc32Seq = threads.map { t =>
+//       val w = Wire(UInt(32.W))
+//       w := t.pc
+//       w
+//     }.toSeq
 
-    val pcVec     = VecInit(pc32Seq).asUInt                // [32*N] packed
-    val activeVec = VecInit(threads.map(_.active).toSeq).asUInt 
-    val startVec  = VecInit(threads.map(_.startWire).toSeq).asUInt 
-    val abortVec  = VecInit(threads.map(_.abortWire).toSeq).asUInt 
-    val doneVec   = VecInit(threads.map(_.done).toSeq).asUInt      
+//     val pcVec     = VecInit(pc32Seq).asUInt                // [32*N] packed
+//     val activeVec = VecInit(threads.map(_.active).toSeq).asUInt 
+//     val startVec  = VecInit(threads.map(_.startWire).toSeq).asUInt 
+//     val abortVec  = VecInit(threads.map(_.abortWire).toSeq).asUInt 
+//     val doneVec   = VecInit(threads.map(_.done).toSeq).asUInt      
 
-    // 实例化 DPI BlackBox
-    val monitor = Module(new KernelStateMonitorDPI(nThreads))
+//     // 实例化 DPI BlackBox
+//     val monitor = Module(new KernelStateMonitorDPI(nThreads))
     
-    monitor.io.clock   := Module.clock
-    monitor.io.reset   := Module.reset
-    monitor.io.pcs     := pcVec
-    monitor.io.actives := activeVec
-    monitor.io.starts  := startVec
-    monitor.io.aborts  := abortVec
-    monitor.io.dones   := doneVec
+//     monitor.io.clock   := Module.clock
+//     monitor.io.reset   := Module.reset
+//     monitor.io.pcs     := pcVec
+//     monitor.io.actives := activeVec
+//     monitor.io.starts  := startVec
+//     monitor.io.aborts  := abortVec
+//     monitor.io.dones   := doneVec
     
-    println(s"[Kernel] Attached DPI Monitor for $nThreads threads.")
-  }
+//     println(s"[Kernel] Attached DPI Monitor for $nThreads threads.")
+//   }
 } 
 
 

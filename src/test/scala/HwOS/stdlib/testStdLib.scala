@@ -18,8 +18,7 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
   this.grant(sharedCounter, worker1)
   this.grant(sharedCounter, worker2)
 
-  worker1.grantLifecycle(worker1, main)
-  worker2.grantLifecycle(worker2, main)
+
 
   // ===================================================================
   // 核心亮点：孵化 Stdlib 并发原语 (作为子进程)
@@ -31,20 +30,7 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
 
   override def entry(): Unit = {
     
-    main.entry {
-      main.Step("Init") {
-        // Main 使用 WG 的 ID 0
-        SysCall.Call(wg.Add(0, 2.U)) 
-        SysCall.start(worker1)
-        SysCall.start(worker2)
-      }
-      main.Step("WaitWorkers") {
-        SysCall.Call(wg.Wait())
-      }
-      main.Step("Finish") {
-        main.exit() // 必须显式退出
-      }
-    }
+    
 
     // Worker 模板逻辑：抢锁 -> 执行关键区 -> 释放并汇报 -> 退出
     def workerLogic(t: HardwareThread, lockId: Int, wgId: Int): Unit = {
@@ -65,6 +51,23 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
     // 分配 ID 并注入逻辑
     worker1.entry { workerLogic(worker1, lockId = 0, wgId = 1) }
     worker2.entry { workerLogic(worker2, lockId = 1, wgId = 2) }
+    worker1.grantLifecycle(worker1, main)
+    worker2.grantLifecycle(worker2, main)
+
+    main.entry {
+      main.Step("Init") {
+        // Main 使用 WG 的 ID 0
+        SysCall.Call(wg.Add(0, 2.U)) 
+        SysCall.start(worker1)
+        SysCall.start(worker2)
+      }
+      main.Step("WaitWorkers") {
+        SysCall.Call(wg.Wait())
+      }
+      main.Step("Finish") {
+        main.exit() // 必须显式退出
+      }
+    }
   }
 }
 

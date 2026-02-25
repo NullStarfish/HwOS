@@ -30,19 +30,53 @@ class HwContext(val self: HwOwner) {
     activeLeases += lease
   }
 
-  // 内核钩子：展开所有契约的硬件级强制回收连线
-  private[kernel] def tearDownLeases(): Unit = {
-    self match {
-      case agent: HardwareAgent =>
+  private[kernel] val kernelKillSignal = WireInit(false.B)
+  self.own(kernelKillSignal)
+
+  val isActive = WireInit(!kernelKillSignal)
+
+  private[kernel] def elaborateOSReaper(thread: HardwareThread): Unit = {
+    // 【核心修复】：为底层强杀逻辑注入上下文！
+    // 尽管这是内核级操作，但它在代替线程归还锁（执行 <==!）时，
+    // 在安全网关眼里，依然必须算作是该 thread 在进行合法的资源交接。
+    ContextScope.withContext(ThreadCtx(thread)) {
+      when(kernelKillSignal) {
+        // 物理切断 (使用 := 绕过用户态安全检查)
+        thread.activeReg := false.B
+        thread.pc        := 0.U
+        thread.doneReg   := false.B
+
+        // 撕毁所有契约
         activeLeases.foreach { lease =>
-          // 只有当运行时确实持有该锁时，才触发强制释放
           when(lease.isActive) {
-            lease.forceReclaim(agent)
+            // 此时有了 ThreadCtx，内部的 <==! 就能完美获取到当前 agent 了
+            lease.forceReclaim(thread)
           }
         }
-      case _ =>
+      }
     }
   }
+
+
+
+  // 内核钩子：展开所有契约的硬件级强制回收连线
+  // private[kernel] def tearDownLeases(): Unit = {
+  //   self match {
+  //     case agent: HardwareAgent =>
+  //       activeLeases.foreach { lease =>
+  //         // 只有当运行时确实持有该锁时，才触发强制释放
+  //         when(lease.isActive) {
+  //           lease.forceReclaim(agent)
+  //         }
+  //       }
+  //     case _ =>
+  //   }
+  // }
+}
+
+
+object HwContext {
+  def apply(self: HwOwner) : HwContext = new HwContext(self)
 }
 
 
@@ -56,11 +90,13 @@ class HwContext(val self: HwOwner) {
 trait HwOwner {
   def name: String 
 
-  val ctx = new HwContext(this)
+  
 
   // 资源授权表：只认 Data (Signal)，彻底抹除对 Thread/Lifecycle 的特判
   private[kernel] val ownedSignals = mutable.Set[Data]()
   private[kernel] val signalAccesses = mutable.Set[Data]()
+
+  val ctx = new HwContext(this)
 
   // 宣誓主权
   def own[T <: Data](signal: T): T = {
@@ -80,9 +116,10 @@ trait HwOwner {
 
 
   def grantLifecycle(thread: HardwareThread, target: HwOwner): Unit = {
-    grant(thread.OP_ABORT, target)
-    grant(thread.OP_EXIT, target)
-    grant(thread.OP_START, target)
+    grant(thread.activeReg, target)
+    grant(thread.pc, target)
+    grant(thread.doneReg, target)
+    grant(thread.ctx.kernelKillSignal, target)
   }
 }
 

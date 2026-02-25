@@ -53,9 +53,6 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable)
     kernel.registerThread(s"${this.name}/${name}_thread", t)
     threads += t
-    t.grant(t.OP_START, this)
-    t.grant(t.OP_ABORT, this)
-    t.grant(t.OP_EXIT, this)
     t
   }
   
@@ -84,9 +81,7 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     }
 
     c.threads.foreach { t =>
-      t.grant(t.OP_START, this)
-      t.grant(t.OP_ABORT, this)
-      t.grant(t.OP_EXIT, this)
+      t.grantLifecycle(t, this)
     }
 
     c

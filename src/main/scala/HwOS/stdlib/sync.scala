@@ -336,7 +336,6 @@ object sync {
         ScoreboardProcess.this.grant(clrIdx(portIdx), agent)
         ScoreboardProcess.this.grant(clrEn(portIdx), agent)
         ScoreboardProcess.this.grant(isReserved, agent)
-
         clrIdx(portIdx) <==! reservedAddr
         clrEn(portIdx)  <==! true.B
         isReserved    <==! false.B

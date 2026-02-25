@@ -2,31 +2,30 @@ package HwOS.kernel
 import chisel3._
 
 object HwOSLanguage {
-  implicit class SecureAssign[T <: Data](val target: T) extends AnyVal {
+  implicit class SecureAssign[T <: Data](val lhs: T) extends AnyVal {
     
-    def <==(data: T): Unit = assign(data, reqAbort = true)
-    def <==!(data: T): Unit = assign(data, reqAbort = false)
-
-    private def assign(data: T, reqAbort: Boolean): Unit = {
-      // 1. 获取当前正在执行代码的 Actor (必须是 Thread 或 Logic)
-      val currentActor: HardwareAgent = ContextScope.getCurrentAgent()
-
-      // 2. 呼叫统一安全网关进行审计
-      ResourceManager.recordDrive(target, currentActor) // 记录驱动者，触发多驱警告
-      ResourceManager.checkSignalWrite(target, currentActor) // 检查所有权/授权，违规立刻抛出 SegFault
-
-      // 3. 鉴权通过，执行物理连线
-      currentActor match {
-        case t: HardwareThread =>
-          // Thread 拥有生命周期和时序状态，需施加 active/abort 保护
-          val valid = if (reqAbort) (t.active && !t.abortWire) else t.active
-          when (valid) { target := data }
-        case l: HardwareLogic =>
-          // Logic 作为无状态守护进程，直接连线
-          target := data
+   // 1. 常规安全赋值：受 Context.isActive 的绝对物理门控
+    def <==(rhs: T): Unit = {
+      val agent = ContextScope.getCurrentAgent()
+      ResourceManager.checkSignalWrite(lhs, agent)
+      
+      // 【核心架构跃升】：在底层硬件生成一个全局使能 Mux！
+      // 如果当前上下文处于静默/被强杀状态，这行赋值在物理上直接断开空转。
+      when (agent.ctx.isActive) {
+        lhs := rhs
       }
     }
-  }
+
+    // 2. 内核级特权赋值：无视 isActive，用于死神进程 (Reaper) 的强杀兜底
+    def <==!(rhs: T): Unit = {
+      val agent = ContextScope.getCurrentAgent()
+      ResourceManager.checkSignalWrite(lhs, agent)
+      
+      // 不受 isActive 门控，强制驱动物理连线
+      lhs := rhs
+    }
+  } 
+  
 
   implicit class SecureVecAccess[T <: Data](val vec: Vec[T]) extends AnyVal {
     // 支持动态索引 (UInt) 和静态索引 (Int)

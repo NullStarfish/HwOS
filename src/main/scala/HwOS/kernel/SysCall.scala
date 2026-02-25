@@ -2,7 +2,7 @@ package HwOS.kernel
 
 import chisel3._
 import scala.util.Try // 引入 Try
-
+import HwOS.kernel.HwOSLanguage._
 object SysCall {
 
   // ==========================================
@@ -38,14 +38,16 @@ object SysCall {
    * 远程杀手：强制中止目标线程 (他杀)
    */
   def kill(target: HardwareThread): Unit = {
-    target.abort()
+    target.ctx.kernelKillSignal <== true.B
   }
 
   /**
    * 远程启动：唤醒目标线程
    */
   def start(target: HardwareThread): Unit = {
-    target.start()
+    target.activeReg <== true.B
+    target.pc        <== 0.U
+    target.doneReg   <== false.B
   }
 
   /**
@@ -61,9 +63,7 @@ object SysCall {
     
     // 2. 核心魔法：所有权注册 (Ownership Registration)
     // 父线程显式获得子线程的生命周期控制权，取代隐式的“父子血缘”逻辑
-    child.grant(child.OP_START, parent)
-    child.grant(child.OP_ABORT, parent)
-    child.grant(child.OP_EXIT, parent)
+    child.grantLifecycle(child, parent)
 
     // 3. 注入逻辑
     child.entry {
@@ -71,7 +71,9 @@ object SysCall {
     }
 
     // 4. 启动并返回句柄
-    child.start()
+    child.activeReg <== true.B
+    child.pc        <== 0.U
+    child.doneReg   <== false.B
     child
   }
 

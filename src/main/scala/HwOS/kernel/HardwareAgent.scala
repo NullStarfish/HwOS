@@ -34,7 +34,7 @@ class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boo
   }
 }
 
-class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Boolean = true, val isMealy: Boolean = false) extends HardwareAgent  {
+class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Boolean = true) extends HardwareAgent  {
   val tls = scala.collection.mutable.Map[String, HwContext]() //used for visibility
 
   class StepNode(val name: String, val block: () => Unit) {
@@ -113,17 +113,16 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
   private val globals = ArrayBuffer[() => Unit]()
 
-  private val activeReg = RegInit(false.B)
-  private val doneReg = RegInit(false.B)
+  val activeReg = this.own(RegInit(false.B))
+  val doneReg = this.own(RegInit(false.B))
+
+  ctx.isActive := activeReg && !ctx.kernelKillSignal
 
   private var pcEntity :UInt = _
   private var _generated = false
 
   private var hasExit: Boolean = false
 
-  val startWire  = WireInit(false.B) 
-  val doneWire   = WireInit(false.B)
-  val abortWire = WireInit(false.B)
 
   val freeze = WireInit(false.B)
 
@@ -136,38 +135,15 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
     pcEntity
   }
-  
+
+
+  def active: Bool =  activeReg
+  def done: Bool =  doneReg
 
 
 
-
-
-  def active: Bool = if (isMealy) (activeReg || startWire) else activeReg
-  def done: Bool = doneWire || doneReg
-
-  val OP_START = this.own(WireInit(false.B))
-  val OP_ABORT = this.own(WireInit(false.B))
-  val OP_EXIT  = this.own(WireInit(false.B))
-
-
-
-
-  def start(): Unit = {
-    OP_START <== true.B
-    startWire := true.B
-    if (isMealy) {
-      assert(pc === 0.U, "mealy should ensure start with pc = 0!")
-    }
-  }
-
-  def abort(): Unit = {
-    OP_ABORT <== true.B
-    abortWire := true.B
-    if (debugEnable) printf(p"[$name] *** ABORT SIGNAL RECEIVED ***\n")
-  }
   
   def exit(): Unit = {
-    OP_EXIT <== true.B
     ContextScope.current match {
       case AtomicCtx(t) => {
         if (t != this) throw new Exception("Cannot exit another thread!")
@@ -181,7 +157,9 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     }
     
     // 硬件退出逻辑对两种情况都适用
-    doneWire  := true.B
+    pc        := 0.U
+    doneReg   := true.B
+    activeReg := false.B
   }
   
 
@@ -212,7 +190,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     //生成pcReg，让综合器自己优化去吧
     val maxSteps = nodes.length 
     val pcWidth  = log2Ceil(maxSteps + 1)
-    val pcReg    = RegInit(0.U(pcWidth.W))
+    val pcReg    = this.own(RegInit(0.U(pcWidth.W)))
     pcEntity     = pcReg 
 
 
@@ -227,9 +205,14 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       if (!node.isHijacked) {
         node.allocatedPC = pcCounter
         currentGeneratingNode = node // 设置上下文，供 Next.hijack 使用
-        when ((pcEntity === pcCounter.U) && execAllowed) {
-          pcReg := pcReg + 1.U
-          node.block() //注意，此时block中的hijack已经被调用，这使得我们能够告知编译器，下一个node已经被hijack了
+        when (pc === pcCounter.U) {
+          // 1. 享受框架级的自动门控保护，一行搞定！
+          ContextScope.withContext(AtomicCtx(this)) {
+            pc <== pc + 1.U
+          }
+          
+          // 2. 业务逻辑完全展开
+          node.block() 
         }
         pcCounter += 1
       } else {
@@ -242,9 +225,9 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
 
 
+    ctx.elaborateOSReaper(this)
 
-
-
+    this.grantLifecycle(this, this.owner)
 
 
 
@@ -278,45 +261,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     //分情况：当moore时：active = activeReg。当没有启动的时候，发送脉冲，activeReg变高，在下一拍，逻辑开始工作。当active的时候发送start，并没有用，因为此时active为高，只有在active为低的时候，start才有效：我们必须修复这一点：在done的时候，也可以进行start：
     //当mealy的时候，第一拍，active就是startWire，随后activeReg就启动了，来维持自己的状态，但是我们发现下面这个条件永远不可能满足
     
-
-    when (abortWire) {
-      activeReg := false.B
-      pc := 0.U
-      doneWire := false.B
-      doneReg := false.B
-
-      ContextScope.withContext(ThreadCtx(this)) {
-        ctx.tearDownLeases()
-      }
-    }
-    .elsewhen (active) {
-      execAllowed := true.B
-      if (isMealy) {
-        activeReg := true.B //维持状态
-        doneReg := false.B //保证在mealy的时候，doneReg也能被下拉
-      }
-
-      when(doneWire) {
-        when (startWire) {
-          activeReg := true.B
-          doneReg   := false.B // <--- 关键！重启时，强制清除 Done 状态
-          pc := 0.U
-        } .otherwise {
-          doneReg := true.B//维持状态
-          activeReg := false.B
-        }
-      }
-
-      ContextScope.withContext(ThreadCtx(this)) {
-        globals.foreach(_()) 
-      }
-    } .otherwise {
-      when (startWire) {
-        activeReg := true.B
-        doneReg := false.B
-        pcReg     := 0.U
-      }
-    }
 
     if (!this.hasExit) {
       agentPrint("The thread doesn't have an exit!!!")

@@ -12,8 +12,6 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
   val main     = createThread("Main")
   val victim   = createThread("Victim")
   val observer = createThread("Observer")
-  victim.grantLifecycle(victim, main)
-  observer.grantLifecycle(observer, main)
 
   // 实例化智能互斥锁
   val mutex = spawn(new MutexProcess(maxClients = 2, "Mutex"))
@@ -58,6 +56,10 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
       }
     }
 
+
+    victim.grantLifecycle(victim, main)
+    observer.grantLifecycle(observer, main)
+
     // ---------------------------------------------------------
     // 3. Main 线程：上帝视角，负责启动和强杀
     // ---------------------------------------------------------
@@ -93,6 +95,9 @@ class MutexAbortModule extends Module {
     val success = Output(Bool())
     val done    = Output(Bool())
   })
+  io.success := DontCare
+  io.done := DontCare
+
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
