@@ -93,6 +93,8 @@ class RegfileIntegrationModule extends Module {
   })
   implicit val kernel: Kernel = new Kernel()
   io.result := DontCare; io.stalls := DontCare; io.done := DontCare
+
+  
   
   
   object Init extends HwProcess("Init") {
@@ -114,8 +116,8 @@ class RegfileIntegrationModule extends Module {
       this.grantLifecycle(client.consumer, daemon)
       daemon.run {
         when(io.start) {
-          SysCall.start(client.producer)
-          SysCall.start(client.consumer)
+          SysCall.Call(SysCall.start(client.producer))
+          SysCall.Call(SysCall.start(client.consumer))
         }
 
         io.result <== client.resultReg
@@ -126,6 +128,9 @@ class RegfileIntegrationModule extends Module {
   }
 
   Init.build()
+
+
+  kernel.dumpSymbolTable("test")
 }
 
 class ScoreboardSpec extends AnyFlatSpec with Matchers {
@@ -160,7 +165,7 @@ class ScoreboardSpec extends AnyFlatSpec with Matchers {
       val stallTicks = c.io.stalls.peek().litValue
       
       println(s"Consumer Read Result: $readResult (Expected: 123)")
-      println(s"Consumer Stall Cycles: $stallTicks (Expected: ~3)")
+      println(s"Consumer Stall Cycles: $stallTicks (Expected: 5)")
 
       // 断言：现在你一定能读出 123 了！
       c.io.result.expect(123.U)

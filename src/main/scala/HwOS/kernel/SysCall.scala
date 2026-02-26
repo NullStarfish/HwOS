@@ -16,7 +16,17 @@ object SysCall {
   def Call[T](func: HwFunction[T]): T = {
     CallStack.push(func.name)
     try {
-      func.emit(ContextScope.getCurrentThread())
+      scala.util.Try {
+        ContextScope.current match {
+          case AtomicCtx(t) =>
+            if (t.currentGeneratingNode != null) {
+              t.currentGeneratingNode.invokedCalls += CallStack.getSnapshot
+            }
+          case ThreadCtx(t) => // 线程级调用的暂不挂载到具体的 PC
+          case _ =>
+        }
+      }
+      func.emit(ContextScope.getCurrentAgent())
     } finally {
       CallStack.pop()
     }
@@ -26,25 +36,18 @@ object SysCall {
   // 2. Process Control Layer (生命周期与调度)
   // ==========================================
 
-  /**
-   * 线程自我终结 (自杀)
-   */
-  def exit(): Unit = {
-    val t = ContextScope.getCurrentThread()
-    t.exit() 
-  }
 
   /**
    * 远程杀手：强制中止目标线程 (他杀)
    */
-  def kill(target: HardwareThread): Unit = {
+  def kill(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall kill"){ agent =>
     target.ctx.kernelKillSignal <== true.B
   }
 
   /**
    * 远程启动：唤醒目标线程
    */
-  def start(target: HardwareThread): Unit = {
+  def start(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall start"){ agent =>
     target.activeReg <== true.B
     target.pc        <== 0.U
     target.doneReg   <== false.B

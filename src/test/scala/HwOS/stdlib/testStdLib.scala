@@ -58,8 +58,8 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
       main.Step("Init") {
         // Main 使用 WG 的 ID 0
         SysCall.Call(wg.Add(0, 2.U)) 
-        SysCall.start(worker1)
-        SysCall.start(worker2)
+        SysCall.Call(SysCall.start(worker1))
+        SysCall.Call(SysCall.start(worker2))
       }
       main.Step("WaitWorkers") {
         SysCall.Call(wg.Wait())
@@ -98,7 +98,7 @@ class SyncIntegrationModule extends Module {
     grantLifecycle(sync.main, daemon)
     override def entry(): Unit = {
       daemon.run {
-        when(io.start) {SysCall.start(sync.main)}
+        when(io.start) {SysCall.Call(SysCall.start(sync.main))}
         io.finalCount <== sync.sharedCounter
         io.allDone <== sync.main.done
       }

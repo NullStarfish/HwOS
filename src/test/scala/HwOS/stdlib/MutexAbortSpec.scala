@@ -73,8 +73,8 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
       main.Step("KillAndRescue") {
         // 【触发神迹】：强杀 Victim！
         // 此时 HwOS 内核会切断 Victim 的 pc，并触发 forceReclaim 释放锁！
-        SysCall.kill(victim) 
-        SysCall.start(observer) // 立刻让二号机上场
+        SysCall.Call(SysCall.kill(victim)) 
+        SysCall.Call(SysCall.start(observer)) // 立刻让二号机上场
       }
       
       main.Step("WaitObserver") {
@@ -110,7 +110,7 @@ class MutexAbortModule extends Module {
       this.grantLifecycle(testProc.main, daemon)
       
       daemon.run {
-        when(io.start) { SysCall.start(testProc.main) }
+        when(io.start) { SysCall.Call(SysCall.start(testProc.main)) }
         io.success <== testProc.observerSuccess
         io.done    <== testProc.main.done
       }

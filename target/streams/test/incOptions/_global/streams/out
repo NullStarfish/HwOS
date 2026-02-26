@@ -1,0 +1,20 @@
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ScoreboardSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule$Init$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineClientProcess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ScoreboardSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule$Init$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineClientProcess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	ScoreboardSpec.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule$Init$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule$$anon$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	PipelineClientProcess.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RegfileIntegrationModule.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mRemoving the temporary directory used for backing up class files: /home/nullstarfish/personal-ysyx-workbench/npc/HwOS/target/scala-2.13/test-classes.bak[0m

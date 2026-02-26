@@ -64,19 +64,32 @@ class Kernel {
 
   
 
-  // def dumpSymbolTable(filename: String): Unit = {
-  //   val file = new File(filename)
-  //   val bw = new BufferedWriter(new FileWriter(file))
+  def dumpSymbolTable(filename: String): Unit = {
+    val file = new java.io.File(filename)
+    val bw = new java.io.BufferedWriter(new java.io.FileWriter(file))
     
-  //   for (t <- threads) {
-  //     for (((stepName, ownerId), pc) <- t.n.zip(t.stepOwners).zipWithIndex) {
-  //       // 格式: <ThreadName> <PC> <StepName> <OwnerID>
-  //       bw.write(s"${t.name} $pc $stepName $ownerId\n")
-  //     }
-  //   }
-  //   bw.close()
-  //   println(s"[Kernel] Symbol table dumped to $filename")
-  // }
+    for (t <- threads) {
+      for (node <- t.nodes) {
+        if (!node.isHijacked && node.allocatedPC != -1) {
+          val pc = node.allocatedPC
+          val stepName = node.name
+
+          // 1. 格式化宏观时序栈 (Thread Level)
+          val threadStackStr = if (node.threadCallStack.isEmpty) "None" else node.threadCallStack.mkString(",")
+          val threadStackDepth = node.threadCallStack.length
+
+          // 2. 格式化微观组合调用树 (Atomic Level)
+          val atomicTreeStr = if (node.invokedCalls.isEmpty) "None" else node.invokedCalls.map(_.mkString(",")).mkString(";")
+          val atomicCallCount = node.invokedCalls.length
+
+          // 新格式: <ThreadName> <PC> <StepName> <T_Depth> <T_Stack> <A_Count> <A_Tree>
+          bw.write(s"${t.name} $pc $stepName $threadStackDepth $threadStackStr $atomicCallCount $atomicTreeStr\n")
+        }
+      }
+    }
+    bw.close()
+    println(s"[Kernel] Symbol table dumped to $filename")
+  }
   
 //  def attachMonitor(): Unit = {
 //     val nThreads = threads.length

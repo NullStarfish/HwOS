@@ -3,6 +3,7 @@ package HwOS.quick_start
 import chisel3._
 import HwOS.kernel._
 import HwOS.kernel.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
+    import chisel3.util.log2Ceil
 
     // 必须隐式传入 Kernel 以注册全局资源
 class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
@@ -32,9 +33,8 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
         counter <== counter + 1.U
         
         // 硬件级阻塞：如果条件不满足，PC 寄存器将在此挂起
-        mainThread.waitCondition(counter >= 10.U) 
         
-        when(counter === 10.U) {
+        mainThread.waitAndAct(counter === 10.U) {
           mainThread.Next.hijack() // 零气泡 (Zero-Bubble) 抢占下一步逻辑
         }
       }
@@ -44,5 +44,20 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
         mainThread.exit() // 终结当前线程的生命周期
       }
     }
+  }
+
+  def DoNTimes(n: Int): HwFunction[Unit] = HwFunction.thread("do n times") {t =>
+    this.grantLifecycle(mainThread, t)
+    val cnt = this.own(RegInit(0.U(log2Ceil(n + 1).W)))
+    t.Step("Start") {
+      SysCall.Call(SysCall.start(mainThread))
+      when (mainThread.done) {
+        cnt <== cnt + 1.U
+      }
+      t.waitAndAct(cnt >= n.U) {
+        t.exit()
+      }
+    }
+    ()
   }
 }

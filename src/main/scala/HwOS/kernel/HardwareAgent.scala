@@ -47,12 +47,15 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     
     // 调试用的 ID
     var allocatedPC: Int = -1
+    val threadCallStack: Seq[String] = CallStack.getSnapshot
+
+    val invokedCalls = scala.collection.mutable.ArrayBuffer[Seq[String]]()
   }
 
   // 1. 存储节点而非直接生成逻辑
   val nodes = ArrayBuffer[StepNode]()
   // 用于在 block 内部查找当前节点
-  private var currentGeneratingNode: StepNode = _
+  private[kernel] var currentGeneratingNode: StepNode = _
 
   object Next {
     /**
@@ -95,11 +98,10 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
   def Step(name: String)(block: => Unit): Unit = {
     // 获取完整的调试路径名
-    val prefix = CallStack.getCurrentPrefix
-    val fullName = s"${prefix}${name}"
+    
     
     // 此时只创建节点，不生成硬件！
-    val node = new StepNode(fullName, () => {
+    val node = new StepNode(name, () => {
       ContextScope.withContext(AtomicCtx(this)) {
         block
       }

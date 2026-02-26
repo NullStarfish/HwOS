@@ -27,4 +27,6 @@ object CallStack {
     val s = stack.get()
     if (s.isEmpty) "" else s.reverse.mkString("_") + "_"
   }
+
+  def getSnapshot: Seq[String] = stack.get().toSeq.reverse
 }

@@ -1,0 +1,6 @@
+[0m[[0m[0mdebug[0m] [0m[0m[zinc] IncrementalCompile -----------[0m
+[0m[[0m[0mdebug[0m] [0m[0mIncrementalCompile.incrementalCompile[0m
+[0m[[0m[0mdebug[0m] [0m[0mprevious = Stamps for: 67 products, 14 sources, 2 libraries[0m
+[0m[[0m[0mdebug[0m] [0m[0mcurrent source = Set(${BASE}/src/main/scala/HwOS/kernel/HwOwnerShip.scala, ${BASE}/src/main/scala/HwOS/kernel/CallStack.scala, ${BASE}/src/main/scala/HwOS/kernel/SysCall.scala, ${BASE}/src/main/scala/HwOS/kernel/HwLang.scala, ${BASE}/src/main/scala/HwOS/quick_start/WelComeToHwOS.scala, ${BASE}/src/main/scala/HwOS/kernel/Kernel.scala, ${BASE}/src/main/scala/HwOS/kernel/HwProcess.scala, ${BASE}/src/main/scala/HwOS/quick_start/CounterProcess.scala, ${BASE}/src/main/scala/HwOS/stdlib/sync.scala, ${BASE}/src/main/scala/HwOS/quick_start/Top.scala, ${BASE}/src/main/scala/HwOS/kernel/HardwareAgent.scala, ${BASE}/src/main/scala/HwOS/lib/regfile/Regfile.scala, ${BASE}/src/main/scala/HwOS/kernel/ContextScope.scala, ${BASE}/src/main/scala/HwOS/kernel/HwFunction.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0m> initialChanges = InitialChanges(Changes(added = Set(), removed = Set(), changed = Set(), unmodified = ...),Set(),Set(),API Changes: Set())[0m
+[0m[[0m[0mdebug[0m] [0m[0mNo changes[0m
