@@ -1,10 +1,10 @@
 #include "SimEngine.hpp"
-#include "VTopModule.h"
+#include "./obj_dir/VTopModule.h"
 #include <ncurses.h>
 
 SimEngine* g_engine = nullptr;
 
-SimEngine::SimEngine(VSimpleTop* top, SymbolParser* parser) 
+SimEngine::SimEngine(VTopModule* top, SymbolParser* parser) 
     : dut(top), sym_parser(parser) {
     g_engine = this;
 }

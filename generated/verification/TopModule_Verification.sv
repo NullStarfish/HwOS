@@ -54,23 +54,28 @@
 `endif // not def INIT_RANDOM_PROLOG_
 module TopModule_Verification();
   reg       wasActive;
-  reg [1:0] lastPc;
+  reg [2:0] lastPc;
   `ifndef SYNTHESIS
     wire _GEN =
       TopModule.activeReg_0 & TopModule.pcReg_0 != lastPc | TopModule.activeReg_0
       & ~wasActive;
     always @(posedge TopModule.clock) begin
       if ((`PRINTF_COND_) & ~wasActive & TopModule.activeReg_0 & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/CounterApp/MainThread_thread] --- ONLINE ---\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] --- ONLINE ---\n");
       if ((`PRINTF_COND_) & wasActive & ~TopModule.activeReg_0 & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/CounterApp/MainThread_thread] --- OFFLINE ---\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] --- OFFLINE ---\n");
       if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/CounterApp/MainThread_thread] EXEC [PC 0] Init\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 0] Init\n");
       if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_0 & ~TopModule.reset)
-        $fwrite(32'h80000002,
-                "[Init/CounterApp/MainThread_thread] EXEC [PC 1] CountUp\n");
-      if ((`PRINTF_COND_) & _GEN & TopModule.pcReg_0 == 2'h2 & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/CounterApp/MainThread_thread] EXEC [PC 2] Finish\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 1] WaitLink\n");
+      if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_1 & ~TopModule.reset)
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 2] PrepareHeader\n");
+      if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_2 & ~TopModule.reset)
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 3] Transmit\n");
+      if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_3 & ~TopModule.reset)
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 4] Ack\n");
+      if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_4 & ~TopModule.reset)
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 5] Finish\n");
     end // always @(posedge)
   `endif // not def SYNTHESIS
   always @(posedge TopModule.clock) begin
@@ -90,8 +95,8 @@ module TopModule_Verification();
         for (logic [1:0] i = 2'h0; i < 2'h2; i += 2'h1) begin
           _RANDOM[i[0]] = `RANDOM;
         end
-        wasActive = _RANDOM[1'h1][4];
-        lastPc = _RANDOM[1'h1][6:5];
+        wasActive = _RANDOM[1'h1][5];
+        lastPc = _RANDOM[1'h1][8:6];
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL

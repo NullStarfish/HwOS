@@ -2,7 +2,7 @@ package HwOS.quick_start
 import chisel3._
 import _root_.circt.stage.ChiselStage
 
-object Generator extends App {
+object QuickStart extends App {
   println("🚀 正在将 HwOS 顶层模块编译为 Verilog...")
   
   // 导出 Verilog 到 generated 文件夹

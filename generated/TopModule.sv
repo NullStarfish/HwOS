@@ -44,43 +44,37 @@
   `endif // RANDOMIZE
 `endif // not def INIT_RANDOM_PROLOG_
 module TopModule(
-  input         clock,
-  input         reset,
-  input         io_start,
-  output [31:0] io_result,
-  output        io_done
+  input  clock,
+  input  reset,
+  input  io_start,
+  output io_done
 );
 
-  reg  [31:0] counter;
-  reg         activeReg;
-  wire        activeReg_0 = activeReg;
-  reg  [1:0]  pcReg;
-  wire [1:0]  pcReg_0 = pcReg;
-  wire        _layer_probe = pcReg == 2'h0;
-  wire        _layer_probe_0 = pcReg == 2'h1;
-  wire        _GEN = counter == 32'hA;
-  wire        _GEN_0 = _layer_probe_0 & _GEN;
-  wire        _GEN_1 = _layer_probe & activeReg;
+  reg        activeReg;
+  wire       activeReg_0 = activeReg;
+  reg        doneReg;
+  reg  [2:0] pcReg;
+  wire [2:0] pcReg_0 = pcReg;
+  wire       _layer_probe = pcReg == 3'h0;
+  wire       _layer_probe_0 = pcReg == 3'h1;
+  wire       _layer_probe_1 = pcReg == 3'h2;
+  wire       _layer_probe_2 = pcReg == 3'h3;
+  wire       _layer_probe_3 = pcReg == 3'h4;
+  wire       _layer_probe_4 = pcReg == 3'h5;
   always @(posedge clock) begin
     if (reset) begin
-      counter <= 32'h0;
       activeReg <= 1'h0;
-      pcReg <= 2'h0;
+      doneReg <= 1'h0;
+      pcReg <= 3'h0;
     end
     else begin
-      if (_layer_probe_0 & activeReg)
-        counter <= counter + 32'h1;
-      else if (_GEN_1)
-        counter <= 32'h0;
-      activeReg <= io_start | ~_GEN_0 & activeReg;
-      if (io_start)
-        pcReg <= 2'h0;
-      else if (_layer_probe_0) begin
-        if (_GEN)
-          pcReg <= 2'h0;
-      end
-      else if (_GEN_1)
-        pcReg <= pcReg + 2'h1;
+      activeReg <= io_start | ~_layer_probe_4 & activeReg;
+      doneReg <= ~io_start & (_layer_probe_4 | doneReg);
+      if (io_start | _layer_probe_4)
+        pcReg <= 3'h0;
+      else if (_layer_probe_3 & activeReg | _layer_probe_2 & activeReg | _layer_probe_1
+               & activeReg | _layer_probe_0 & activeReg | _layer_probe & activeReg)
+        pcReg <= pcReg + 3'h1;
     end
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_
@@ -96,16 +90,22 @@ module TopModule(
         for (logic [1:0] i = 2'h0; i < 2'h2; i += 2'h1) begin
           _RANDOM[i[0]] = `RANDOM;
         end
-        counter = _RANDOM[1'h0];
-        activeReg = _RANDOM[1'h1][0];
-        pcReg = _RANDOM[1'h1][3:2];
+        activeReg = _RANDOM[1'h0][0];
+        doneReg = _RANDOM[1'h0][1];
+        pcReg = _RANDOM[1'h1][4:2];
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL
       `FIRRTL_AFTER_INITIAL
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  assign io_result = counter;
-  assign io_done = _GEN_0 & activeReg;
+  KernelStateMonitorDPI monitor (
+    .clock   (clock),
+    .reset   (reset),
+    .pcs     ({29'h0, pcReg}),
+    .actives (activeReg),
+    .dones   (doneReg)
+  );
+  assign io_done = doneReg;
 endmodule
 

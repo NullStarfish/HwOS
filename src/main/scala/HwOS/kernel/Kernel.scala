@@ -91,35 +91,32 @@ class Kernel {
     println(s"[Kernel] Symbol table dumped to $filename")
   }
   
-//  def attachMonitor(): Unit = {
-//     val nThreads = threads.length
-//     if (nThreads == 0) return
+  def attachMonitor(): Unit = {
+    val nThreads = threads.length
+    if (nThreads == 0) return
 
-//     val pc32Seq = threads.map { t =>
-//       val w = Wire(UInt(32.W))
-//       w := t.pc
-//       w
-//     }.toSeq
+    // 将所有的 PC 强制对齐到 32 bit 供 C++ 读取
+    val pc32Seq = threads.map { t =>
+      val w = WireInit(0.U(32.W))
+      w := t.pc
+      w
+    }.toSeq
 
-//     val pcVec     = VecInit(pc32Seq).asUInt                // [32*N] packed
-//     val activeVec = VecInit(threads.map(_.active).toSeq).asUInt 
-//     val startVec  = VecInit(threads.map(_.startWire).toSeq).asUInt 
-//     val abortVec  = VecInit(threads.map(_.abortWire).toSeq).asUInt 
-//     val doneVec   = VecInit(threads.map(_.done).toSeq).asUInt      
+    val pcVec     = VecInit(pc32Seq).asUInt
+    val activeVec = VecInit(threads.map(_.active).toSeq).asUInt 
+    val doneVec   = VecInit(threads.map(_.done).toSeq).asUInt      
 
-//     // 实例化 DPI BlackBox
-//     val monitor = Module(new KernelStateMonitorDPI(nThreads))
+    // 实例化 DPI BlackBox
+    val monitor = Module(new KernelStateMonitorDPI(nThreads))
     
-//     monitor.io.clock   := Module.clock
-//     monitor.io.reset   := Module.reset
-//     monitor.io.pcs     := pcVec
-//     monitor.io.actives := activeVec
-//     monitor.io.starts  := startVec
-//     monitor.io.aborts  := abortVec
-//     monitor.io.dones   := doneVec
+    monitor.io.clock   := Module.clock
+    monitor.io.reset   := Module.reset
+    monitor.io.pcs     := pcVec
+    monitor.io.actives := activeVec
+    monitor.io.dones   := doneVec
     
-//     println(s"[Kernel] Attached DPI Monitor for $nThreads threads.")
-//   }
+    println(s"[Kernel] Attached DPI Monitor for $nThreads threads.")
+  }
 } 
 
 
@@ -129,8 +126,6 @@ class KernelStateMonitorDPI(val nThreads: Int) extends BlackBox with HasBlackBox
     val reset   = Input(Bool())
     val pcs     = Input(UInt((32 * nThreads).W))
     val actives = Input(UInt(nThreads.W))
-    val starts  = Input(UInt(nThreads.W))
-    val aborts  = Input(UInt(nThreads.W))
     val dones   = Input(UInt(nThreads.W))
   })
 
@@ -143,19 +138,14 @@ class KernelStateMonitorDPI(val nThreads: Int) extends BlackBox with HasBlackBox
        |  input reset,
        |  input [${nThreads * 32 - 1}:0] pcs,
        |  input [${nThreads - 1}:0]      actives,
-       |  input [${nThreads - 1}:0]      starts,
-       |  input [${nThreads - 1}:0]      aborts,
        |  input [${nThreads - 1}:0]      dones
        |);
        |
        |  // 声明 DPI-C 函数
-       |  // 注意：在 C++ 侧，bit 向量通常映射为 svBitVecVal* 数组
        |  import "DPI-C" function void kernel_monitor_tick(
        |    input int n_threads,
        |    input bit [${nThreads * 32 - 1}:0] pcs,
        |    input bit [${nThreads - 1}:0]      actives,
-       |    input bit [${nThreads - 1}:0]      starts,
-       |    input bit [${nThreads - 1}:0]      aborts,
        |    input bit [${nThreads - 1}:0]      dones
        |  );
        |
@@ -165,8 +155,6 @@ class KernelStateMonitorDPI(val nThreads: Int) extends BlackBox with HasBlackBox
        |        ${nThreads},
        |        pcs,
        |        actives,
-       |        starts,
-       |        aborts,
        |        dones
        |      );
        |    end

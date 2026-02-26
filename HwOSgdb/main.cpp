@@ -1,27 +1,28 @@
 #include "verilated.h"
-#include "VTopModule.h" // 请替换为你的实际 Top 头文件
+#include "./obj_dir/VTopModule.h" // 请替换为你的实际 Top 头文件
 #include "svdpi.h"
 #include "SymbolParser.hpp"
 #include "SimEngine.hpp"
 #include "UIManager.hpp"
 
-// DPI C 回调函数 (由 SystemVerilog 侧通过 import "DPI-C" 调用)
+
+
+// DPI C 回调函数 (剔除了 starts 和 aborts)
 extern "C" void kernel_monitor_tick(
-    int n_threads, const svBitVecVal* pcs, const svBitVecVal* actives, 
-    const svBitVecVal* starts, const svBitVecVal* aborts, const svBitVecVal* dones
+    int n_threads, const svBitVecVal* pcs, const svBitVecVal* actives, const svBitVecVal* dones
 ) {
     if (g_engine) {
         g_engine->record_snapshot(n_threads, pcs, actives, dones);
     }
-}
+} 
 
 int main(int argc, char** argv) {
     Verilated::commandArgs(argc, argv);
-    VSimpleTop* top = new VTopModule;
+    VTopModule* top = new VTopModule;
 
     // 初始化核心组件
     SymbolParser parser;
-    parser.load_symbols("generated/hwos.symbols");
+    parser.load_symbols("../generated/hwos.symbols");
 
     SimEngine engine(top, &parser);
     UIManager ui(&parser, &engine);
@@ -37,8 +38,9 @@ int main(int argc, char** argv) {
     // 主事件循环
     while (ui.is_running() && !Verilated::gotFinish()) {
         ui.render_all();
-        int ch = getch();
-        ui.handle_input(ch);
+        
+        // 替换掉原来的 int ch = getch(); ui.handle_input(ch);
+        ui.process_input(); 
     }
 
     delete top;

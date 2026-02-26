@@ -44,4 +44,6 @@ class TopModule extends Module {
   
   // 触发全局构建
   Init.build()
+  kernel.dumpSymbolTable("generated/hwos.symbols")
+  kernel.attachMonitor()
 }

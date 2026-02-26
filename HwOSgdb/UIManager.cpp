@@ -172,7 +172,11 @@ void UIManager::render_all() {
     render_cmd();
 }
 
-void UIManager::handle_input(int ch) {
+void UIManager::process_input() {
+    // 关键修复：从 win_cmd 获取输入，而不是用全局的 getch()
+    // 这样就不会触发 stdscr 的隐式黑屏刷新了
+    int ch = wgetch(win_cmd); 
+
     if (ch == 'q') running = false;
     else if (ch == '\t') focus_sidebar = !focus_sidebar;
     else if (ch == 'r') { sim_engine->run_continuous(); scroll_offset = 0; }

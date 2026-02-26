@@ -10,7 +10,7 @@ public:
     ~UIManager();
 
     void render_all();
-    void handle_input(int ch);
+    void process_input();
     bool is_running() const { return running; }
 
 private:
