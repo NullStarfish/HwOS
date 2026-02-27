@@ -2,3 +2,5 @@ target/
 project/
 .metals/
 HwOSgdb/obj_dir/
+.vscode/
+.bloop/
