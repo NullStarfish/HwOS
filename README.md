@@ -140,11 +140,12 @@ If you find HwOS useful in your research, please consider citing our Technical R
 
 
 @techreport{chen2026hwos1.1,
-  title={HwOS 1.1: Scaling Thread-Level RTL with Ownership and Semantic Observability},
+  title={HwOS 1.1 Technical Report: Ownership,
+Functional Hardware, and Zero-Bubble
+Concurrency},
   author={Chen, Kaixin},
-  institution={Zhejiang University},
   year={2026},
-  doi={YOUR_ZENODO_DOI_HERE}
+  doi={https://doi.org/10.5281/zenodo.18795624}
 }
 
 ```
