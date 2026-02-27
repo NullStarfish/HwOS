@@ -1,165 +1,155 @@
+# HwOS: A Thread-Level RTL Abstraction Framework
 
-# HwOS: A Thread-Level RTL Abstraction for Composable and Observable Hardware Design
+[![Scala Version](https://img.shields.io/badge/Scala-2.13+-red.svg)](https://www.scala-lang.org/)
+[![Chisel Version](https://img.shields.io/badge/Chisel-3.6+-blue.svg)](https://www.chisel-lang.org/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[![Scala](https://img.shields.io/badge/Language-Scala%2FChisel-red)](https://www.chisel-lang.org/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![DOI](https://zenodo.org/badge/1145070977.svg)](https://doi.org/10.5281/zenodo.18608985)
+**HwOS** is a novel hardware construction framework built on top of Chisel/Scala. It introduces Operating System (OS) abstractions into the Register-Transfer Level (RTL) domain, addressing the exponential growth of control logic complexity in modern heterogeneous computing and out-of-order processors. 
 
+HwOS operates on a simple but radical philosophy: **"Hardware is an Operating System, Everything is a Thread."**
 
+By replacing fragmented Finite State Machines (FSMs) and explicit `Valid-Ready` handshakes with a **Thread-Level RTL (TL-RTL)** paradigm, HwOS enables designers to write complex, concurrent hardware using an imperative, software-like mindset without sacrificing physical area or timing performance.
 
-**HwOS** is a hardware construction framework based on [Chisel](https://www.chisel-lang.org/), designed to introduce operating system abstractions into the RTL design domain. Its core philosophy is: **"Hardware is an Operating System, Everything is a Thread."**
+## ✨ Core Features
 
-By defining **Thread-Level RTL (TL-RTL)**, HwOS encapsulates sequential logic and fragmented FSMs into `HardwareThread` objects with independent lifecycles. Paired with the **HwOSgdb** debugger, it enables developers to monitor and debug hardware states in real-time at the source-code semantic level.
+* **Thread-Level RTL (TL-RTL):** Write sequential hardware logic using `HardwareThread` and `Step`. The compiler automatically flattens these into optimal FSMs with assigned Program Counters (PCs).
+* **Zero-Bubble `hijack`:** A compiler-level metaprogramming directive that inlines the closure of the next `Step` into the current cycle, enabling 0-cycle, zero-bubble state transitions without writing complex manual combinational bypasses.
+* **Functional Hardware (`HwFunction`):** Decouples the execution container (the "CPU") from the logic payload (the "Program"). Hardware logic can be passed, nested, and invoked via `SysCall`.
+* **Ownership & Context-Aware Safety:** Hardware resources (wires/registers) are strictly managed via an Access Control List (ACL). The native `<==` operator physically gates assignments based on the thread's active state, preventing illegal out-of-context logic generation (`ContextScope`).
+* **OS Reaper & `HwLease`:** A system-level Garbage Collector for RTL. If a thread is aborted or killed, the OS Reaper uses privileged assignments (`<==!`) to forcibly reclaim stateful resources (like Mutexes) to prevent system deadlocks.
+* **Hardware Stdlib:** Comes with a built-in, highly optimized concurrency library including `Mutex`, `Semaphore`, `WaitGroup` (using concurrent adder-trees), and `Scoreboard`.
+* **Native Semantic Observability (HwOSgdb):** A DPI-C and ncurses-based TUI debugger. It visualizes the dual-track CallStack (macro-temporal and micro-combinational) and supports time-travel debugging.
 
----
+## 🚀 Quick Start
 
-## ✨ Features
+### Prerequisites
+* JDK 17+ 
+* sbt (Scala Build Tool)
+* Verilator (for HwOSgdb and fast simulation)
+* `ncurses` library (for HwOSgdb UI)
 
-* **Thread-Level RTL (TL-RTL) Abstraction**
-    * Describes timing behavior in an imperative style using primitives like `Step`, `Wait`, and `Fork`, replacing traditional FSM state transitions.
-    * Supports **Implicit Context Capture**, allowing child threads to access parent variables directly with zero wiring overhead.
+### 1. Run the Counter Example
+The quickest way to see HwOS in action is to run the QuickStart counter process.
 
-* **Driver as Control Flow Proxy**
-    * Physical resources (e.g., Register Files, Buses) are encapsulated within `Drivers`.
-    * **Instruction Injection Mechanism**: Drivers automatically inject blocking logic (e.g., `waitCondition`) into the caller's thread to handle resource arbitration and pipeline stalls, eliminating manual Ready-Valid handshakes.
+```bash
+# Run the ScalaTest to simulate the Counter Process
+sbt "testOnly HwOS.quick_start.TopModuleSpec"
 
-* **Service-Based Pipeline**
-    * Shifts the paradigm from "instructions flowing through pipes" to "instructions as active threads seeking services."
-    * Naturally supports out-of-order execution and dynamic dependency resolution without centralized issue queues.
-
-* **Fractal Architecture**
-    * Uses a recursive `Kernel` - `Process` - `Thread` structure, supporting modular reuse and hierarchical system management.
-
-* **Native Observability & HwOSgdb**
-    * Maps hardware simulation states back to source symbols using SystemVerilog DPI-C interfaces.
-    * Provides a **terminal-based debugger (HwOSgdb)** supporting semantic breakpoints (e.g., `break Thread.pc==2`), single-stepping, time travel, and state visualization.
-
-
-## 📂 Project Structure
-
-```text
-HwOS/
-├── src/main/scala/HwOS/kernel/    # Core Kernel Implementation
-│   ├── Kernel.scala               # Global Manager, ID Allocation & DPI Interface
-│   ├── HwProcess.scala            # Logic Container, supports recursive spawn
-│   ├── HardwareAgent.scala        # Definitions for HardwareThread & HardwareLogic
-│   ├── ContextScope.scala         # Stack management for metaprogramming (ThreadCtx)
-│   ├── PhysicalDriver.scala       # Base Driver class & DriverMeta
-│   └── drivers/                   # Standard Driver Library
-│       ├── ScoreboardRegfileDriver.scala  # RegFile Driver with Scoreboard support
-│       ├── PipelinedScoreboardRegfileDriver.scala
-│       └── ...
-├── src/test/scala/HwOS/           # Tests and Examples
-│   ├── example/                   # Comprehensive Examples (App objects)
-│   │   ├── SimpleTopforDPIDebug.scala 
-│   │   └── PipelineDebugGen.scala
-│   ├── kernel/                    # Unit Tests (Fork, Abort, MultiCore, etc.)
-│   └── synth/                     # Synthesis Benchmarks (Micro-benchmarks) 
-├── synth_results/                 # Synthesis Output & Reports (Verilog/Log) 
-├── HwOSgdb.cpp                    # Source code for the terminal debugger 
-├── compile_HwOSgdb.sh             # Build script for the debugger 
-└── build.sbt                      # Scala/Chisel build configuration
+# Or generate the SystemVerilog files and the Symbol Table
+sbt "runMain HwOS.quick_start.QuickStart"
 
 ```
 
----
+The generated SystemVerilog and `hwos.symbols` file will be located in the `generated/` directory.
 
-## 🛠️ Prerequisites
+### 2. A Glimpse of TL-RTL Code
 
-Before you begin, ensure you have the following installed:
-
-1. **Scala & sbt**: For building the Chisel project. (JDK 8+ required)
-2. **Verilator**: Open-source Verilog simulator, required for DPI interface generation and fast simulation.
-3. **C++ Compiler (g++)**: For compiling HwOSgdb.
-4. **ncurses Library**: UI dependency for HwOSgdb.
-* Ubuntu/Debian: `sudo apt-get install libncurses5-dev libncursesw5-dev`
-
-
-
----
-
-## 🚀 Usage
-
-### 1. Defining a Hardware Thread
-
-In HwOS, you don't write `always` blocks or FSM `case` statements. Instead, define timing logic inside an `entry` block:
+Here is how you define a hardware process with thread-level concurrency and safe resource ownership in HwOS:
 
 ```scala
-// Example: A simple Accumulator Thread
-val t = createThread("Accumulator")
-t.entry {
-  // Define Steps, which automatically map to FSM states
-  t.Step("Load") {
-    accReg := 10.U
-  }
-  t.Step("Compute") {
-    accReg := accReg * 2.U
-  }
-  // Use a Driver for atomic operations; handshakes are handled automatically
-  t.Step("Store") {
-    driver.writeAtomic(addr, accReg) {
-      t.exit() // Task complete, exit thread
+class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+  // 1. Declare resources and claim ownership
+  val counter  = this.own(RegInit(0.U(32.W)))
+  
+  // 2. Spawn a hardware thread
+  val mainThread = createThread("MainThread")
+
+  override def entry(): Unit = {
+    // 3. Grant write permissions to the thread
+    this.grant(counter, mainThread)
+
+    // 4. Define sequential logic
+    mainThread.entry {
+      mainThread.Step("Init") {
+        counter <== 0.U // Safe assignment gated by thread's isActive
+      }
+      mainThread.Step("CountUp") {
+        counter <== counter + 1.U
+        // Hardware-level blocking: PC stalls here until condition is met
+        mainThread.waitAndAct(counter === 10.U) {
+          mainThread.Next.hijack() // Zero-Bubble transition to the next step
+        }
+      }
+      mainThread.Step("Finish") {
+        mainThread.exit() // Terminate thread lifecycle
+      }
     }
   }
 }
 
 ```
 
-### 2. Build and Run
+## 🛠️ HwOSgdb: Source-Level Hardware Debugger
 
-To run the simulation with the HwOSgdb debugger, follow this specific order:
+Stop guessing states from raw VCD waveforms. **HwOSgdb** is a terminal-based UI debugger that leverages DPI-C to stream live telemetry from your RTL simulation.
 
-**Step 1: Generate Verilog and Simulation Artifacts**
-First, run the Scala application to generate the SystemVerilog code and DPI interfaces.
+### Building and Running HwOSgdb
 
 ```bash
-# Run the example App object
-sbt "test:runMain HwOS.example.PipelineDebugGen"
+# First, generate the Verilog and symbols via sbt
+sbt "runMain HwOS.kernel.Example"
+
+# Navigate to the debugger directory
+cd HwOSgdb
+
+# Build the C++ simulator and TUI
+make
+
+# Run the interactive debugger
+./hwosgdb
 
 ```
 
-*This step generates the Verilog files and the `hwos.symbols` symbol table required by the debugger.*
+### GDB Controls:
 
-**Step 2: Compile the Debugger**
-Once the Verilog/C++ models are generated (or if you are compiling the standalone debugger), run the provided script:
-
-```bash
-./compile_HwOSgdb.sh
-
-```
-
-**Step 3: Start Debugging**
-Run the compiled executable (HwOSgdb) to start the interactive session:
-
-```bash
-./obj_dir/VSimpleTop
-
-```
-
-**Debugger Shortcuts**:
-
-* `[Space]`: Step one clock cycle.
+* `[SPACE]`: Step exactly one clock cycle.
 * `[r]`: Run continuously.
-* `[b]`: Set breakpoint (e.g., `Thread_0.pc == 3`).
-* `[s]`: Step until the focused thread changes state.
-* `[TAB]`: Switch focus between Sidebar (Thread List) and Main View (Waveform/State).
+* `[s]`: Step-over (Run until the focused thread changes state).
+* `[TAB]`: Switch focus between Sidebar (Thread List) and Scope (Timeline).
+* `[UP/DOWN]`: Scroll through the Time-Travel history buffer.
 
-### 3. Synthesis & Benchmarking
+## 📂 Project Structure
 
-To generate synthesis-ready Verilog for benchmarking (as seen in the `synth_results` folder):
-
-```bash
-sbt "test:runMain HwOS.synth.synthThread"
-
-```
-
-The output verilog files will be located in the `generated/` directory.
-
-
-
+* `src/main/scala/HwOS/`
+* `kernel/`: The core framework (`HwProcess`, `HardwareThread`, `ContextScope`, `HwOwnerShip`, `SysCall`).
+* `stdlib/`: Hardware synchronization primitives (`Mutex`, `WaitGroup`, `Scoreboard`).
+* `lib/`: Standard components (e.g., `ScoreboardRegfile`).
+* `quick_start/`: Hello World examples.
 
 ---
 
-*This is a personal research project built on Chisel 3.*
+* `src/test/scala/HwOS/`: Comprehensive unit tests verifying deadlocks, lease reclaims, and RAW hazard stalling.
+* `HwOSgdb/`: The C++ and `ncurses` based TUI debugger and Verilator simulation engine.
 
+## 📄 Academic Citation
+
+If you find HwOS useful in your research, please consider citing our Technical Report / Preprint:
+
+```bibtex
+@misc{chen2026hwos,
+  author       = {Chen, Kaixin},
+  title        = {HwOS: A Thread-Level RTL Abstraction for Composable and Observable Hardware Design},
+  publisher    = {TechRxiv},
+  year         = {2026},
+  month        = {feb},
+  howpublished = {Preprint},
+  doi          = {10.36227/techrxiv.177155627.77438450/v1}, 
+  url          = {https://doi.org/10.36227/techrxiv.177155627.77438450/v1}
+}
+
+
+
+@techreport{chen2026hwos1.1,
+  title={HwOS 1.1: Scaling Thread-Level RTL with Ownership and Semantic Observability},
+  author={Chen, Kaixin},
+  institution={Zhejiang University},
+  year={2026},
+  doi={YOUR_ZENODO_DOI_HERE}
+}
+
+```
+
+## 📜 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
 
