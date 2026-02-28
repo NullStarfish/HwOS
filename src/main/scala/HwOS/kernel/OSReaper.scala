@@ -10,18 +10,18 @@ class OSReaperProcess(monitoredThreads: Seq[HardwareThread], localName: String)(
     val daemon = createLogic("Daemon")
 
     monitoredThreads.foreach { thread =>
-      if (thread.lifecycleReady) {
+      if (thread.lifecycleReady && thread.runtime.supportsLifecycleGrant) {
         thread.grantLifecycle(thread, daemon)
       }
     }
 
     daemon.run {
       monitoredThreads.foreach { thread =>
-        if (thread.lifecycleReady) {
-          when(thread.ctx.kernelKillSignal) {
-            thread.activeReg <==! false.B
-            thread.pc        <==! 0.U
-            thread.doneReg   <==! false.B
+        if (thread.lifecycleReady && thread.runtime.supportsKill) {
+          when(thread.runtime.killSignal) {
+            thread.runtime.active <==! false.B
+            thread.runtime.pc     <==! 0.U
+            thread.runtime.done   <==! false.B
 
             thread.ctx.activeLeases.foreach { lease =>
               when(lease.isActive) {

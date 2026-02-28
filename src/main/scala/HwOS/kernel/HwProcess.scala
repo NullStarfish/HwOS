@@ -49,8 +49,8 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
   val children = ArrayBuffer[HwProcess]()
 
 
-  def createThread(name: String = "Main"): HardwareThread = {
-    val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable)
+  def createThread(name: String = "Main", policy: ThreadPolicy = ThreadPolicy.Auto): HardwareThread = {
+    val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable, policy)
     kernel.registerThread(s"${this.name}/${name}_thread", t)
     kernel.registerContext(t)
     threads += t
@@ -82,7 +82,9 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     }
 
     c.threads.foreach { t =>
-      t.grantLifecycle(t, this)
+      if (t.runtime.supportsLifecycleGrant) {
+        t.grantLifecycle(t, this)
+      }
     }
 
     c

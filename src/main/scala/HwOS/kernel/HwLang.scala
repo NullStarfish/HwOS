@@ -8,6 +8,7 @@ object HwOSLanguage {
     def <==(rhs: T): Unit = {
       val agent = ContextScope.getCurrentAgent()
       ResourceManager.checkSignalWrite(lhs, agent)
+      ResourceManager.recordDrive(lhs, agent)
       
       // 【核心架构跃升】：在底层硬件生成一个全局使能 Mux！
       // 如果当前上下文处于静默/被强杀状态，这行赋值在物理上直接断开空转。
@@ -19,6 +20,7 @@ object HwOSLanguage {
     // 2. 内核级特权赋值：无视 isActive，用于死神进程 (Reaper) 的强杀兜底
     def <==!(rhs: T): Unit = {
       val agent = ContextScope.getCurrentAgent()
+      ResourceManager.recordDrive(lhs, agent)
       ResourceManager.checkSignalWrite(lhs, agent)
       
       // 不受 isActive 门控，强制驱动物理连线

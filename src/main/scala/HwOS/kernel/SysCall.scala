@@ -41,16 +41,16 @@ object SysCall {
    * 远程杀手：强制中止目标线程 (他杀)
    */
   def kill(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall kill"){ agent =>
-    target.ctx.kernelKillSignal <== true.B
+    target.markExternalKill()
+    target.runtime.kill()
   }
 
   /**
    * 远程启动：唤醒目标线程
    */
   def start(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall start"){ agent =>
-    target.activeReg <== true.B
-    target.pc        <== 0.U
-    target.doneReg   <== false.B
+    target.markExternalStart()
+    target.runtime.activate()
   }
 
   /**
@@ -59,6 +59,7 @@ object SysCall {
    */
   def fork(name: String)(childBody: HardwareThread => Unit): HardwareThread = {
     val parent = ContextScope.getCurrentThread()
+    parent.markFork()
     
     // 1. 创建子线程
     val childName = s"${parent.name.split("/").last}_fork_$name"
@@ -74,9 +75,7 @@ object SysCall {
     }
 
     // 4. 启动并返回句柄
-    child.activeReg <== true.B
-    child.pc        <== 0.U
-    child.doneReg   <== false.B
+    child.runtime.activate()
     child
   }
 

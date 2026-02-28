@@ -34,8 +34,19 @@ class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boo
   }
 }
 
-class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Boolean = true) extends HardwareAgent  {
+class HardwareThread(
+    val name: String,
+    val owner: HwProcess,
+    val debugEnable: Boolean = true,
+    val policy: ThreadPolicy = ThreadPolicy.Auto,
+) extends HardwareAgent  {
+  private val analysisPrintEnabled =
+    sys.env.get("HWOS_PRINT_THREAD_ANALYSIS").contains("1") ||
+      java.lang.Boolean.getBoolean("hwos.printThreadAnalysis")
+
   val tls = scala.collection.mutable.Map[String, HwContext]() //used for visibility
+  val capabilities = new ThreadCapabilities
+  capabilities.debugVisible = debugEnable
 
   class StepNode(val name: String, val block: () => Unit) {
     var prev: StepNode = _
@@ -114,35 +125,54 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
 
   private val globals = ArrayBuffer[() => Unit]()
-
-  val activeReg = this.own(RegInit(false.B))
-  val doneReg = this.own(RegInit(false.B))
-
-  ctx.isActive := activeReg && !ctx.kernelKillSignal
-
-  private var pcEntity :UInt = _
+  private var runtimeEntity: ThreadRuntime = _
   private var _generated = false
 
   private var hasExit: Boolean = false
 
 
   val freeze = WireInit(false.B)
+  private val activeView = WireInit(false.B)
+  private val doneView = WireInit(false.B)
+  private val pcView = WireInit(0.U(32.W))
 
-
-  def pc: UInt = {
-    if (pcEntity == null) {
-      agentPrint("Cannot access thread.pc outside of entry!!!")
-      throw new Exception("pc not set")
+  def runtime: ThreadRuntime = {
+    if (runtimeEntity == null) {
+      throw new Exception(s"[HwOS] Runtime for thread '$name' is not initialized yet.")
     }
-
-    pcEntity
+    runtimeEntity
   }
 
 
-  def active: Bool =  activeReg
-  def done: Bool =  doneReg
+  def pc: UInt = {
+    if (runtimeEntity == null) pcView else runtime.pc
+  }
 
-  def lifecycleReady: Boolean = pcEntity != null
+
+  def active: Bool = {
+    scala.util.Try(ContextScope.getCurrentAgent()).toOption match {
+      case Some(agent) if agent != this => capabilities.exposesActive = true
+      case _ =>
+    }
+    activeView
+  }
+  def done: Bool = {
+    scala.util.Try(ContextScope.getCurrentAgent()).toOption match {
+      case Some(agent) if agent != this => capabilities.exposesDone = true
+      case _ =>
+    }
+    doneView
+  }
+
+  def lifecycleReady: Boolean = runtime.lifecycleReady
+
+  def markExternalStart(): Unit = capabilities.usesExternalStart = true
+  def markExternalKill(): Unit = capabilities.usesExternalKill = true
+  def markDoneObserved(): Unit = capabilities.exposesDone = true
+  def markActiveObserved(): Unit = capabilities.exposesActive = true
+  def markLifecycleGranted(): Unit = capabilities.exposesLifecycle = true
+  def markLeaseTracking(): Unit = capabilities.usesLeaseTracking = true
+  def markFork(): Unit = capabilities.usesFork = true
 
 
 
@@ -161,9 +191,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     }
     
     // 硬件退出逻辑对两种情况都适用
-    pc        := 0.U
-    doneReg   := true.B
-    activeReg := false.B
+    runtime.exit()
   }
   
 
@@ -182,6 +210,8 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     ContextScope.withContext(ThreadCtx(this)) { block } //注意，这是非常重要的
     if (nodes.isEmpty) {return}
 
+    runtimeEntity = chooseRuntime()
+
     for (i <- 0 until nodes.length) {
       if (i > 0) nodes(i).prev = nodes(i-1)
       if (i < nodes.length - 1) nodes(i).next = nodes(i+1)
@@ -192,15 +222,16 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     var pcCounter = 0
 
     //生成pcReg，让综合器自己优化去吧
-    val maxSteps = nodes.length 
-    val pcWidth  = log2Ceil(maxSteps + 1)
-    val pcReg    = this.own(RegInit(0.U(pcWidth.W)))
-    pcEntity     = pcReg 
+    val maxSteps = nodes.length
+    val pcReg    = runtime.allocatePc(maxSteps)
+    runtime.bindContext()
+    activeView := runtime.active
+    doneView := runtime.done
+    pcView := runtime.pc
 
 
 
 
-    val execAllowed = WireInit(false.B)
 
 
 
@@ -227,7 +258,9 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
     }
     // 上面我们完成了：pc译码分配block的逻辑，这是静态的，下面我们通过active等逻辑，让他动起来
 
-    this.grantLifecycle(this, this.owner)
+    if (runtime.supportsLifecycleGrant) {
+      runtime.grantLifecycle(this.owner)
+    }
 
 
 
@@ -267,6 +300,8 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       throw new Exception
     }
 
+    maybePrintCapabilitySummary()
+
 
     if (debugEnable) { //放在最后防止被覆盖
       when (this.freeze) {
@@ -281,7 +316,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
   def waitCondition(cond: Bool): Unit = { 
     ContextScope.current match {
-      case AtomicCtx(t) => {}
+      case AtomicCtx(t) => t.capabilities.hasMultiCycleWait = true
       case _ => {agentPrint(p"Do not use waitCondition outside entry!!!"); throw new Exception("waitCondition outside entry")}
     }
 
@@ -292,7 +327,7 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
 
   def waitAndAct(cond: Bool)(block: => Unit): Unit = {
     ContextScope.current match {
-      case AtomicCtx(t) => {}
+      case AtomicCtx(t) => t.capabilities.hasMultiCycleWait = true
       case _ => {agentPrint("Do not use waitCondition outside entry!!!"); throw new Exception("waitCondition outside entry")}
     }
 
@@ -309,5 +344,28 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       case _ => {agentPrint("Do not use Global outside entry!!!"); throw new Exception("global outside entry")}
     }
     globals += { () => block } 
-  } 
+  }
+
+  private def maybePrintCapabilitySummary(): Unit = {
+    if (analysisPrintEnabled && policy != ThreadPolicy.Persistent) {
+      val selected = runtime match {
+        case _: InlineThreadRuntime => "inline-runtime"
+        case _: PersistentThreadRuntime => "persistent-runtime"
+        case _ => "unknown-runtime"
+      }
+      println(s"[HwOS Analysis] Thread '$name' => ${capabilities.summary}, selected=$selected")
+    }
+  }
+
+  private def chooseRuntime(): ThreadRuntime = {
+    policy match {
+      case ThreadPolicy.Persistent => new PersistentThreadRuntime(this, policy)
+      case ThreadPolicy.InlinePreferred if capabilities.canUseInlineRuntime =>
+        new InlineThreadRuntime(this, policy)
+      case ThreadPolicy.InlinePreferred =>
+        new PersistentThreadRuntime(this, policy)
+      case ThreadPolicy.Auto =>
+        new PersistentThreadRuntime(this, policy)
+    }
+  }
 }

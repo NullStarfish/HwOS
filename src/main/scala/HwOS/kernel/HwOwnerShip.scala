@@ -28,6 +28,10 @@ class HwContext(val self: HwOwner) {
   private[kernel] val activeLeases = ArrayBuffer[HwLease]()
 
   def registerLease(lease: HwLease): Unit = {
+    self match {
+      case t: HardwareThread => t.markLeaseTracking()
+      case _ =>
+    }
     activeLeases += lease
   }
 
@@ -79,10 +83,8 @@ trait HwOwner {
 
 
   def grantLifecycle(thread: HardwareThread, target: HwOwner): Unit = {
-    grant(thread.activeReg, target)
-    grant(thread.pc, target)
-    grant(thread.doneReg, target)
-    grant(thread.ctx.kernelKillSignal, target)
+    thread.markLifecycleGranted()
+    thread.runtime.grantLifecycle(target)
   }
 }
 

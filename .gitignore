@@ -4,3 +4,5 @@ project/
 HwOSgdb/obj_dir/
 .vscode/
 .bloop/
+.clang-module-cache/
+.swift-module-cache/
