@@ -12,24 +12,27 @@ case class AtomicCtx(t: HardwareThread)  extends ExecutionContext
 
 // 上下文管理器 (单例)
 object ContextScope {
-  private val scopeStack = Stack[ExecutionContext]()
+  private val scopeStack = new ThreadLocal[Stack[ExecutionContext]] {
+    override def initialValue(): Stack[ExecutionContext] = Stack[ExecutionContext]()
+  }
 
   // 压栈并执行代码块
   def withContext[T](ctx: ExecutionContext)(block: => T): T = {
-    scopeStack.push(ctx)
+    scopeStack.get().push(ctx)
     try {
       block
     } finally {
-      scopeStack.pop()
+      scopeStack.get().pop()
     }
   }
 
   // 获取当前上下文
   def current: ExecutionContext = {
-    if (scopeStack.isEmpty) {
+    val currentStack = scopeStack.get()
+    if (currentStack.isEmpty) {
       throw new Exception("the scope is empty")
     }
-    scopeStack.top
+    currentStack.top
   }
 
   def getCurrentThread(): HardwareThread =  {

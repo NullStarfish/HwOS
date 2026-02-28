@@ -142,6 +142,8 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
   def active: Bool =  activeReg
   def done: Bool =  doneReg
 
+  def lifecycleReady: Boolean = pcEntity != null
+
 
 
   
@@ -224,10 +226,6 @@ class HardwareThread(val name: String, val owner: HwProcess, val debugEnable: Bo
       }
     }
     // 上面我们完成了：pc译码分配block的逻辑，这是静态的，下面我们通过active等逻辑，让他动起来
-
-
-
-    ctx.elaborateOSReaper(this)
 
     this.grantLifecycle(this, this.owner)
 

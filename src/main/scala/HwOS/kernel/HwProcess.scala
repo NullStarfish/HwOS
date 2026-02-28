@@ -52,6 +52,7 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
   def createThread(name: String = "Main"): HardwareThread = {
     val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable)
     kernel.registerThread(s"${this.name}/${name}_thread", t)
+    kernel.registerContext(t)
     threads += t
     t
   }
@@ -93,5 +94,8 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
   
   def build(): Unit = {
     entry()
+    if (parent.isEmpty) {
+      kernel.boot()
+    }
   }
 }

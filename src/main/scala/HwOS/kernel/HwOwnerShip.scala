@@ -35,44 +35,6 @@ class HwContext(val self: HwOwner) {
   self.own(kernelKillSignal)
 
   val isActive = WireInit(!kernelKillSignal)
-
-  private[kernel] def elaborateOSReaper(thread: HardwareThread): Unit = {
-    // 【核心修复】：为底层强杀逻辑注入上下文！
-    // 尽管这是内核级操作，但它在代替线程归还锁（执行 <==!）时，
-    // 在安全网关眼里，依然必须算作是该 thread 在进行合法的资源交接。
-    ContextScope.withContext(ThreadCtx(thread)) {
-      when(kernelKillSignal) {
-        // 物理切断 (使用 <==! 绕过用户态安全检查)
-        thread.activeReg <==! false.B
-        thread.pc        <==! 0.U
-        thread.doneReg   <==! false.B
-
-        // 撕毁所有契约
-        activeLeases.foreach { lease =>
-          when(lease.isActive) {
-            // 此时有了 ThreadCtx，内部的 <==! 就能完美获取到当前 agent 了
-            lease.forceReclaim(thread)
-          }
-        }
-      }
-    }
-  }
-
-
-
-  // 内核钩子：展开所有契约的硬件级强制回收连线
-  // private[kernel] def tearDownLeases(): Unit = {
-  //   self match {
-  //     case agent: HardwareAgent =>
-  //       activeLeases.foreach { lease =>
-  //         // 只有当运行时确实持有该锁时，才触发强制释放
-  //         when(lease.isActive) {
-  //           lease.forceReclaim(agent)
-  //         }
-  //       }
-  //     case _ =>
-  //   }
-  // }
 }
 
 

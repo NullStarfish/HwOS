@@ -7,6 +7,10 @@ import java.io._
 
 class Kernel {
   val secure_mode :Boolean = true
+  private var booted = false
+  private var booting = false
+  private val monitorEnabled =
+    sys.env.get("HWOS_ENABLE_MONITOR").contains("1") || java.lang.Boolean.getBoolean("hwos.enableMonitor")
 
   private val threads = ArrayBuffer[HardwareThread]()
   private val threadNameMap = new HashMap[String, Int]()
@@ -23,6 +27,11 @@ class Kernel {
     tid
   }
   def getTID(name: String): Option[Int] = threadNameMap.get(name)
+
+  private val contexts = ArrayBuffer[HardwareThread]()
+  def registerContext(thread: HardwareThread): Unit = {
+    contexts += thread
+  }
 
 
 
@@ -46,6 +55,25 @@ class Kernel {
 
   def getPID(name: String): Option[Int] = processNameMap.get(name) 
 
+  def boot(): Unit = {
+    if (booted || booting) return
+
+    booting = true
+    try {
+      implicit val selfKernel: Kernel = this
+
+      object SystemKernel extends HwProcess("Kernel", overrideDebug = Some(false)) {
+        val reaper = spawn(new OSReaperProcess(contexts.toSeq, "OSReaper")(Kernel.this))
+        override def entry(): Unit = {}
+      }
+
+      SystemKernel.build()
+      booted = true
+    } finally {
+      booting = false
+    }
+  }
+
 
 
 
@@ -65,6 +93,7 @@ class Kernel {
   
 
   def dumpSymbolTable(filename: String): Unit = {
+    boot()
     val file = new java.io.File(filename)
     val bw = new java.io.BufferedWriter(new java.io.FileWriter(file))
     
@@ -92,6 +121,11 @@ class Kernel {
   }
   
   def attachMonitor(): Unit = {
+    boot()
+    if (!monitorEnabled) {
+      println("[Kernel] Monitor disabled. Set HWOS_ENABLE_MONITOR=1 or -Dhwos.enableMonitor=true to attach DPI monitor.")
+      return
+    }
     val nThreads = threads.length
     if (nThreads == 0) return
 

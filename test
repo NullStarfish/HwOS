@@ -1,0 +1,7 @@
+Init/PpClient/ProducerInstr_thread 0 Issue_Reserve 0 None 3 Reserve_0;Reserve_0,ReqSBLease_0;Reserve_0,Reserve_0
+Init/PpClient/ProducerInstr_thread 1 EX_Cycle1 0 None 0 None
+Init/PpClient/ProducerInstr_thread 2 EX_Cycle2 0 None 0 None
+Init/PpClient/ProducerInstr_thread 3 EX_Cycle3 0 None 0 None
+Init/PpClient/ProducerInstr_thread 4 WB_Writeback 0 None 4 WB_0;WB_0,ReqSBLease_0;WB_0,Base_Write_0;WB_0,Release_0
+Init/PpClient/ProducerInstr_thread 5 Retire 0 None 0 None
+Init/PpClient/ConsumerInstr_thread 0 WaitIssue 0 None 0 None
