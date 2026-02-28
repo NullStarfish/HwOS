@@ -65,6 +65,9 @@ class HardwareThread(
 
   // 1. 存储节点而非直接生成逻辑
   val nodes = ArrayBuffer[StepNode]()
+  private val nodeByName = LinkedHashMap[String, StepNode]()
+  private val pendingJumpTargets = scala.collection.mutable.Set[String]()
+  private var jumpPcByName = Map.empty[String, UInt]
   // 用于在 block 内部查找当前节点
   private[kernel] var currentGeneratingNode: StepNode = _
 
@@ -108,6 +111,9 @@ class HardwareThread(
 
 
   def Step(name: String)(block: => Unit): Unit = {
+    if (nodeByName.contains(name)) {
+      throw new Exception(s"[HwOS] Duplicate step name '$name' in thread '$this.name'.")
+    }
     // 获取完整的调试路径名
     
     
@@ -118,6 +124,7 @@ class HardwareThread(
       }
     })
     nodes += node
+    nodeByName(name) = node
   }
 
 
@@ -174,6 +181,21 @@ class HardwareThread(
   def markLeaseTracking(): Unit = capabilities.usesLeaseTracking = true
   def markFork(): Unit = capabilities.usesFork = true
 
+  def jump(target: String): Unit = {
+    ContextScope.current match {
+      case AtomicCtx(t) if t == this =>
+      case AtomicCtx(_) => throw new Exception("Cannot jump another thread!")
+      case _ => throw new Exception("jump() must be called inside a Step!")
+    }
+
+    val targetPc = jumpPcByName.getOrElse(
+      target,
+      throw new Exception(s"[HwOS] Unknown jump target '$target' in thread '$name'."),
+    )
+    pendingJumpTargets += target
+    pc <== targetPc
+  }
+
 
 
   
@@ -228,6 +250,7 @@ class HardwareThread(
     activeView := runtime.active
     doneView := runtime.done
     pcView := runtime.pc
+    jumpPcByName = nodes.iterator.map(node => node.name -> WireInit(0.U(log2Ceil(maxSteps max 2).W))).toMap
 
 
 
@@ -256,6 +279,19 @@ class HardwareThread(
         }
       }
     }
+
+    for (node <- nodes) {
+      if (!node.isHijacked) {
+        jumpPcByName(node.name) := node.allocatedPC.U
+      }
+    }
+
+    for (target <- pendingJumpTargets) {
+      val targetNode = nodeByName(target)
+      if (targetNode.isHijacked || targetNode.allocatedPC < 0) {
+        throw new Exception(s"[HwOS] jump target '$target' in thread '$name' has no standalone PC. Consider jumping to a non-hijacked step.")
+      }
+    }
     // 上面我们完成了：pc译码分配block的逻辑，这是静态的，下面我们通过active等逻辑，让他动起来
 
     if (runtime.supportsLifecycleGrant) {
@@ -273,8 +309,8 @@ class HardwareThread(
       when (wasActive && !active) { agentPrint("--- OFFLINE ---") }
       val justStarted = active && !wasActive
       when ((active && pcReg =/= lastPc) || justStarted) {
-        for ((name, idx) <- nodes.map(_.name).zipWithIndex) {
-          when (pcReg === idx.U) { agentPrint(s"EXEC [PC $idx] $name") }
+        for (node <- nodes if node.allocatedPC >= 0) {
+          when (pcReg === node.allocatedPC.U) { agentPrint(s"EXEC [PC ${node.allocatedPC}] ${node.name}") }
         }
       }
       when (active && (pc === lastPc)) {
