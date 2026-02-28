@@ -225,12 +225,10 @@ object InjectedFreeFlow {
   class FetchProcess(program: Seq[ISA.Instr], initData: Seq[Int], localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     private val fetchWidth = 2
     val decode = spawn(new DecodeProcess(program.length max 1, initData, "Decode"))
-    val issueMutex = spawn(new sync.MutexProcess(fetchWidth, "IssueMutex"))
     private val launcher = createLogic("Launcher")
 
     private val issuePtr = this.own(RegInit(0.U(log2Ceil(program.length + 1).W)))
     private val programRom = VecInit(program.map(ISA.encode))
-    val feeders = (0 until fetchWidth).map(i => createThread(s"Feeder$i"))
 
     val slots = program.indices.map { i =>
       val thread = createThread(s"Slot${i}_inst")
@@ -246,56 +244,44 @@ object InjectedFreeFlow {
         }
         this.grantLifecycle(slot.thread, this)
       }
-      for ((feeder, feederId) <- feeders.zipWithIndex) {
-        this.grant(issuePtr, feeder)
-        slots.foreach(slot => this.grantLifecycle(slot.thread, feeder))
-        slots.foreach(slot => this.grant(slot.instArg, feeder))
+      this.grant(issuePtr, launcher)
+      slots.foreach(slot => this.grantLifecycle(slot.thread, launcher))
+      slots.foreach(slot => this.grant(slot.instArg, launcher))
+      launcher.run {
+        val freeVec = VecInit(slots.map(slot => !slot.thread.active))
+        val firstFire = issuePtr < program.length.U && freeVec.asUInt.orR
+        val firstIdx = PriorityEncoder(freeVec)
+        val secondMask = Wire(Vec(slots.length, Bool()))
+        for ((isFree, idx) <- freeVec.zipWithIndex) {
+          secondMask(idx) := isFree && (!firstFire || firstIdx =/= idx.U)
+        }
+        val secondFire = issuePtr + 1.U < program.length.U && secondMask.asUInt.orR
+        val secondIdx = PriorityEncoder(secondMask)
 
-        feeder.entry {
-          feeder.Step(s"ListenFreeSlot_$feederId") {
-            val freeVec = VecInit(slots.map(slot => !slot.thread.active))
-            val anyFree = freeVec.asUInt.orR
-            feeder.waitCondition(issuePtr < program.length.U && anyFree)
-          }
-
-          feeder.Step(s"ClaimAndIssue_$feederId") {
-            val issueLease = SysCall.Call(issueMutex.RequestLease(feederId))
-            SysCall.Call(issueLease.Lock())
-
-            val freeVec = VecInit(slots.map(slot => !slot.thread.active))
-            val anyFree = freeVec.asUInt.orR
-            feeder.waitCondition(issuePtr < program.length.U && anyFree)
-
-            val inst = programRom(issuePtr(log2Ceil(program.length max 2) - 1, 0))
-            val freeIdx = PriorityEncoder(freeVec)
-            for ((slot, idx) <- slots.zipWithIndex) {
-              when(freeIdx === idx.U) {
-                slot.instArg <== inst
-                SysCall.Call(SysCall.start(slot.thread))
-              }
-            }
-            issuePtr <== issuePtr + 1.U
-            SysCall.Call(issueLease.Unlock())
-            feeder.Next.hijack()
-          }
-
-          feeder.Step(s"Loop_$feederId") {
-            val hasOutstandingWork = issuePtr < program.length.U || slots.map(_.thread.active).reduce(_ || _)
-            when(hasOutstandingWork) {
-              feeder.jump(s"ListenFreeSlot_$feederId")
-            }.otherwise {
-              feeder.exit()
+        when(firstFire) {
+          val inst0 = programRom(issuePtr(log2Ceil(program.length max 2) - 1, 0))
+          for ((slot, idx) <- slots.zipWithIndex) {
+            when(firstIdx === idx.U) {
+              slot.instArg <== inst0
+              SysCall.Call(SysCall.start(slot.thread))
             }
           }
         }
-      }
 
-      feeders.foreach(this.grantLifecycle(_, launcher))
-      launcher.run {
-        for (feeder <- feeders) {
-          when(!feeder.active && !feeder.done) {
-            SysCall.Call(SysCall.start(feeder))
+        when(secondFire) {
+          val inst1Idx = issuePtr + 1.U
+          val inst1 = programRom(inst1Idx(log2Ceil(program.length max 2) - 1, 0))
+          for ((slot, idx) <- slots.zipWithIndex) {
+            when(secondIdx === idx.U) {
+              slot.instArg <== inst1
+              SysCall.Call(SysCall.start(slot.thread))
+            }
           }
+        }
+
+        val issueCount = Mux(firstFire, 1.U, 0.U) + Mux(secondFire, 1.U, 0.U)
+        when(issueCount =/= 0.U) {
+          issuePtr <== issuePtr + issueCount
         }
       }
     }

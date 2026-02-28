@@ -20,6 +20,10 @@ class InjectedFreeFlowSpec extends AnyFlatSpec {
     ISA.Instr(op = 1, rd = 3, rs1 = 0, imm = 3),
     ISA.Instr(op = 1, rd = 4, rs1 = 0, imm = 4),
   )
+  private val dualIssueProgram = Seq(
+    ISA.Instr(op = 1, rd = 1, rs1 = 0, imm = 1),
+    ISA.Instr(op = 1, rd = 2, rs1 = 0, imm = 2),
+  )
 
   "Injected free-flow prototype" should "run a minimal fetch-decode-service MVP" in {
     simulate(new InjectedCpuModule(program, initData = Seq(0, 0, 0, 0, 42))) { c =>
@@ -70,6 +74,17 @@ class InjectedFreeFlowSpec extends AnyFlatSpec {
 
       c.clock.step(7)
       assert(c.io.activeThreads.peek().litValue >= 3, "expected multiple instruction threads in flight with dual fetch workers")
+    }
+  }
+
+  it should "launch two instructions together from fetch" in {
+    simulate(new InjectedCpuModule(dualIssueProgram, initData = Seq(0, 11, 22))) { c =>
+      c.reset.poke(true.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      c.clock.step(2)
+      assert(c.io.activeThreads.peek().litValue >= 2, "expected dual issue from fetch to make two threads active quickly")
     }
   }
 }
