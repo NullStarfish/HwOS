@@ -9,13 +9,14 @@ import chisel3.util._
 
 object InjectedFreeFlow {
   object ISA {
-    val opWidth = 1
+    val opWidth = 2
     val regWidth = 3
     val immWidth = 8
     val instWidth = opWidth + regWidth + regWidth + immWidth
 
     val OP_ADDI = 0.U(opWidth.W)
     val OP_LOAD = 1.U(opWidth.W)
+    val OP_LOADADD = 2.U(opWidth.W)
 
     case class Instr(op: Int, rd: Int, rs1: Int, imm: Int)
 
@@ -97,20 +98,30 @@ object InjectedFreeFlow {
 
     def install(slotId: Int, instBits: UInt): HwFunction[Unit] = HwFunction.thread(s"${name}_Install_$slotId") { t =>
       val decodedSrc = t.own(RegInit(0.U(32.W)))
+      val loadedValue = t.own(RegInit(0.U(32.W)))
       val result = t.own(RegInit(0.U(32.W)))
       val loadDelay = t.own(RegInit(0.U(2.W)))
 
-      t.Step(s"RouteReserve_$slotId") {
-        val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
-        SysCall.Call(writePort.Reserve(ISA.rd(instBits)))
+      t.Step(s"RouteDispatch_$slotId") {
+        val canArith = ISA.opcode(instBits) === ISA.OP_ADDI && SysCall.Call(arith.service.Available())
+        val canLoad = ISA.opcode(instBits) === ISA.OP_LOAD && SysCall.Call(load.service.Available())
+        val canLoadAdd = ISA.opcode(instBits) === ISA.OP_LOADADD && SysCall.Call(load.service.Available())
+        t.waitCondition(canArith || canLoad || canLoadAdd)
+
+        when(canArith) {
+          t.jump(s"ArithReserve_$slotId")
+        }
+        when(canLoad) {
+          t.jump(s"LoadReserve_$slotId")
+        }
+        when(canLoadAdd) {
+          t.jump(s"LoadAddLoadReserve_$slotId")
+        }
       }
 
-      t.Step(s"RouteDispatch_$slotId") {
-        when(ISA.opcode(instBits) === ISA.OP_ADDI) {
-          t.jump(s"ArithGuard_$slotId")
-        }.otherwise {
-          t.jump(s"LoadAcquire_$slotId")
-        }
+      t.Step(s"ArithReserve_$slotId") {
+        val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
+        SysCall.Call(writePort.Reserve(ISA.rd(instBits)))
       }
 
       t.Step(s"ArithGuard_$slotId") {
@@ -131,6 +142,11 @@ object InjectedFreeFlow {
         t.jump(s"RouteWriteback_$slotId")
       }
 
+      t.Step(s"LoadReserve_$slotId") {
+        val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
+        SysCall.Call(writePort.Reserve(ISA.rd(instBits)))
+      }
+
       t.Step(s"LoadAcquire_$slotId") {
         SysCall.Call(load.Acquire(slotId))
         loadDelay <== 0.U
@@ -143,6 +159,52 @@ object InjectedFreeFlow {
       t.Step(s"LoadRead_$slotId") {
         result <== SysCall.Call(load.Read(ISA.imm(instBits)))
         SysCall.Call(load.Release(slotId))
+        t.jump(s"RouteWriteback_$slotId")
+      }
+
+      t.Step(s"LoadAddLoadReserve_$slotId") {
+        val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
+        SysCall.Call(writePort.Reserve(ISA.rd(instBits)))
+      }
+
+      t.Step(s"LoadAddLoadAcquire_$slotId") {
+        SysCall.Call(load.Acquire(slotId))
+        loadDelay <== 0.U
+      }
+
+      t.Step(s"LoadAddLoadWait_$slotId") {
+        SysCall.Call(load.Wait(loadDelay))
+      }
+
+      t.Step(s"LoadAddLoadRead_$slotId") {
+        loadedValue <== SysCall.Call(load.Read(ISA.imm(instBits)))
+        SysCall.Call(load.Release(slotId))
+        t.jump(s"LoadAddArithDispatch_$slotId")
+      }
+
+      t.Step(s"LoadAddArithDispatch_$slotId") {
+        val canArith = SysCall.Call(arith.service.Available())
+        t.waitCondition(canArith)
+        when(canArith) {
+          t.jump(s"LoadAddArithGuard_$slotId")
+        }
+      }
+
+      t.Step(s"LoadAddArithGuard_$slotId") {
+        SysCall.Call(regFile.scoreboard.Guard(ISA.rs1(instBits)))
+      }
+
+      t.Step(s"LoadAddArithRead_$slotId") {
+        decodedSrc <== SysCall.Call(regFile.baseReg.Read(ISA.rs1(instBits)))
+      }
+
+      t.Step(s"LoadAddArithAcquire_$slotId") {
+        SysCall.Call(arith.Acquire(slotId))
+      }
+
+      t.Step(s"LoadAddArithExec_$slotId") {
+        result <== SysCall.Call(arith.Execute(loadedValue, decodedSrc))
+        SysCall.Call(arith.Release(slotId))
         t.jump(s"RouteWriteback_$slotId")
       }
 
@@ -220,7 +282,7 @@ object InjectedFreeFlow {
           feeder.Step(s"Loop_$feederId") {
             val hasOutstandingWork = issuePtr < program.length.U || slots.map(_.thread.active).reduce(_ || _)
             when(hasOutstandingWork) {
-              feeder.pc := 0.U
+              feeder.jump(s"ListenFreeSlot_$feederId")
             }.otherwise {
               feeder.exit()
             }
@@ -243,27 +305,31 @@ object InjectedFreeFlow {
     val io = IO(new Bundle {
       val x1 = Output(UInt(32.W))
       val x2 = Output(UInt(32.W))
+      val x3 = Output(UInt(32.W))
       val activeThreads = Output(UInt(8.W))
     })
 
     io.x1 := DontCare
     io.x2 := DontCare
+    io.x3 := DontCare
     io.activeThreads := DontCare
 
     implicit val kernel: Kernel = new Kernel()
 
     object Init extends HwProcess("Init") {
-      this.own(io.x1); this.own(io.x2); this.own(io.activeThreads)
+      this.own(io.x1); this.own(io.x2); this.own(io.x3); this.own(io.activeThreads)
       val fetch = spawn(new FetchProcess(program, initData, "Fetch"))
       val daemon = createLogic("Daemon")
 
       override def entry(): Unit = {
         this.grant(io.x1, daemon)
         this.grant(io.x2, daemon)
+        this.grant(io.x3, daemon)
         this.grant(io.activeThreads, daemon)
         daemon.run {
           io.x1 <== SysCall.Call(fetch.decode.regFile.baseReg.Read(1.U))
           io.x2 <== SysCall.Call(fetch.decode.regFile.baseReg.Read(2.U))
+          io.x3 <== SysCall.Call(fetch.decode.regFile.baseReg.Read(3.U))
           io.activeThreads <== PopCount(fetch.slots.map(_.thread.active))
         }
       }

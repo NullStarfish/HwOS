@@ -10,6 +10,10 @@ class InjectedFreeFlowSpec extends AnyFlatSpec {
     ISA.Instr(op = 0, rd = 1, rs1 = 0, imm = 9),
     ISA.Instr(op = 1, rd = 2, rs1 = 0, imm = 4),
   )
+  private val loadAddProgram = Seq(
+    ISA.Instr(op = 0, rd = 1, rs1 = 0, imm = 9),
+    ISA.Instr(op = 2, rd = 2, rs1 = 1, imm = 4),
+  )
   private val multiIssueProgram = Seq(
     ISA.Instr(op = 1, rd = 1, rs1 = 0, imm = 1),
     ISA.Instr(op = 1, rd = 2, rs1 = 0, imm = 2),
@@ -42,6 +46,19 @@ class InjectedFreeFlowSpec extends AnyFlatSpec {
       c.clock.step(11)
       c.io.x1.expect(9.U)
       c.io.x2.expect(42.U)
+    }
+  }
+
+  it should "run a LOADADD control program through load then arithmetic" in {
+    simulate(new InjectedCpuModule(loadAddProgram, initData = Seq(0, 0, 0, 0, 42))) { c =>
+      c.reset.poke(true.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      c.clock.step(24)
+
+      c.io.x1.expect(9.U)
+      c.io.x2.expect(51.U)
     }
   }
 

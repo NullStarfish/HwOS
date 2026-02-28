@@ -167,6 +167,10 @@ object sync {
     def RequestLease(id: Int): HwFunction[SemaphoreLease] = HwFunction.bindings(s"ReqSemLease_$id") { _ =>
       leases(id)
     }
+
+    def Available(): HwFunction[Bool] = HwFunction.stateless("SemAvailable") { _ =>
+      count > 0.U
+    }
   }
 
   // ==========================================
