@@ -122,4 +122,128 @@ object RegfileLib {
       writePorts(portIdx)
     }
   }
+
+  class AgeOrderedScoreboardRegfileProcess(
+      val depth: Int,
+      val width: Int,
+      val maxWriters: Int,
+      val maxInFlight: Int,
+      val zeroReg: Boolean,
+      localName: String,
+  )(implicit kernel: Kernel)
+      extends HwProcess(localName) {
+
+    private val addrWidth = log2Ceil(depth max 2)
+    private case class PendingPort(busy: Bool, addr: UInt, data: UInt, ready: Bool)
+
+    val baseReg = spawn(new BaseRegfileProcess(depth, width, 1, zeroReg, "Base"))
+    val scoreboard = spawn(new ScoreboardProcess(depth, maxWriters, zeroAlwaysFree = zeroReg, "Control"))
+    val orderWindow = spawn(new OrderedWindowProcess(maxWriters, maxInFlight, "OrderWindow"))
+
+    private val pendingPorts = Array.tabulate(maxWriters) { _ =>
+      PendingPort(
+        this.own(RegInit(false.B)),
+        this.own(RegInit(0.U(addrWidth.W))),
+        this.own(RegInit(0.U(width.W))),
+        this.own(RegInit(false.B)),
+      )
+    }
+    private val publishDone = Array.tabulate(maxWriters)(_ => this.own(RegInit(false.B)))
+
+    private def matchingPorts(addr: UInt, requireReady: Bool): Vec[Bool] =
+      VecInit(pendingPorts.toIndexedSeq.map(p => p.busy && p.addr === addr && (!requireReady || p.ready)))
+
+    private def BeginPendingWrite(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"BeginPendingWrite_$portIdx") { t =>
+      val pending = pendingPorts(portIdx)
+      this.grant(pending.busy, t)
+      this.grant(pending.addr, t)
+      this.grant(pending.ready, t)
+      this.grant(publishDone(portIdx), t)
+      pending.busy <== true.B
+      pending.addr <== addr
+      pending.ready <== false.B
+      publishDone(portIdx) <== false.B
+      ()
+    }
+
+    private def FinishPendingWrite(portIdx: Int, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"FinishPendingWrite_$portIdx") { t =>
+      val pending = pendingPorts(portIdx)
+      this.grant(pending.data, t)
+      this.grant(pending.ready, t)
+      pending.data <== data
+      pending.ready <== true.B
+      ()
+    }
+
+    override def entry(): Unit = {
+      val daemon = createLogic("OrderedWriteDaemon")
+      for (pending <- pendingPorts) {
+        this.grant(pending.busy, daemon)
+        this.grant(pending.addr, daemon)
+        this.grant(pending.data, daemon)
+        this.grant(pending.ready, daemon)
+      }
+      for (done <- publishDone) {
+        this.grant(done, daemon)
+      }
+
+      daemon.run {
+        for ((pending, i) <- pendingPorts.zipWithIndex) {
+          val windowLease = SysCall.Call(orderWindow.RequestLease(i))
+          when(pending.busy && pending.ready && SysCall.Call(windowLease.Committed())) {
+            SysCall.Call(baseReg.Write(0, pending.addr, pending.data))
+            val sbLease = SysCall.Call(scoreboard.RequestLease(i))
+            SysCall.Call(sbLease.Release())
+            SysCall.Call(windowLease.ForceCommit())
+            pending.busy <== false.B
+            pending.ready <== false.B
+            publishDone(i) <== true.B
+          }
+        }
+      }
+    }
+
+    def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("OrderedGuardedRead") { t =>
+      val matchingReady = matchingPorts(addr, requireReady = true.B)
+      val matchingBusy = matchingPorts(addr, requireReady = false.B)
+      val canRead = (if (zeroReg) addr === 0.U else false.B) || !matchingBusy.asUInt.orR || matchingReady.asUInt.orR
+      t.waitCondition(canRead)
+
+      val rdata = this.own(WireInit(0.U(width.W)))
+      grant(rdata, t)
+
+      when(if (zeroReg) addr === 0.U else false.B) {
+        rdata <== 0.U
+      }.elsewhen(matchingReady.asUInt.orR) {
+        rdata <== Mux1H(matchingReady, VecInit(pendingPorts.toIndexedSeq.map(_.data)))
+      }.otherwise {
+        rdata <== SysCall.Call(baseReg.Read(addr))
+      }
+      rdata
+    }
+
+    class OrderedRegWritePort(val portIdx: Int) {
+      def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
+        val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
+        val windowLease = SysCall.Call(orderWindow.RequestLease(portIdx))
+        SysCall.Call(sbLease.Reserve(addr))
+        SysCall.Call(windowLease.Reserve())
+        SysCall.Call(BeginPendingWrite(portIdx, addr))
+      }
+
+      def WritebackAndClear(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"WB_$portIdx") { t =>
+        val windowLease = SysCall.Call(orderWindow.RequestLease(portIdx))
+        SysCall.Call(FinishPendingWrite(portIdx, data))
+        SysCall.Call(windowLease.Commit())
+        t.waitCondition(publishDone(portIdx))
+        ()
+      }
+    }
+
+    private val writePorts = Array.tabulate(maxWriters)(i => new OrderedRegWritePort(i))
+
+    def RequestWritePort(portIdx: Int): HwFunction[OrderedRegWritePort] = HwFunction.bindings(s"ReqOrderedRegPort_$portIdx") { _ =>
+      writePorts(portIdx)
+    }
+  }
 }

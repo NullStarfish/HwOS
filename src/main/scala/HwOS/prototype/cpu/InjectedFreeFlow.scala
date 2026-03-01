@@ -101,11 +101,37 @@ object InjectedFreeFlow {
       val loadedValue = t.own(RegInit(0.U(32.W)))
       val result = t.own(RegInit(0.U(32.W)))
       val loadDelay = t.own(RegInit(0.U(2.W)))
+      val opcode = ISA.opcode(instBits)
+      val rd = ISA.rd(instBits)
+      val rs1 = ISA.rs1(instBits)
+      val imm = ISA.imm(instBits)
+
+      def reserveWrite(stepName: String): Unit =
+        t.Step(stepName) {
+          val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
+          SysCall.Call(writePort.Reserve(rd))
+        }
+
+      def guardedRead(stepName: String, addr: UInt): Unit =
+        t.Step(stepName) {
+          decodedSrc <== SysCall.Call(regFile.GuardedRead(addr))
+        }
+
+      def acquireArith(stepName: String): Unit =
+        t.Step(stepName) {
+          SysCall.Call(arith.Acquire(slotId))
+        }
+
+      def acquireLoad(stepName: String): Unit =
+        t.Step(stepName) {
+          SysCall.Call(load.Acquire(slotId))
+          loadDelay <== 0.U
+        }
 
       t.Step(s"RouteDispatch_$slotId") {
-        val canArith = ISA.opcode(instBits) === ISA.OP_ADDI && SysCall.Call(arith.service.Available())
-        val canLoad = ISA.opcode(instBits) === ISA.OP_LOAD && SysCall.Call(load.service.Available())
-        val canLoadAdd = ISA.opcode(instBits) === ISA.OP_LOADADD && SysCall.Call(load.service.Available())
+        val canArith = opcode === ISA.OP_ADDI && SysCall.Call(arith.service.Available())
+        val canLoad = opcode === ISA.OP_LOAD && SysCall.Call(load.service.Available())
+        val canLoadAdd = opcode === ISA.OP_LOADADD && SysCall.Call(load.service.Available())
         t.waitCondition(canArith || canLoad || canLoadAdd)
 
         when(canArith) {
@@ -119,65 +145,43 @@ object InjectedFreeFlow {
         }
       }
 
-      t.Step(s"ArithReserve_$slotId") {
-        val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
-        SysCall.Call(writePort.Reserve(ISA.rd(instBits)))
-      }
-
-      t.Step(s"ArithGuard_$slotId") {
-        SysCall.Call(regFile.scoreboard.Guard(ISA.rs1(instBits)))
-      }
+      reserveWrite(s"ArithReserve_$slotId")
+      guardedRead(s"ArithGuard_$slotId", rs1)
 
       t.Step(s"ArithRead_$slotId") {
-        decodedSrc <== SysCall.Call(regFile.baseReg.Read(ISA.rs1(instBits)))
+        t.jump(s"ArithAcquire_$slotId")
       }
 
-      t.Step(s"ArithAcquire_$slotId") {
-        SysCall.Call(arith.Acquire(slotId))
-      }
+      acquireArith(s"ArithAcquire_$slotId")
 
       t.Step(s"ArithExec_$slotId") {
-        result <== SysCall.Call(arith.Execute(decodedSrc, ISA.imm(instBits)))
+        result <== SysCall.Call(arith.Execute(decodedSrc, imm))
         SysCall.Call(arith.Release(slotId))
         t.jump(s"RouteWriteback_$slotId")
       }
 
-      t.Step(s"LoadReserve_$slotId") {
-        val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
-        SysCall.Call(writePort.Reserve(ISA.rd(instBits)))
-      }
-
-      t.Step(s"LoadAcquire_$slotId") {
-        SysCall.Call(load.Acquire(slotId))
-        loadDelay <== 0.U
-      }
+      reserveWrite(s"LoadReserve_$slotId")
+      acquireLoad(s"LoadAcquire_$slotId")
 
       t.Step(s"LoadWait_$slotId") {
         SysCall.Call(load.Wait(loadDelay))
       }
 
       t.Step(s"LoadRead_$slotId") {
-        result <== SysCall.Call(load.Read(ISA.imm(instBits)))
+        result <== SysCall.Call(load.Read(imm))
         SysCall.Call(load.Release(slotId))
         t.jump(s"RouteWriteback_$slotId")
       }
 
-      t.Step(s"LoadAddLoadReserve_$slotId") {
-        val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
-        SysCall.Call(writePort.Reserve(ISA.rd(instBits)))
-      }
-
-      t.Step(s"LoadAddLoadAcquire_$slotId") {
-        SysCall.Call(load.Acquire(slotId))
-        loadDelay <== 0.U
-      }
+      reserveWrite(s"LoadAddLoadReserve_$slotId")
+      acquireLoad(s"LoadAddLoadAcquire_$slotId")
 
       t.Step(s"LoadAddLoadWait_$slotId") {
         SysCall.Call(load.Wait(loadDelay))
       }
 
       t.Step(s"LoadAddLoadRead_$slotId") {
-        loadedValue <== SysCall.Call(load.Read(ISA.imm(instBits)))
+        loadedValue <== SysCall.Call(load.Read(imm))
         SysCall.Call(load.Release(slotId))
         t.jump(s"LoadAddArithDispatch_$slotId")
       }
@@ -190,17 +194,13 @@ object InjectedFreeFlow {
         }
       }
 
-      t.Step(s"LoadAddArithGuard_$slotId") {
-        SysCall.Call(regFile.scoreboard.Guard(ISA.rs1(instBits)))
-      }
+      guardedRead(s"LoadAddArithGuard_$slotId", rs1)
 
       t.Step(s"LoadAddArithRead_$slotId") {
-        decodedSrc <== SysCall.Call(regFile.baseReg.Read(ISA.rs1(instBits)))
+        t.jump(s"LoadAddArithAcquire_$slotId")
       }
 
-      t.Step(s"LoadAddArithAcquire_$slotId") {
-        SysCall.Call(arith.Acquire(slotId))
-      }
+      acquireArith(s"LoadAddArithAcquire_$slotId")
 
       t.Step(s"LoadAddArithExec_$slotId") {
         result <== SysCall.Call(arith.Execute(loadedValue, decodedSrc))
@@ -223,11 +223,11 @@ object InjectedFreeFlow {
   final class Slot(val slotId: Int, val thread: HardwareThread, val instArg: UInt)
 
   class FetchProcess(program: Seq[ISA.Instr], initData: Seq[Int], localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-    private val fetchWidth = 2
+    private val issueWidth = 2
     val decode = spawn(new DecodeProcess(program.length max 1, initData, "Decode"))
     private val launcher = createLogic("Launcher")
 
-    private val issuePtr = this.own(RegInit(0.U(log2Ceil(program.length + 1).W)))
+    private val fetchPtr = this.own(RegInit(0.U(log2Ceil(program.length + 1).W)))
     private val programRom = VecInit(program.map(ISA.encode))
 
     val slots = program.indices.map { i =>
@@ -237,6 +237,8 @@ object InjectedFreeFlow {
     }
 
     override def entry(): Unit = {
+      require(issueWidth == 2, "Current MVP keeps only 1-bit intra-bundle order")
+
       for (slot <- slots) {
         slot.thread.grant(slot.instArg, this)
         slot.thread.entry {
@@ -244,44 +246,33 @@ object InjectedFreeFlow {
         }
         this.grantLifecycle(slot.thread, this)
       }
-      this.grant(issuePtr, launcher)
+      this.grant(fetchPtr, launcher)
       slots.foreach(slot => this.grantLifecycle(slot.thread, launcher))
       slots.foreach(slot => this.grant(slot.instArg, launcher))
       launcher.run {
         val freeVec = VecInit(slots.map(slot => !slot.thread.active))
-        val firstFire = issuePtr < program.length.U && freeVec.asUInt.orR
-        val firstIdx = PriorityEncoder(freeVec)
-        val secondMask = Wire(Vec(slots.length, Bool()))
-        for ((isFree, idx) <- freeVec.zipWithIndex) {
-          secondMask(idx) := isFree && (!firstFire || firstIdx =/= idx.U)
-        }
-        val secondFire = issuePtr + 1.U < program.length.U && secondMask.asUInt.orR
-        val secondIdx = PriorityEncoder(secondMask)
-
-        when(firstFire) {
-          val inst0 = programRom(issuePtr(log2Ceil(program.length max 2) - 1, 0))
-          for ((slot, idx) <- slots.zipWithIndex) {
-            when(firstIdx === idx.U) {
-              slot.instArg <== inst0
-              SysCall.Call(SysCall.start(slot.thread))
+        val launchPlan = Seq(
+          freeVec,
+          VecInit(slots.indices.map(idx => freeVec(idx) && !PriorityEncoderOH(freeVec.asUInt)(idx)))
+        )
+        val fires = launchPlan.zipWithIndex.map { case (candidates, laneIdx) =>
+          val slotOH = PriorityEncoderOH(candidates.asUInt)
+          val slotFire = (fetchPtr + laneIdx.U) < program.length.U && slotOH.orR
+          val inst = programRom((fetchPtr + laneIdx.U)(log2Ceil(program.length max 2) - 1, 0))
+          when(slotFire) {
+            for ((slot, idx) <- slots.zipWithIndex) {
+              when(slotOH(idx)) {
+                slot.instArg <== inst
+                SysCall.Call(SysCall.start(slot.thread))
+              }
             }
           }
+          Mux(slotFire, 1.U, 0.U)
         }
 
-        when(secondFire) {
-          val inst1Idx = issuePtr + 1.U
-          val inst1 = programRom(inst1Idx(log2Ceil(program.length max 2) - 1, 0))
-          for ((slot, idx) <- slots.zipWithIndex) {
-            when(secondIdx === idx.U) {
-              slot.instArg <== inst1
-              SysCall.Call(SysCall.start(slot.thread))
-            }
-          }
-        }
-
-        val issueCount = Mux(firstFire, 1.U, 0.U) + Mux(secondFire, 1.U, 0.U)
+        val issueCount = fires.reduce(_ + _)
         when(issueCount =/= 0.U) {
-          issuePtr <== issuePtr + issueCount
+          fetchPtr <== fetchPtr + issueCount
         }
       }
     }

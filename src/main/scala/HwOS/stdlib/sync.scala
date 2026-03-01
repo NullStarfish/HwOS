@@ -248,6 +248,127 @@ object sync {
     selectedIdx // 返回硬件线缆引用
   }
 
+  class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+    private val tokenWidth = log2Ceil((maxInFlight + 1) max 2)
+    private case class WindowReq(reserve: Bool, commit: Bool, forceCommit: Bool, reclaim: Bool)
+    private case class WindowEntry(active: Bool, commitPending: Bool, token: UInt)
+
+    private val nextIssue = this.own(RegInit(0.U(tokenWidth.W)))
+    private val nextCommit = this.own(RegInit(0.U(tokenWidth.W)))
+    private val inFlight = this.own(RegInit(0.U(tokenWidth.W)))
+    private val reqs = Array.tabulate(maxClients) { _ =>
+      WindowReq(
+        this.own(WireInit(false.B)),
+        this.own(WireInit(false.B)),
+        this.own(WireInit(false.B)),
+        this.own(WireInit(false.B)),
+      )
+    }
+
+    private val entries = Array.tabulate(maxClients) { _ =>
+      WindowEntry(
+        this.own(RegInit(false.B)),
+        this.own(RegInit(false.B)),
+        this.own(RegInit(0.U(tokenWidth.W))),
+      )
+    }
+    private def reserveRequests: UInt =
+      PriorityEncoderOH(VecInit((0 until maxClients).map(i => reqs(i).reserve && !entries(i).active)).asUInt)
+    private def forceCommitRequests: UInt =
+      PriorityEncoderOH(VecInit((0 until maxClients).map(i => reqs(i).forceCommit && entries(i).active && entries(i).commitPending && entries(i).token === nextCommit)).asUInt)
+
+    override def entry(): Unit = {
+      val daemon = createLogic("OrderDaemon")
+      this.grant(nextIssue, daemon)
+      this.grant(nextCommit, daemon)
+      this.grant(inFlight, daemon)
+      entries.foreach { entry =>
+        this.grant(entry.active, daemon)
+        this.grant(entry.commitPending, daemon)
+        this.grant(entry.token, daemon)
+      }
+
+      daemon.run {
+        val reserveGrantOH = Mux(inFlight < maxInFlight.U, reserveRequests, 0.U(maxClients.W))
+        val reserveFire = reserveGrantOH.orR
+        val forceCommitOH = forceCommitRequests
+        val commitFire = forceCommitOH.orR
+        val reclaimOH = VecInit((0 until maxClients).map(i => reqs(i).reclaim && entries(i).active)).asUInt
+        val reclaimCount = PopCount(reclaimOH)
+
+        for ((entry, i) <- entries.zipWithIndex) {
+          when(reserveGrantOH(i)) {
+            entry.active <== true.B
+            entry.commitPending <== false.B
+            entry.token <== nextIssue
+          }
+          when(reqs(i).commit && entry.active) {
+            entry.commitPending <== true.B
+          }
+          when(forceCommitOH(i) || reclaimOH(i)) {
+            entry.active <== false.B
+            entry.commitPending <== false.B
+          }
+        }
+
+        when(reserveFire) {
+          nextIssue <== nextIssue + 1.U
+        }
+        when(commitFire || reclaimOH.asUInt.orR) {
+          when(commitFire) {
+            nextCommit <== nextCommit + 1.U
+          }.otherwise {
+            val reclaimHead = VecInit((0 until maxClients).map(i => reclaimOH(i) && entries(i).token === nextCommit)).asUInt.orR
+            when(reclaimHead) {
+              nextCommit <== nextCommit + 1.U
+            }
+          }
+          inFlight <== inFlight + Mux(reserveFire, 1.U, 0.U) - Mux(commitFire, 1.U, 0.U) - reclaimCount
+        }.elsewhen(reserveFire) {
+          inFlight <== inFlight + 1.U
+        }
+      }
+    }
+
+    class WindowLease(val id: Int) extends HwLease {
+      override def isActive: Bool = entries(id).active
+
+      def Reserve(): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$id") { t =>
+        OrderedWindowProcess.this.grant(reqs(id).reserve, t)
+        reqs(id).reserve <== true.B
+        val granted = inFlight < maxInFlight.U && reserveRequests(id)
+        t.waitCondition(granted)
+        t.ctx.registerLease(this)
+      }
+
+      def Commit(): HwFunction[Unit] = HwFunction.stateless(s"Commit_$id") { agent =>
+        OrderedWindowProcess.this.grant(reqs(id).commit, agent)
+        reqs(id).commit <== true.B
+      }
+
+      def Committed(): HwFunction[Bool] = HwFunction.stateless(s"Committed_$id") { _ =>
+        val entry = entries(id)
+        entry.active && entry.commitPending && entry.token === nextCommit
+      }
+
+      def ForceCommit(): HwFunction[Unit] = HwFunction.stateless(s"ForceCommit_$id") { agent =>
+        OrderedWindowProcess.this.grant(reqs(id).forceCommit, agent)
+        reqs(id).forceCommit <== true.B
+      }
+
+      override def forceReclaim(agent: HardwareAgent): Unit = {
+        OrderedWindowProcess.this.grant(reqs(id).reclaim, agent)
+        reqs(id).reclaim <==! true.B
+      }
+    }
+
+    private val leases = Array.tabulate(maxClients)(i => new WindowLease(i))
+
+    def RequestLease(id: Int): HwFunction[WindowLease] = HwFunction.bindings(s"ReqWindowLease_$id") { _ =>
+      leases(id)
+    }
+  }
+
 
 
 
