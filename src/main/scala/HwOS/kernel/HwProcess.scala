@@ -49,9 +49,18 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
   val children = ArrayBuffer[HwProcess]()
 
 
-  def createThread(name: String = "Main", policy: ThreadPolicy = ThreadPolicy.Auto): HardwareThread = {
-    val t = new HardwareThread(s"${this.name}/${name}_thread", this, debugEnable, policy)
-    kernel.registerThread(s"${this.name}/${name}_thread", t)
+  def createThread(
+      name: String = "Main",
+      backend: ThreadBackendKind = ThreadBackendKind.Default,
+  ): HardwareThread = {
+    val threadName = s"${this.name}/${name}_thread"
+    val t = backend match {
+      case ThreadBackendKind.Default =>
+        new DefaultHardwareThread(threadName, this, debugEnable, backend)
+      case ThreadBackendKind.Inline =>
+        new InlineHardwareThread(threadName, this, debugEnable, backend)
+    }
+    kernel.registerThread(threadName, t)
     kernel.registerContext(t)
     threads += t
     t

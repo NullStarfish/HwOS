@@ -4,45 +4,8 @@ import chisel3._
 import chisel3.util._
 import HwOS.kernel.HwOSLanguage._
 
-sealed trait ThreadPolicy
-
-object ThreadPolicy {
-  case object Persistent extends ThreadPolicy
-  case object Auto extends ThreadPolicy
-  case object InlinePreferred extends ThreadPolicy
-}
-
-final class ThreadCapabilities {
-  var hasMultiCycleWait: Boolean = false
-  var usesExternalStart: Boolean = false
-  var usesExternalKill: Boolean = false
-  var exposesDone: Boolean = false
-  var exposesActive: Boolean = false
-  var exposesLifecycle: Boolean = false
-  var usesLeaseTracking: Boolean = false
-  var usesFork: Boolean = false
-  var debugVisible: Boolean = false
-
-  def inlineBlockers: Seq[String] = Seq(
-    if (usesExternalStart) Some("external-start") else None,
-    if (usesExternalKill) Some("external-kill") else None,
-    if (exposesLifecycle) Some("lifecycle-granted") else None,
-    if (usesLeaseTracking) Some("lease-tracking") else None,
-    if (usesFork) Some("fork") else None,
-  ).flatten
-
-  def canUseInlineRuntime: Boolean = inlineBlockers.isEmpty
-
-  def summary: String = {
-    val blockers = inlineBlockers
-    if (blockers.isEmpty) "inline-candidate"
-    else s"persistent-required[${blockers.mkString(",")}]"
-  }
-}
-
 trait ThreadRuntime {
   def thread: HardwareThread
-  def policy: ThreadPolicy
 
   def supportsExplicitStart: Boolean
   def supportsKill: Boolean
@@ -63,7 +26,6 @@ trait ThreadRuntime {
 
 final class PersistentThreadRuntime(
     val thread: HardwareThread,
-    val policy: ThreadPolicy,
 ) extends ThreadRuntime {
   private val activeReg = thread.own(RegInit(false.B))
   private val doneReg = thread.own(RegInit(false.B))
@@ -127,7 +89,6 @@ final class PersistentThreadRuntime(
 
 final class InlineThreadRuntime(
     val thread: HardwareThread,
-    val policy: ThreadPolicy,
 ) extends ThreadRuntime {
   private var pcEntity: UInt = _
   private var terminalPc: UInt = _

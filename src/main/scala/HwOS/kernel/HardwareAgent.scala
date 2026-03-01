@@ -2,9 +2,7 @@
 package HwOS.kernel
 
 import chisel3._
-import chisel3.util._
-import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
-import HwOS.kernel.HwOSLanguage.SecureAssign
+import scala.collection.mutable.ArrayBuffer
 
 trait HardwareAgent extends HwOwner {
   val owner: HwProcess
@@ -34,374 +32,44 @@ class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boo
   }
 }
 
-class HardwareThread(
+abstract class HardwareThread(
     val name: String,
     val owner: HwProcess,
     val debugEnable: Boolean = true,
-    val policy: ThreadPolicy = ThreadPolicy.Auto,
-) extends HardwareAgent  {
-  private val analysisPrintEnabled =
-    sys.env.get("HWOS_PRINT_THREAD_ANALYSIS").contains("1") ||
-      java.lang.Boolean.getBoolean("hwos.printThreadAnalysis")
-
+    val backend: ThreadBackendKind = ThreadBackendKind.Default,
+) extends HardwareAgent
+    with ThreadControlApi
+    with ThreadRuntimeApi {
   val tls = scala.collection.mutable.Map[String, HwContext]() //used for visibility
-  val capabilities = new ThreadCapabilities
-  capabilities.debugVisible = debugEnable
 
-  class StepNode(val name: String, val block: () => Unit) {
-    var prev: StepNode = _
-    var next: StepNode = _
-    
-    // 核心状态：是否被前一个节点抢占（吞噬）
-    // 如果为 true，这个节点将失去独立的 PC，变成上一节点逻辑的一部分
-    var isHijacked: Boolean = false
-    
-    // 调试用的 ID
-    var allocatedPC: Int = -1
-    val threadCallStack: Seq[String] = CallStack.getSnapshot
-
-    val invokedCalls = scala.collection.mutable.ArrayBuffer[Seq[String]]()
-  }
-
-  // 1. 存储节点而非直接生成逻辑
-  val nodes = ArrayBuffer[StepNode]()
-  private val nodeByName = LinkedHashMap[String, StepNode]()
-  private val pendingJumpTargets = scala.collection.mutable.Set[String]()
-  private var jumpPcByName = Map.empty[String, UInt]
-  // 用于在 block 内部查找当前节点
-  private[kernel] var currentGeneratingNode: StepNode = _
-
-  object Next {
-    /**
-     * hijack: 抢夺下一个 Step 的控制权
-     * 1. 立即在当前位置展开下一个 Step 的逻辑 (Inline)
-     * 2. 剥夺下一个 Step 的独立 PC (Shield PC decoding)
-     */
-    def hijack(): Unit = {
-      val me = currentGeneratingNode
-      val victim = me.next
-      
-      if (victim == null) {
-        throw new Exception(s"[HwOS] Step '${me.name}' tried to hijack non-existent next step!")
-      }
-      
-      if (victim.isHijacked) {
-         // 防止重复 hijack (虽然逻辑上允许 A hijack B, B hijack C 形成长链)
-         // 这里允许链式抢占
-      }
-
-      // 动作 1: 标记受害者被吞噬
-      // 这一步至关重要：当主循环遍历到 victim 时，会看到这个标记并跳过它
-      victim.isHijacked = true
-      
-      // 动作 2: 立即展开受害者的逻辑 (Inline)
-      // 注意：这里是在 currentGeneratingNode 的 when(pc===...) 作用域内
-      // 所以 victim 的逻辑成为了 me 的一部分
-      ContextScope.withContext(AtomicCtx(HardwareThread.this)) {
-        // 我们临时把 currentGeneratingNode 切换为 victim，
-        // 这样如果 victim 里面也叫了 Next.hijack，它能正确找到 victim.next
-        val save = currentGeneratingNode
-        currentGeneratingNode = victim
-        victim.block()
-        currentGeneratingNode = save
-      }
-    }
-  }
-
-
-
-  def Step(name: String)(block: => Unit): Unit = {
-    if (nodeByName.contains(name)) {
-      throw new Exception(s"[HwOS] Duplicate step name '$name' in thread '$this.name'.")
-    }
-    // 获取完整的调试路径名
-    
-    
-    // 此时只创建节点，不生成硬件！
-    val node = new StepNode(name, () => {
-      ContextScope.withContext(AtomicCtx(this)) {
-        block
-      }
-    })
-    nodes += node
-    nodeByName(name) = node
-  }
-
-
-
-
-
-  private val globals = ArrayBuffer[() => Unit]()
-  private var runtimeEntity: ThreadRuntime = _
-  private var _generated = false
-
-  private var hasExit: Boolean = false
-
-
-  val freeze = WireInit(false.B)
-  private val activeView = WireInit(false.B)
-  private val doneView = WireInit(false.B)
-  private val pcView = WireInit(0.U(32.W))
-
-  def runtime: ThreadRuntime = {
-    if (runtimeEntity == null) {
-      throw new Exception(s"[HwOS] Runtime for thread '$name' is not initialized yet.")
-    }
-    runtimeEntity
-  }
-
-
-  def pc: UInt = {
-    if (runtimeEntity == null) pcView else runtime.pc
-  }
-
-
-  def active: Bool = {
-    scala.util.Try(ContextScope.getCurrentAgent()).toOption match {
-      case Some(agent) if agent != this => capabilities.exposesActive = true
-      case _ =>
-    }
-    activeView
-  }
-  def done: Bool = {
-    scala.util.Try(ContextScope.getCurrentAgent()).toOption match {
-      case Some(agent) if agent != this => capabilities.exposesDone = true
-      case _ =>
-    }
-    doneView
-  }
-
-  def lifecycleReady: Boolean = runtime.lifecycleReady
-
-  def markExternalStart(): Unit = capabilities.usesExternalStart = true
-  def markExternalKill(): Unit = capabilities.usesExternalKill = true
-  def markDoneObserved(): Unit = capabilities.exposesDone = true
-  def markActiveObserved(): Unit = capabilities.exposesActive = true
-  def markLifecycleGranted(): Unit = capabilities.exposesLifecycle = true
-  def markLeaseTracking(): Unit = capabilities.usesLeaseTracking = true
-  def markFork(): Unit = capabilities.usesFork = true
-
-  def jump(target: String): Unit = {
-    ContextScope.current match {
-      case AtomicCtx(t) if t == this =>
-      case AtomicCtx(_) => throw new Exception("Cannot jump another thread!")
-      case _ => throw new Exception("jump() must be called inside a Step!")
-    }
-
-    val targetPc = jumpPcByName.getOrElse(
-      target,
-      throw new Exception(s"[HwOS] Unknown jump target '$target' in thread '$name'."),
-    )
-    pendingJumpTargets += target
-    pc <== targetPc
-  }
-
-
-
-  
-  def exit(): Unit = {
-    ContextScope.current match {
-      case AtomicCtx(t) => {
-        if (t != this) throw new Exception("Cannot exit another thread!")
-        t.hasExit = true
-      }
-      case ThreadCtx(t) => {
-        if (t != this) throw new Exception("Cannot exit another thread!")
-        t.hasExit = true // 标记该线程拥有合法的退出路径
-      }
-      case _ => throw new Exception("exit() must be called inside a Step or Thread context!")
-    }
-    
-    // 硬件退出逻辑对两种情况都适用
-    runtime.exit()
-  }
-  
-
-
-
-  def entry(block: => Unit): Unit = {
-    if (_generated) {
-      agentPrint("generated twice!!!")
-      throw new Exception("generate thread twice")
-    }
-    _generated = true
-
-
-
-
-    ContextScope.withContext(ThreadCtx(this)) { block } //注意，这是非常重要的
-    if (nodes.isEmpty) {return}
-
-    runtimeEntity = chooseRuntime()
-
-    for (i <- 0 until nodes.length) {
-      if (i > 0) nodes(i).prev = nodes(i-1)
-      if (i < nodes.length - 1) nodes(i).next = nodes(i+1)
-    }
-
-
-
-    var pcCounter = 0
-
-    //生成pcReg，让综合器自己优化去吧
-    val maxSteps = nodes.length
-    val pcReg    = runtime.allocatePc(maxSteps)
-    runtime.bindContext()
-    activeView := runtime.active
-    doneView := runtime.done
-    pcView := runtime.pc
-    jumpPcByName = nodes.iterator.map(node => node.name -> WireInit(0.U(log2Ceil(maxSteps max 2).W))).toMap
-
-
-
-
-
-
-
-    for (node <- nodes) {
-      // 只有当节点没有被前面的节点 hijack 时，才分配 PC 和生成译码逻辑
-      if (!node.isHijacked) {
-        node.allocatedPC = pcCounter
-        currentGeneratingNode = node // 设置上下文，供 Next.hijack 使用
-        when (pc === pcCounter.U) {
-          // 1. 享受框架级的自动门控保护，一行搞定！
-          ContextScope.withContext(AtomicCtx(this)) {
-            pc <== pc + 1.U
-          }
-          
-          // 2. 业务逻辑完全展开
-          node.block() 
-        }
-        pcCounter += 1
-      } else {
-        if (debugEnable) {
-          // printf(p"Step ${node.name} is hijacked, logic merged.\n")
-        }
-      }
-    }
-
-    for (node <- nodes) {
-      if (!node.isHijacked) {
-        jumpPcByName(node.name) := node.allocatedPC.U
-      }
-    }
-
-    for (target <- pendingJumpTargets) {
-      val targetNode = nodeByName(target)
-      if (targetNode.isHijacked || targetNode.allocatedPC < 0) {
-        throw new Exception(s"[HwOS] jump target '$target' in thread '$name' has no standalone PC. Consider jumping to a non-hijacked step.")
-      }
-    }
-    // 上面我们完成了：pc译码分配block的逻辑，这是静态的，下面我们通过active等逻辑，让他动起来
-
-    if (runtime.supportsLifecycleGrant) {
-      runtime.grantLifecycle(this.owner)
-    }
-
-
-
-
-    if (debugEnable) {
-      val wasActive = RegNext(active)
-      val lastPc    = RegNext(pcReg)
-      val watchDog  = RegInit(0.U(32.W))
-      when (!wasActive && active) { agentPrint("--- ONLINE ---") }
-      when (wasActive && !active) { agentPrint("--- OFFLINE ---") }
-      val justStarted = active && !wasActive
-      when ((active && pcReg =/= lastPc) || justStarted) {
-        for (node <- nodes if node.allocatedPC >= 0) {
-          when (pcReg === node.allocatedPC.U) { agentPrint(s"EXEC [PC ${node.allocatedPC}] ${node.name}") }
-        }
-      }
-      when (active && (pc === lastPc)) {
-        watchDog := watchDog + 1.U
-      } .otherwise {
-        watchDog := 0.U
-      }
-      when(watchDog >= 1000.U) {
-        //assert (false.B, "Detected dead lock! ")
-      }
-    }
-
-
-
-
-
-    //分情况：当moore时：active = activeReg。当没有启动的时候，发送脉冲，activeReg变高，在下一拍，逻辑开始工作。当active的时候发送start，并没有用，因为此时active为高，只有在active为低的时候，start才有效：我们必须修复这一点：在done的时候，也可以进行start：
-    //当mealy的时候，第一拍，active就是startWire，随后activeReg就启动了，来维持自己的状态，但是我们发现下面这个条件永远不可能满足
-    
-
-    if (!this.hasExit) {
-      agentPrint("The thread doesn't have an exit!!!")
-      throw new Exception
-    }
-
-    maybePrintCapabilitySummary()
-
-
-    if (debugEnable) { //放在最后防止被覆盖
-      when (this.freeze) {
-        this.pc := this.pc
-      }
-    }
-
-
-
-  }
-
-
-  def waitCondition(cond: Bool): Unit = { 
-    ContextScope.current match {
-      case AtomicCtx(t) => t.capabilities.hasMultiCycleWait = true
-      case _ => {agentPrint(p"Do not use waitCondition outside entry!!!"); throw new Exception("waitCondition outside entry")}
-    }
-
-    when(!cond) { 
-      this.pc := this.pc
-    } 
-  }
-
-  def waitAndAct(cond: Bool)(block: => Unit): Unit = {
-    ContextScope.current match {
-      case AtomicCtx(t) => t.capabilities.hasMultiCycleWait = true
-      case _ => {agentPrint("Do not use waitCondition outside entry!!!"); throw new Exception("waitCondition outside entry")}
-    }
-
-    when (!cond) {
-      this.pc := this.pc
-    } .otherwise {
-      block
-    }
-  }
-
-  def Global(block: => Unit): Unit = { 
-    ContextScope.current match {
-      case ThreadCtx(t) => {}
-      case _ => {agentPrint("Do not use Global outside entry!!!"); throw new Exception("global outside entry")}
-    }
-    globals += { () => block } 
-  }
-
-  private def maybePrintCapabilitySummary(): Unit = {
-    if (analysisPrintEnabled && policy != ThreadPolicy.Persistent) {
-      val selected = runtime match {
-        case _: InlineThreadRuntime => "inline-runtime"
-        case _: PersistentThreadRuntime => "persistent-runtime"
-        case _ => "unknown-runtime"
-      }
-      println(s"[HwOS Analysis] Thread '$name' => ${capabilities.summary}, selected=$selected")
-    }
-  }
-
-  private def chooseRuntime(): ThreadRuntime = {
-    policy match {
-      case ThreadPolicy.Persistent => new PersistentThreadRuntime(this, policy)
-      case ThreadPolicy.InlinePreferred if capabilities.canUseInlineRuntime =>
-        new InlineThreadRuntime(this, policy)
-      case ThreadPolicy.InlinePreferred =>
-        new PersistentThreadRuntime(this, policy)
-      case ThreadPolicy.Auto =>
-        new PersistentThreadRuntime(this, policy)
-    }
-  }
+  val nodes: ArrayBuffer[ThreadStepNode]
+  private[kernel] var currentGeneratingNode: ThreadStepNode
+  private[kernel] def runtime: ThreadRuntime
+  def lifecycleReady: Boolean
+
+  def markExternalStart(): Unit
+  def markExternalKill(): Unit
+  def markDoneObserved(): Unit
+  def markActiveObserved(): Unit
+  def markLifecycleGranted(): Unit
+  def markLeaseTracking(): Unit
+  def markFork(): Unit
 }
+
+private[kernel] final class DefaultHardwareThread(
+    name: String,
+    owner: HwProcess,
+    debugEnable: Boolean = true,
+    backend: ThreadBackendKind = ThreadBackendKind.Default,
+) extends HardwareThread(name, owner, debugEnable, backend)
+    with DefaultThreadRuntimeBackend
+    with DefaultThreadControlBackend
+
+private[kernel] final class InlineHardwareThread(
+    name: String,
+    owner: HwProcess,
+    debugEnable: Boolean = true,
+    backend: ThreadBackendKind = ThreadBackendKind.Inline,
+) extends HardwareThread(name, owner, debugEnable, backend)
+    with InlineThreadRuntimeBackend
+    with DefaultThreadControlBackend

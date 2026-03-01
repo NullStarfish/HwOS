@@ -7,7 +7,7 @@ import HwOS.kernel.HwOSLanguage._
 
 class InlineWorkerProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val counter = this.own(RegInit(0.U(8.W)))
-  val worker = createThread("InlineWorker", ThreadPolicy.InlinePreferred)
+  val worker = createThread("InlineWorker", backend = ThreadBackendKind.Inline)
 
   override def entry(): Unit = {
     this.grant(counter, worker)
@@ -58,7 +58,7 @@ class InlineRuntimeModule extends Module {
 }
 
 class InlineRuntimeSpec extends AnyFlatSpec {
-  "InlinePreferred thread" should "run to completion without explicit start/kill lifecycle" in {
+  "Inline backend thread" should "run to completion without explicit start/kill lifecycle" in {
     simulate(new InlineRuntimeModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()
