@@ -6,20 +6,81 @@ import HwOS.kernel.HwOSLanguage._
 
 import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
 
-trait DefaultThreadControlBackend extends ThreadControlApi { self: HardwareThread with DefaultThreadRuntimeBackend =>
-  override val nodes = ArrayBuffer[ThreadStepNode]()
+trait DefaultThreadBackend
+    extends ThreadControlApi
+    with ThreadRuntimeApi { self: HardwareThread =>
+  private val activeReg = this.own(RegInit(false.B))
+  private val doneReg = this.own(RegInit(false.B))
+  private var pcEntity: UInt = _
+  private lazy val lifecycleLease = new DefaultThreadLifecycleLease(
+    thread = this,
+    activeReg = activeReg,
+    doneReg = doneReg,
+    pcAccessor = () => pcEntity,
+  )
+  private var lifecycleLeaseRegistered = false
+
+  private[kernel] var generatedEntry: Boolean = false
+  private[kernel] var hasExitPath: Boolean = false
+  private[kernel] val freeze: Bool = WireInit(false.B)
+
+  private val nodes = ArrayBuffer[ThreadStepNode]()
   private val nodeByName = LinkedHashMap[String, ThreadStepNode]()
   private val pendingJumpTargets = scala.collection.mutable.Set[String]()
   private var jumpPcByName = Map.empty[String, UInt]
-  override private[kernel] var currentGeneratingNode: ThreadStepNode = _
+  private[kernel] var currentGeneratingNode: ThreadStepNode = _
   private val globals = ArrayBuffer[() => Unit]()
 
-  override def pc: UInt = runtimePc
+  override def active: Bool = lifecycleLease.active
+  override def done: Bool = lifecycleLease.done
+
+  override def pc: UInt = {
+    if (pcEntity == null) {
+      agentPrint("Cannot access thread.pc outside of entry!!!")
+      throw new Exception("pc not set")
+    }
+    pcEntity
+  }
+
+  override def start(): Unit = {
+    lifecycleLease.startLifecycle()
+  }
+
+  override def exit(): Unit = {
+    hasExitPath = true
+    lifecycleLease.exitLifecycle()
+  }
+
+  private def allocatePc(maxSteps: Int): UInt = {
+    if (pcEntity != null) {
+      throw new Exception(s"[HwOS] PC allocated twice for thread '$name'")
+    }
+    val pcWidth = log2Ceil(maxSteps + 1)
+    pcEntity = this.own(RegInit(0.U(pcWidth.W)))
+    pcEntity
+  }
+
+  private def bindContext(): Unit = {
+    if (!lifecycleLeaseRegistered) {
+      ctx.registerLease(lifecycleLease)
+      lifecycleLeaseRegistered = true
+    }
+    ctx.bindIsActive(lifecycleLease.active)
+  }
+
+  private def verifyExitPath(): Unit = {}
+  private def maybePrintCapabilitySummary(): Unit = ()
+
+  override private[kernel] def threadNodes: Seq[ThreadStepNode] = nodes.toSeq
+
+  override private[kernel] def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
+    if (currentGeneratingNode != null) {
+      currentGeneratingNode.invokedCalls += snapshot
+    }
+  }
 
   override val Next: ThreadNextApi = new ThreadNextApi {
-    override def hijack(): Unit = {
-      self.hijack()
-    }
+    override def hijack(): Unit = self.hijack()
   }
 
   override def hijack(): Unit = {
@@ -31,7 +92,6 @@ trait DefaultThreadControlBackend extends ThreadControlApi { self: HardwareThrea
 
     val me = currentGeneratingNode
     val victim = me.next
-
     if (victim == null) {
       throw new Exception(s"[HwOS] Step '${me.name}' tried to hijack non-existent next step!")
     }
@@ -83,8 +143,6 @@ trait DefaultThreadControlBackend extends ThreadControlApi { self: HardwareThrea
     ContextScope.withContext(ThreadCtx(this)) { block }
     if (nodes.isEmpty) { return }
 
-    runtimeEntity = chooseRuntime()
-
     for (i <- 0 until nodes.length) {
       if (i > 0) nodes(i).prev = nodes(i - 1)
       if (i < nodes.length - 1) nodes(i).next = nodes(i + 1)
@@ -92,8 +150,8 @@ trait DefaultThreadControlBackend extends ThreadControlApi { self: HardwareThrea
 
     var pcCounter = 0
     val maxSteps = nodes.length
-    val pcReg = runtime.allocatePc(maxSteps)
-    bindRuntimeViews()
+    val pcReg = allocatePc(maxSteps)
+    bindContext()
     jumpPcByName = nodes.iterator.map(node => node.name -> WireInit(0.U(log2Ceil(maxSteps max 2).W))).toMap
 
     for (node <- nodes) {
@@ -121,10 +179,6 @@ trait DefaultThreadControlBackend extends ThreadControlApi { self: HardwareThrea
       }
     }
 
-    if (runtime.supportsLifecycleGrant) {
-      runtime.grantLifecycle(this.owner)
-    }
-
     if (debugEnable) {
       val wasActive = RegNext(active)
       val lastPc = RegNext(pcReg)
@@ -142,28 +196,27 @@ trait DefaultThreadControlBackend extends ThreadControlApi { self: HardwareThrea
       }.otherwise {
         watchDog := 0.U
       }
+      when(this.freeze) {
+        ContextScope.withContext(AtomicCtx(this)) {
+          this.pc <== this.pc
+        }
+      }
     }
 
     verifyExitPath()
     maybePrintCapabilitySummary()
-
-    if (debugEnable) {
-      when(this.freeze) {
-        this.pc := this.pc
-      }
-    }
   }
 
   override def waitCondition(cond: Bool): Unit = {
     ContextScope.current match {
       case AtomicCtx(_) =>
       case _ =>
-        agentPrint(p"Do not use waitCondition outside entry!!!")
+        agentPrint("Do not use waitCondition outside entry!!!")
         throw new Exception("waitCondition outside entry")
     }
 
     when(!cond) {
-      this.pc := this.pc
+      this.pc <== this.pc
     }
   }
 
@@ -176,7 +229,7 @@ trait DefaultThreadControlBackend extends ThreadControlApi { self: HardwareThrea
     }
 
     when(!cond) {
-      this.pc := this.pc
+      this.pc <== this.pc
     }.otherwise {
       block
     }

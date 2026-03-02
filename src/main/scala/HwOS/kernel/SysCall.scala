@@ -19,9 +19,7 @@ object SysCall {
       scala.util.Try {
         ContextScope.current match {
           case AtomicCtx(t) =>
-            if (t.currentGeneratingNode != null) {
-              t.currentGeneratingNode.invokedCalls += CallStack.getSnapshot
-            }
+            t.recordAtomicCallSnapshot(CallStack.getSnapshot)
           case ThreadCtx(t) => // 线程级调用的暂不挂载到具体的 PC
           case _ =>
         }
@@ -41,25 +39,27 @@ object SysCall {
    * 远程杀手：强制中止目标线程 (他杀)
    */
   def kill(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall kill"){ agent =>
-    target.markExternalKill()
-    target.runtime.kill()
+    target.requireLifecycleAccess(agent.ctx, "kill")
+    ContextScope.withContext(AtomicCtx(target)) {
+      target.ctx.kernelKillSignal <==! true.B
+    }
   }
 
   /**
    * 远程启动：唤醒目标线程
    */
   def start(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall start"){ agent =>
-    target.markExternalStart()
-    target.runtime.activate()
+    target.requireLifecycleAccess(agent.ctx, "start")
+    target.start()
   }
 
   /**
    * 创建子线程
-   * 这里彻底移除了 parentThread 的概念，将权限管理 100% 委托给 HwOwner 体系。
+   * 生命周期控制权限由目标 thread 自己的 lifecycle ACL 管理，
+   * 不是 HwContext 的普通 resource ACL。
    */
   def fork(name: String)(childBody: HardwareThread => Unit): HardwareThread = {
     val parent = ContextScope.getCurrentThread()
-    parent.markFork()
     
     // 1. 创建子线程
     val childName = s"${parent.name.split("/").last}_fork_$name"
@@ -75,7 +75,7 @@ object SysCall {
     }
 
     // 4. 启动并返回句柄
-    child.runtime.activate()
+    Call(start(child))
     child
   }
 

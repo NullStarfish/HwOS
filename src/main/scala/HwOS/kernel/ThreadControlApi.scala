@@ -17,10 +17,13 @@ trait ThreadNextApi {
 }
 
 trait ThreadControlApi {
+  // 抽象控制游标。它表示当前状态切片位置，不承诺具体后端必须用物理 PC 实现。
   def pc: UInt
   def Next: ThreadNextApi
 
+  // Step 是最小状态切片。它是 bottom-up 的时序语义，不是更高层 block DSL。
   def Step(name: String)(block: => Unit): Unit
+  // hijack / jump / wait* 都是控制语义，而不是 runtime 细节。
   def hijack(): Unit
   def jump(target: String): Unit
   def waitCondition(cond: Bool): Unit

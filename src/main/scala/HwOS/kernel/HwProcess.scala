@@ -18,7 +18,8 @@ object ProcessBuilder {
 
 
 case class ProcEnv(kernel: Kernel, parent: Option[HwProcess], debugEnable: Boolean)
-abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] = None )(implicit val kernel: Kernel) extends HwOwner {
+abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] = None )(implicit val kernel: Kernel) extends HwContextEntity {
+  ctx.bindIsActive(true.B)
 
 
 
@@ -86,14 +87,8 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     c.build()
     
     // 自动向上兼容的权限二次分发
-    c.getAllOwnedSignals().foreach { sig =>
+    c.ctx.getAllOwnedSignals().foreach { sig =>
       c.grant(sig, this)
-    }
-
-    c.threads.foreach { t =>
-      if (t.runtime.supportsLifecycleGrant) {
-        t.grantLifecycle(t, this)
-      }
     }
 
     c

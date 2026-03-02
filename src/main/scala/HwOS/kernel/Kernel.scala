@@ -98,7 +98,7 @@ class Kernel {
     val bw = new java.io.BufferedWriter(new java.io.FileWriter(file))
     
     for (t <- threads) {
-      for (node <- t.nodes) {
+      for (node <- t.threadNodes) {
         if (!node.isHijacked && node.allocatedPC != -1) {
           val pc = node.allocatedPC
           val stepName = node.name

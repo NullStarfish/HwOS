@@ -2,9 +2,8 @@
 package HwOS.kernel
 
 import chisel3._
-import scala.collection.mutable.ArrayBuffer
 
-trait HardwareAgent extends HwOwner {
+trait HardwareAgent extends HwContextEntity {
   val owner: HwProcess
   val name: String
   val debugEnable: Boolean
@@ -25,6 +24,8 @@ trait HardwareAgent extends HwOwner {
 }
 
 class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boolean = true) extends HardwareAgent {
+  ctx.bindIsActive(true.B)
+
   def run(block: => Unit): Unit = {
     ContextScope.withContext(LogicCtx(this)) {
       block
@@ -41,19 +42,22 @@ abstract class HardwareThread(
     with ThreadControlApi
     with ThreadRuntimeApi {
   val tls = scala.collection.mutable.Map[String, HwContext]() //used for visibility
+  private[kernel] val lifecycleAcl = scala.collection.mutable.Set[HwContext]()
 
-  val nodes: ArrayBuffer[ThreadStepNode]
-  private[kernel] var currentGeneratingNode: ThreadStepNode
-  private[kernel] def runtime: ThreadRuntime
-  def lifecycleReady: Boolean
+  private[kernel] def grantLifecycleAccess(target: HwContext): Unit = {
+    lifecycleAcl += target
+  }
 
-  def markExternalStart(): Unit
-  def markExternalKill(): Unit
-  def markDoneObserved(): Unit
-  def markActiveObserved(): Unit
-  def markLifecycleGranted(): Unit
-  def markLeaseTracking(): Unit
-  def markFork(): Unit
+  private[kernel] def requireLifecycleAccess(actor: HwContext, op: String): Unit = {
+    if (!lifecycleAcl.contains(actor)) {
+      throw new Exception(
+        s"[HwOS Lifecycle Error] '${actor.name}' is not allowed to $op thread '${name}'. Use grantLifecycle() first.",
+      )
+    }
+  }
+
+  private[kernel] def threadNodes: Seq[ThreadStepNode]
+  private[kernel] def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit
 }
 
 private[kernel] final class DefaultHardwareThread(
@@ -62,8 +66,7 @@ private[kernel] final class DefaultHardwareThread(
     debugEnable: Boolean = true,
     backend: ThreadBackendKind = ThreadBackendKind.Default,
 ) extends HardwareThread(name, owner, debugEnable, backend)
-    with DefaultThreadRuntimeBackend
-    with DefaultThreadControlBackend
+    with DefaultThreadBackend
 
 private[kernel] final class InlineHardwareThread(
     name: String,
@@ -71,5 +74,4 @@ private[kernel] final class InlineHardwareThread(
     debugEnable: Boolean = true,
     backend: ThreadBackendKind = ThreadBackendKind.Inline,
 ) extends HardwareThread(name, owner, debugEnable, backend)
-    with InlineThreadRuntimeBackend
-    with DefaultThreadControlBackend
+    with InlineThreadBackend
