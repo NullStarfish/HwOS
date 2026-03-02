@@ -1,7 +1,8 @@
-package HwOS.kernel
+package HwOS.kernel.thread
 
-import HwOS.kernel.HwOSLanguage._
 import chisel3._
+import HwOS.kernel.context.{AtomicCtx, ContextScope, HwLease}
+import HwOS.kernel.lang.HwOSLanguage._
 
 trait ThreadLifecycleLease extends HwLease {
   def active: Bool

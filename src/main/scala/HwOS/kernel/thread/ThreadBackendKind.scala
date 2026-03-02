@@ -1,4 +1,4 @@
-package HwOS.kernel
+package HwOS.kernel.thread
 
 sealed trait ThreadBackendKind
 

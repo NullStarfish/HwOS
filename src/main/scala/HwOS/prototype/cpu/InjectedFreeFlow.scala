@@ -1,7 +1,10 @@
 package HwOS.prototype.cpu
 
-import HwOS.kernel._
-import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.function.HwFunction
+import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.process.HwProcess
+import HwOS.kernel.system.{Kernel, SysCall}
+import HwOS.kernel.thread.HardwareThread
 import HwOS.lib.regfile.RegfileLib._
 import HwOS.stdlib.sync
 import chisel3._

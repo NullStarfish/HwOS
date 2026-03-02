@@ -1,22 +1,22 @@
-package HwOS.kernel
+package HwOS.kernel.thread.backend
 
 import chisel3._
 import chisel3.util._
-import HwOS.kernel.HwOSLanguage._
-
 import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
+import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
+import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.thread._
 
-trait DefaultThreadBackend
+trait InlineThreadBackend
     extends ThreadControlApi
-    with ThreadRuntimeApi { self: HardwareThread =>
-  private val activeReg = this.own(RegInit(false.B))
-  private val doneReg = this.own(RegInit(false.B))
+    with ThreadRuntimeApi
+    with ThreadBackendDebugApi { self: HardwareThread =>
   private var pcEntity: UInt = _
-  private lazy val lifecycleLease = new DefaultThreadLifecycleLease(
+  private var terminalPc: UInt = _
+  private lazy val lifecycleLease = new InlineThreadLifecycleLease(
     thread = this,
-    activeReg = activeReg,
-    doneReg = doneReg,
     pcAccessor = () => pcEntity,
+    terminalPcAccessor = () => terminalPc,
   )
   private var lifecycleLeaseRegistered = false
 
@@ -31,8 +31,19 @@ trait DefaultThreadBackend
   private[kernel] var currentGeneratingNode: ThreadStepNode = _
   private val globals = ArrayBuffer[() => Unit]()
 
-  override def active: Bool = lifecycleLease.active
-  override def done: Bool = lifecycleLease.done
+  override def active: Bool = {
+    if (pcEntity == null || terminalPc == null) {
+      throw new Exception(s"[HwOS] Inline backend for '$name' is not initialized")
+    }
+    lifecycleLease.active
+  }
+
+  override def done: Bool = {
+    if (pcEntity == null || terminalPc == null) {
+      throw new Exception(s"[HwOS] Inline backend for '$name' is not initialized")
+    }
+    lifecycleLease.done
+  }
 
   override def pc: UInt = {
     if (pcEntity == null) {
@@ -57,6 +68,7 @@ trait DefaultThreadBackend
     }
     val pcWidth = log2Ceil(maxSteps + 1)
     pcEntity = this.own(RegInit(0.U(pcWidth.W)))
+    terminalPc = maxSteps.U(pcWidth.W)
     pcEntity
   }
 
@@ -71,9 +83,9 @@ trait DefaultThreadBackend
   private def verifyExitPath(): Unit = {}
   private def maybePrintCapabilitySummary(): Unit = ()
 
-  override private[kernel] def threadNodes: Seq[ThreadStepNode] = nodes.toSeq
+  override def threadNodes: Seq[ThreadStepNode] = nodes.toSeq
 
-  override private[kernel] def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
+  override def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
     if (currentGeneratingNode != null) {
       currentGeneratingNode.invokedCalls += snapshot
     }
@@ -180,21 +192,11 @@ trait DefaultThreadBackend
     }
 
     if (debugEnable) {
-      val wasActive = RegNext(active)
       val lastPc = RegNext(pcReg)
-      val watchDog = RegInit(0.U(32.W))
-      when(!wasActive && active) { agentPrint("--- ONLINE ---") }
-      when(wasActive && !active) { agentPrint("--- OFFLINE ---") }
-      val justStarted = active && !wasActive
-      when((active && pcReg =/= lastPc) || justStarted) {
+      when(pcReg =/= lastPc) {
         for (node <- nodes if node.allocatedPC >= 0) {
           when(pcReg === node.allocatedPC.U) { agentPrint(s"EXEC [PC ${node.allocatedPC}] ${node.name}") }
         }
-      }
-      when(active && (pc === lastPc)) {
-        watchDog := watchDog + 1.U
-      }.otherwise {
-        watchDog := 0.U
       }
       when(this.freeze) {
         ContextScope.withContext(AtomicCtx(this)) {

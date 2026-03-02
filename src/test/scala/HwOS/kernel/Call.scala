@@ -6,6 +6,7 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel._
 import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.examples.CallStackIntegrationModule
 
 // ---------------------------------------------------------
 // 1. 业务逻辑进程 (展示双轨调用栈)

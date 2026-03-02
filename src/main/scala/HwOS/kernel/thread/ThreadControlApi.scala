@@ -1,7 +1,8 @@
-package HwOS.kernel
+package HwOS.kernel.thread
 
 import chisel3._
 import scala.collection.mutable.ArrayBuffer
+import HwOS.kernel.debug.CallStack
 
 final class ThreadStepNode(val name: String, val block: () => Unit) {
   var prev: ThreadStepNode = _

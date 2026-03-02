@@ -1,8 +1,13 @@
-package HwOS.kernel
+package HwOS.kernel.system
 
 import chisel3._
 import scala.util.Try // 引入 Try
-import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
+import HwOS.kernel.debug.CallStack
+import HwOS.kernel.function.{HwFunction}
+import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.thread.HardwareThread
+import HwOS.kernel.thread.backend.ThreadBackendDebugApi
 object SysCall {
 
   // ==========================================
@@ -18,7 +23,7 @@ object SysCall {
     try {
       scala.util.Try {
         ContextScope.current match {
-          case AtomicCtx(t) =>
+          case AtomicCtx(t: ThreadBackendDebugApi) =>
             t.recordAtomicCallSnapshot(CallStack.getSnapshot)
           case ThreadCtx(t) => // 线程级调用的暂不挂载到具体的 PC
           case _ =>

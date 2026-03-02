@@ -1,7 +1,9 @@
-
-package HwOS.kernel
+package HwOS.kernel.thread
 
 import chisel3._
+import HwOS.kernel.context.{ContextScope, HwContext, HwContextEntity, LogicCtx}
+import HwOS.kernel.process.HwProcess
+import HwOS.kernel.thread.backend.{DefaultThreadBackend, InlineThreadBackend}
 
 trait HardwareAgent extends HwContextEntity {
   val owner: HwProcess
@@ -55,9 +57,6 @@ abstract class HardwareThread(
       )
     }
   }
-
-  private[kernel] def threadNodes: Seq[ThreadStepNode]
-  private[kernel] def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit
 }
 
 private[kernel] final class DefaultHardwareThread(

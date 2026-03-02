@@ -1,9 +1,12 @@
-package HwOS.kernel
+package HwOS.kernel.system
 
 import chisel3._
 import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import java.io._
+import HwOS.kernel.process.HwProcess
+import HwOS.kernel.thread.HardwareThread
+import HwOS.kernel.thread.backend.ThreadBackendDebugApi
 
 class Kernel {
   val secure_mode :Boolean = true
@@ -98,22 +101,26 @@ class Kernel {
     val bw = new java.io.BufferedWriter(new java.io.FileWriter(file))
     
     for (t <- threads) {
-      for (node <- t.threadNodes) {
-        if (!node.isHijacked && node.allocatedPC != -1) {
-          val pc = node.allocatedPC
-          val stepName = node.name
+      t match {
+        case debugT: ThreadBackendDebugApi =>
+          for (node <- debugT.threadNodes) {
+            if (!node.isHijacked && node.allocatedPC != -1) {
+              val pc = node.allocatedPC
+              val stepName = node.name
 
-          // 1. 格式化宏观时序栈 (Thread Level)
-          val threadStackStr = if (node.threadCallStack.isEmpty) "None" else node.threadCallStack.mkString(",")
-          val threadStackDepth = node.threadCallStack.length
+              // 1. 格式化宏观时序栈 (Thread Level)
+              val threadStackStr = if (node.threadCallStack.isEmpty) "None" else node.threadCallStack.mkString(",")
+              val threadStackDepth = node.threadCallStack.length
 
-          // 2. 格式化微观组合调用树 (Atomic Level)
-          val atomicTreeStr = if (node.invokedCalls.isEmpty) "None" else node.invokedCalls.map(_.mkString(",")).mkString(";")
-          val atomicCallCount = node.invokedCalls.length
+              // 2. 格式化微观组合调用树 (Atomic Level)
+              val atomicTreeStr = if (node.invokedCalls.isEmpty) "None" else node.invokedCalls.map(_.mkString(",")).mkString(";")
+              val atomicCallCount = node.invokedCalls.length
 
-          // 新格式: <ThreadName> <PC> <StepName> <T_Depth> <T_Stack> <A_Count> <A_Tree>
-          bw.write(s"${t.name} $pc $stepName $threadStackDepth $threadStackStr $atomicCallCount $atomicTreeStr\n")
-        }
+              // 新格式: <ThreadName> <PC> <StepName> <T_Depth> <T_Stack> <A_Count> <A_Tree>
+              bw.write(s"${t.name} $pc $stepName $threadStackDepth $threadStackStr $atomicCallCount $atomicTreeStr\n")
+            }
+          }
+        case _ =>
       }
     }
     bw.close()

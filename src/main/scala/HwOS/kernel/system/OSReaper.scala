@@ -1,7 +1,9 @@
-package HwOS.kernel
+package HwOS.kernel.system
 
-import HwOS.kernel.HwOSLanguage._
 import chisel3._
+import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.process.HwProcess
+import HwOS.kernel.thread.HardwareThread
 
 class OSReaperProcess(monitoredThreads: Seq[HardwareThread], localName: String)(implicit kernel: Kernel)
     extends HwProcess(localName, overrideDebug = Some(false)) {

@@ -1,10 +1,10 @@
-package HwOS.kernel
+package HwOS.kernel.context
 
 import chisel3._
 import scala.collection.mutable
-import HwOS.kernel.HwFunction.apply
 import scala.collection.mutable.ArrayBuffer
-import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 // ==========================================
 // 核心抽象：硬件租约

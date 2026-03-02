@@ -1,8 +1,9 @@
 package HwOS.quick_start
 
 import chisel3._
-import HwOS.kernel._
-import HwOS.kernel.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
+import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
+import HwOS.kernel.process.HwProcess
+import HwOS.kernel.system.{Kernel, SysCall}
 
 
 class TopModule extends Module {

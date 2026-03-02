@@ -1,9 +1,11 @@
 package HwOS.quick_start
 
 import chisel3._
-import HwOS.kernel._
-import HwOS.kernel.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
-    import chisel3.util.log2Ceil
+import HwOS.kernel.function.HwFunction
+import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
+import HwOS.kernel.process.HwProcess
+import HwOS.kernel.system.{Kernel, SysCall}
+import chisel3.util.log2Ceil
 
     // 必须隐式传入 Kernel 以注册全局资源
 class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {

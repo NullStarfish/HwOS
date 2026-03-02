@@ -1,6 +1,9 @@
-package HwOS.kernel
+package HwOS.kernel.examples
 import chisel3._
-import HwOSLanguage._
+import HwOS.kernel.function.HwFunction
+import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.process.HwProcess
+import HwOS.kernel.system.{Kernel, SysCall}
 import _root_.circt.stage.ChiselStage
 
 class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
@@ -118,4 +121,3 @@ object Example extends App {
   
   println("✅ Verilog 导出完成！请查看 generated/TopModule.v")
 }
-

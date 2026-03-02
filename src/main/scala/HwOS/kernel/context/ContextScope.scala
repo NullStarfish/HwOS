@@ -1,6 +1,7 @@
-package HwOS.kernel
+package HwOS.kernel.context
 
 import scala.collection.mutable.Stack
+import HwOS.kernel.thread.{HardwareAgent, HardwareLogic, HardwareThread}
 
 
 // 上下文定义

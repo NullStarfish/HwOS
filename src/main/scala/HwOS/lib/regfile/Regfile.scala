@@ -2,8 +2,11 @@ package HwOS.lib.regfile
 
 import chisel3._
 import chisel3.util._
-import HwOS.kernel._
-import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.function.HwFunction
+import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.process.HwProcess
+import HwOS.kernel.system.{Kernel, SysCall}
+import HwOS.kernel.thread.HardwareAgent
 import HwOS.stdlib.sync._
 
 object RegfileLib {

@@ -1,4 +1,7 @@
-package HwOS.kernel
+package HwOS.kernel.function
+
+import HwOS.kernel.context.{AtomicCtx, ContextScope, LogicCtx, ThreadCtx}
+import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 /**
  * HwFunction[T]: 硬件指令流定义 (Code Segment)

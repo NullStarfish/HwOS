@@ -1,5 +1,6 @@
-package HwOS.kernel
+package HwOS.kernel.lang
 import chisel3._
+import HwOS.kernel.context.{ContextScope, ResourceManager}
 
 object HwOSLanguage {
   implicit class SecureAssign[T <: Data](val lhs: T) extends AnyVal {

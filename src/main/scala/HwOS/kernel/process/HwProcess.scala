@@ -1,8 +1,11 @@
-package HwOS.kernel
+package HwOS.kernel.process
 
 import chisel3._
 import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
+import HwOS.kernel.context.HwContextEntity
+import HwOS.kernel.system.Kernel
+import HwOS.kernel.thread._
 
 //命名永远让上一级来命名
 

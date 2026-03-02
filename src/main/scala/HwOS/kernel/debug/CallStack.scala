@@ -1,4 +1,4 @@
-package HwOS.kernel
+package HwOS.kernel.debug
 
 import scala.collection.mutable.Stack
 
