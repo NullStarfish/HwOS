@@ -21,8 +21,8 @@ object HwOSLanguage {
     // 2. 内核级特权赋值：无视 isActive，用于死神进程 (Reaper) 的强杀兜底
     def <==!(rhs: T): Unit = {
       val agent = ContextScope.getCurrentAgent()
-      ResourceManager.recordDrive(lhs, agent.ctx)
       ResourceManager.checkSignalWrite(lhs, agent.ctx)
+      ResourceManager.recordDrive(lhs, agent.ctx)
       
       // 不受 isActive 门控，强制驱动物理连线
       lhs := rhs
@@ -31,9 +31,11 @@ object HwOSLanguage {
   
 
   implicit class SecureVecAccess[T <: Data](val vec: Vec[T]) extends AnyVal {
-    // 动态索引会生成瞬时派生节点，不能作为 ACL/ownership 的稳定锚点。
-    // 只允许上层把权限挂在稳定资源上，再通过专门端口协议驱动动态访问。
-    def at(idx: UInt): T = vec(idx)
+    def at(idx: UInt): T = {
+      val childNode = vec(idx)
+      ResourceManager.markDynamicVecAccess(childNode, vec)
+      childNode
+    }
     def at(idx: Int): T  = propagateOwnership(vec(idx))
 
     private def propagateOwnership(childNode: T): T = {

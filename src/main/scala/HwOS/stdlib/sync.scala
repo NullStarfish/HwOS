@@ -336,35 +336,28 @@ object sync {
 
 
 
-  class BaseScoreboardProcess(val resourceCount: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-    private val busyTable = this.own(RegInit(VecInit(Seq.fill(resourceCount)(false.B))))
-    private val busyCells = Array.tabulate(resourceCount)(i => busyTable.at(i))
-
+  class BaseScoreboardProcess(val resourceCount: Int, val maxUpdates: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+    private val busyTable = this.exemptVectorAcl(this.own(RegInit(VecInit(Seq.fill(resourceCount)(false.B)))))
+    
     override def entry(): Unit = {}
 
     def ReadBusy(addr: UInt): HwFunction[Bool] = HwFunction.stateless("BaseSB_ReadBusy") { _ =>
       if (zeroAlwaysFree) Mux(addr === 0.U, false.B, busyTable(addr)) else busyTable(addr)
     }
 
-    def SetBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless("BaseSB_SetBusy") { agent =>
-      busyCells.foreach(cell => this.grant(cell, agent))
-      for (resIdx <- 0 until resourceCount) {
-        when(addr === resIdx.U) {
-          if (!zeroAlwaysFree || resIdx != 0) {
-            busyCells(resIdx) <== true.B
-          }
+    def SetBusy(slotIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"BaseSB_SetBusy_$slotIdx") { agent =>
+      if (zeroAlwaysFree) {
+        when(addr =/= 0.U) {
+          busyTable.at(addr) <== true.B
         }
+      } else {
+        busyTable.at(addr) <== true.B
       }
       ()
     }
 
-    def ClearBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless("BaseSB_ClearBusy") { agent =>
-      busyCells.foreach(cell => this.grant(cell, agent))
-      for (resIdx <- 0 until resourceCount) {
-        when(addr === resIdx.U) {
-          busyCells(resIdx) <== false.B
-        }
-      }
+    def ClearBusy(slotIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"BaseSB_ClearBusy_$slotIdx") { agent =>
+      busyTable.at(addr) <== false.B
       ()
     }
   }
@@ -378,7 +371,7 @@ object sync {
   )(implicit kernel: Kernel)
       extends HwProcess(localName) {
 
-    private val base = spawn(new BaseScoreboardProcess(resourceCount, zeroAlwaysFree, "Base"))
+    private val base = spawn(new BaseScoreboardProcess(resourceCount, maxClients, zeroAlwaysFree, "Base"))
     private val updateSlots = spawn(new SemaphoreProcess(maxClients, initialCount = maxUpdateSlots, "UpdateSlots"))
 
     override def entry(): Unit = {}
@@ -392,11 +385,11 @@ object sync {
       }
 
       def SetBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"SetBusy_$clientId") { _ =>
-        SysCall.Call(base.SetBusy(addr))
+        SysCall.Call(base.SetBusy(clientId, addr))
       }
 
       def ClearBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"ClearBusy_$clientId") { _ =>
-        SysCall.Call(base.ClearBusy(addr))
+        SysCall.Call(base.ClearBusy(clientId, addr))
       }
 
       def Release(): HwFunction[Unit] = HwFunction.stateless(s"ReleaseBusySlot_$clientId") { _ =>

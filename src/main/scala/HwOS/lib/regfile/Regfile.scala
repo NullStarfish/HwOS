@@ -17,23 +17,21 @@ object RegfileLib {
   class BaseRegfileProcess(val depth: Int, val width: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel)
       extends HwProcess(localName) {
 
-    private val regs = this.own(RegInit(VecInit(Seq.fill(depth)(0.U(width.W)))))
-    private val regCells = Array.tabulate(depth)(i => regs.at(i))
-
+    private val regs = this.exemptVectorAcl(this.own(RegInit(VecInit(Seq.fill(depth)(0.U(width.W))))))
+    
     override def entry(): Unit = {}
 
     def Read(addr: UInt): HwFunction[UInt] = HwFunction.stateless("Base_Read") { _ =>
       if (zeroReg) Mux(addr === 0.U, 0.U, regs(addr)) else regs(addr)
     }
 
-    def Write(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless("Base_Write") { agent =>
-      regCells.foreach(cell => this.grant(cell, agent))
-      for (regIdx <- 0 until depth) {
-        when(addr === regIdx.U) {
-          if (!zeroReg || regIdx != 0) {
-            regCells(regIdx) <== data
-          }
+    def Write(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless("Base_Write") { _ =>
+      if (zeroReg) {
+        when(addr =/= 0.U) {
+          regs.at(addr) <== data
         }
+      } else {
+        regs.at(addr) <== data
       }
       ()
     }

@@ -41,6 +41,11 @@ class HwContext(val self: HwContextEntity) {
     signal
   }
 
+  def exemptVectorAcl[T <: Data](vec: Vec[T]): Vec[T] = {
+    ResourceManager.registerAclExemptVector(vec)
+    vec
+  }
+
   private[kernel] val kernelKillSignal = own(RegInit(false.B))
 
   def grant(signal: Data, target: HwContext): Unit = {
@@ -80,6 +85,10 @@ trait HwContextEntity {
     ctx.own(signal)
   }
 
+  def exemptVectorAcl[T <: Data](vec: Vec[T]): Vec[T] = {
+    ctx.exemptVectorAcl(vec)
+  }
+
   def grant(signal: Data, target: HwContextEntity): Unit = {
     ctx.grant(signal, target.ctx)
   }
@@ -108,6 +117,8 @@ private[kernel] object ResourceManager {
   private val signalOwners = mutable.HashMap[SignalRef, HwContext]()
   private val acl = mutable.HashMap[SignalRef, mutable.Set[HwContext]]()
   private val driverRegistry = mutable.HashMap[SignalRef, mutable.Set[HwContext]]()
+  private val aclExemptVectors = mutable.HashSet[SignalRef]()
+  private val dynamicVecParents = mutable.HashMap[SignalRef, SignalRef]()
 
   private def ref(signal: Data): SignalRef = SignalRef(signal)
   
@@ -124,6 +135,18 @@ private[kernel] object ResourceManager {
   }
   
   def getOwner(signal: Data): Option[HwContext] = signalOwners.get(ref(signal))
+
+  def registerAclExemptVector(vec: Data): Unit = {
+    aclExemptVectors += ref(vec)
+  }
+
+  def markDynamicVecAccess(child: Data, parentVec: Data): Unit = {
+    dynamicVecParents(ref(child)) = ref(parentVec)
+  }
+
+  def isAclExemptDynamicVecAccess(signal: Data): Boolean = {
+    dynamicVecParents.get(ref(signal)).exists(aclExemptVectors.contains)
+  }
 
   def delegatePermission(signal: Data, delegator: HwContext, target: HwContext): Unit = {
     val allowedActors = acl.getOrElseUpdate(ref(signal), mutable.Set[HwContext]())
@@ -150,6 +173,9 @@ private[kernel] object ResourceManager {
   }
 
   def checkSignalWrite(signal: Data, currentActor: HwContext): Unit = {
+    if (isAclExemptDynamicVecAccess(signal)) {
+      return
+    }
     val allowedActors = acl.getOrElse(ref(signal), mutable.Set[HwContext]())
     if (!allowedActors.contains(currentActor)) {
       val ownerName = signalOwners.get(ref(signal)).map(_.name).getOrElse("Unknown")
