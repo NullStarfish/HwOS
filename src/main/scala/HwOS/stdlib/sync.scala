@@ -17,78 +17,34 @@ object sync {
   // 内建基于优先级编码器的分布式仲裁器
   // ==========================================
   class MutexProcess(val maxClients: Int, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-  
-    private val locked = this.own(RegInit(false.B))
-    private val reqs = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
-    private val unlocks = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
+    private val gate = spawn(new SemaphoreProcess(maxClients, initialCount = 1, "Gate"))
 
-    for (i <- 0 until maxClients) {
-      this.own(reqs(i))
-      this.own(unlocks(i))
-    }
-
-    private val anyUnlock = unlocks.reduce(_ || _)
-    private val anyReq    = reqs.reduce(_ || _)
-    private val winnerIdx = PriorityEncoder(reqs)
-
-    override def entry(): Unit = {
-      val main = createLogic("Main")
-      this.grant(locked, main)
-      main.run {
-        when(anyUnlock) {
-          locked <== false.B
-        } .elsewhen(anyReq && !locked) {
-          locked <== true.B
-        }
-      }
-    }
+    override def entry(): Unit = {}
 
     // ==========================================
     // 发行内核级租约 (Mutex Lease)
     // ==========================================
     class MutexLease(val id: Int) extends HwLease {
-      val isHeld = RegInit(false.B)
-      MutexProcess.this.own(isHeld) // 所有权归 MutexProcess
+      private val gateLease = gate.directLease(id)
+      override def isActive: Bool = gateLease.isActive
 
-      override def isActive: Bool = isHeld
-
-      // 1. 获取锁：原来在 MutexProcess 里的逻辑，现在移到这里
       def Lock(): HwFunction[Unit] = HwFunction.atomic(s"Lock_$id") { t =>
-        MutexProcess.this.grant(reqs(id), t) 
-        reqs(id) <== true.B 
-        val canAcquire = !locked && (winnerIdx === id.U)
-        t.waitCondition(canAcquire)
-
-        when(canAcquire) {
-          MutexProcess.this.grant(isHeld, t)
-          isHeld <== true.B 
-          
-        }
-        
-        // 【核心】：在硬件线程上下文 (PCB) 中注册契约本身
-        t.ctx.registerLease(this)
+        val gateLease = SysCall.Call(gate.RequestLease(id))
+        SysCall.Call(gateLease.Acquire())
       }
 
-      // 2. 正常释放
       def Unlock(): HwFunction[Unit] = HwFunction.stateless(s"Unlock_$id") { agent =>
-        MutexProcess.this.grant(unlocks(id), agent)
-        MutexProcess.this.grant(isHeld, agent)
-        
-        unlocks(id) <== true.B 
-        isHeld <== false.B
+        val gateLease = SysCall.Call(gate.RequestLease(id))
+        when(gateLease.isActive) {
+          SysCall.Call(gateLease.Release())
+        }
       }
 
-      // 3. 内核强杀回收
       override def forceReclaim(agent: HardwareAgent): Unit = {
-        MutexProcess.this.grant(unlocks(id), agent)
-        MutexProcess.this.grant(isHeld, agent)
-        
-        unlocks(id) <==! true.B   
-        isHeld <==! false.B
+        gateLease.forceReclaim(agent)
       }
     }
 
-    // 静态实例化所有锁句柄
     private val leases = Array.tabulate(maxClients)(i => new MutexLease(i))
 
     def RequestLease(id: Int): HwFunction[MutexLease] = HwFunction.bindings(s"ReqMutexLease_$id") { _ =>
@@ -141,10 +97,10 @@ object sync {
       def Acquire(): HwFunction[Unit] = HwFunction.atomic(s"Acquire_$id") { t =>
         SemaphoreProcess.this.grant(acquires(id), t)
         acquires(id) <== true.B
-        val canAcquire = (count > 0.U) && (winnerAcqIdx === id.U)
+        val canAcquire = isHeld || ((count > 0.U) && (winnerAcqIdx === id.U))
         t.waitCondition(canAcquire)
 
-        when(canAcquire) {
+        when(!isHeld && canAcquire) {
           SemaphoreProcess.this.grant(isHeld, t)
           isHeld <== true.B
         }
@@ -154,8 +110,10 @@ object sync {
       def Release(): HwFunction[Unit] = HwFunction.stateless(s"Release_$id") { agent =>
         SemaphoreProcess.this.grant(releases(id), agent)
         SemaphoreProcess.this.grant(isHeld, agent)
-        releases(id) <== true.B
-        isHeld <== false.B
+        when(isHeld) {
+          releases(id) <== true.B
+          isHeld <== false.B
+        }
       }
 
       override def forceReclaim(agent: HardwareAgent): Unit = {
@@ -167,6 +125,7 @@ object sync {
     }
 
     private val leases = Array.tabulate(maxClients)(i => new SemaphoreLease(i))
+    private[sync] def directLease(id: Int): SemaphoreLease = leases(id)
 
     // 显式接口
     def RequestLease(id: Int): HwFunction[SemaphoreLease] = HwFunction.bindings(s"ReqSemLease_$id") { _ =>
@@ -341,7 +300,7 @@ object sync {
       def Reserve(): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$id") { t =>
         OrderedWindowProcess.this.grant(reqs(id).reserve, t)
         reqs(id).reserve <== true.B
-        val granted = inFlight < maxInFlight.U && reserveRequests(id)
+        val granted = entries(id).active
         t.waitCondition(granted)
         t.ctx.registerLease(this)
       }
@@ -437,9 +396,11 @@ object sync {
 
       def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
         val isBusy = busyTable.at(addr)
-        t.waitCondition(!isBusy)
+        val alreadyReserved = isReserved && (reservedAddr === addr)
+        val canReserve = alreadyReserved || !isBusy
+        t.waitCondition(canReserve)
         
-        when(!isBusy) {
+        when(!alreadyReserved && !isBusy) {
           ScoreboardProcess.this.grant(setIdx(portIdx), t); ScoreboardProcess.this.grant(setEn(portIdx), t)
           ScoreboardProcess.this.grant(isReserved, t);      ScoreboardProcess.this.grant(reservedAddr, t)
 

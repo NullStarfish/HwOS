@@ -5,6 +5,27 @@ import chisel3.util._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
+object VecAccessIdentityProbe {
+  var staticSameRef: Boolean = false
+  var dynamicSameRef: Boolean = true
+}
+
+class VecAccessIdentityProbeModule extends Module {
+  val io = IO(new Bundle {
+    val idx = Input(UInt(2.W))
+  })
+
+  val regs = RegInit(VecInit(Seq.fill(4)(0.U(8.W))))
+
+  val staticA = regs(0)
+  val staticB = regs(0)
+  val dynamicA = regs(io.idx)
+  val dynamicB = regs(io.idx)
+
+  VecAccessIdentityProbe.staticSameRef = staticA eq staticB
+  VecAccessIdentityProbe.dynamicSameRef = dynamicA eq dynamicB
+}
+
 // ==============================================================================
 // 1. 极简测试模块
 // ==============================================================================
@@ -89,5 +110,19 @@ class SimpleRegVecTest extends AnyFlatSpec {
       assert(r0 == 0xAAAA, "Port A write failed! (Overwritten by Port B logic?)")
       assert(r1 == 0xBBBB, "Port B write failed!")
     }
+  }
+
+  it should "create fresh Data nodes for repeated dynamic-index accesses" in {
+    VecAccessIdentityProbe.staticSameRef = false
+    VecAccessIdentityProbe.dynamicSameRef = true
+
+    simulate(new VecAccessIdentityProbeModule) { c =>
+      c.io.idx.poke(0.U)
+      c.clock.step()
+    }
+
+    assert(VecAccessIdentityProbe.staticSameRef, "Static Vec index should resolve to the same element object.")
+    assert(!VecAccessIdentityProbe.dynamicSameRef,
+      "Dynamic Vec(UInt) access should not be treated as a stable object identity for ACL/resource keys.")
   }
 }

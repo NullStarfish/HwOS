@@ -35,15 +35,18 @@ object RegfileLib {
     override def entry(): Unit = {
       val daemon = createLogic("WriteDaemon")
       this.grant(regs, daemon)
+      val regCells = (0 until depth).map(i => regs.at(i))
+      regCells.foreach(cell => this.grant(cell, daemon))
       
       daemon.run {
         for (i <- 0 until maxWriters) {
           when(wEnables(i)) {
-            // 如果开启了 zeroReg 特性，强制保护 0 号寄存器不被修改 (RISC-V 必备)
-            if (zeroReg) {
-              when(wAddrs(i) =/= 0.U) { regs.at(wAddrs(i)) <== wDatas(i) }
-            } else {
-              regs(wAddrs(i)) := wDatas(i)
+            for (regIdx <- 0 until depth) {
+              when(wAddrs(i) === regIdx.U) {
+                if (!zeroReg || regIdx != 0) {
+                  regCells(regIdx) <== wDatas(i)
+                }
+              }
             }
           }
         }
@@ -57,16 +60,6 @@ object RegfileLib {
       if (zeroReg) Mux(addr === 0.U, 0.U, regs(addr)) else regs(addr)
     }
 
-    // 写入请求：自动鉴权对应的物理端口
-    def Write(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"Base_Write_$portIdx") { agent =>
-      this.grant(wAddrs(portIdx), agent)
-      this.grant(wDatas(portIdx), agent)
-      this.grant(wEnables(portIdx), agent)
-      
-      wAddrs(portIdx)   <== addr
-      wDatas(portIdx)   <== data
-      wEnables(portIdx) <== true.B
-    }
   }
 
  // ==========================================
@@ -82,6 +75,16 @@ object RegfileLib {
     val scoreboard = spawn(new ScoreboardProcess(resourceCount=depth, maxConcurrentPorts = maxWriters, zeroAlwaysFree = zeroReg, "Control"))
 
     override def entry(): Unit = {}
+
+    private def DriveBaseWrite(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"DriveBaseWrite_$portIdx") { agent =>
+      baseReg.grant(baseReg.wAddrs(portIdx), agent)
+      baseReg.grant(baseReg.wDatas(portIdx), agent)
+      baseReg.grant(baseReg.wEnables(portIdx), agent)
+
+      baseReg.wAddrs(portIdx) <== addr
+      baseReg.wDatas(portIdx) <== data
+      baseReg.wEnables(portIdx) <== true.B
+    }
 
     // ==========================================
     // 消费者接口：安全读取 (RAW 护盾)
@@ -113,7 +116,7 @@ object RegfileLib {
       // 写回并释放资源：将 BaseReg 的数据写入与 Lease 的释放绑定在一起
       def WritebackAndClear(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"WB_$portIdx") { agent =>
         val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
-        SysCall.Call(baseReg.Write(portIdx, addr, data))
+        SysCall.Call(DriveBaseWrite(portIdx, addr, data))
         SysCall.Call(sbLease.Release())
       }
     }
@@ -194,7 +197,12 @@ object RegfileLib {
         for ((pending, i) <- pendingPorts.zipWithIndex) {
           val windowLease = SysCall.Call(orderWindow.RequestLease(i))
           when(pending.busy && pending.ready && SysCall.Call(windowLease.Committed())) {
-            SysCall.Call(baseReg.Write(0, pending.addr, pending.data))
+            baseReg.grant(baseReg.wAddrs(0), daemon)
+            baseReg.grant(baseReg.wDatas(0), daemon)
+            baseReg.grant(baseReg.wEnables(0), daemon)
+            baseReg.wAddrs(0) <== pending.addr
+            baseReg.wDatas(0) <== pending.data
+            baseReg.wEnables(0) <== true.B
             val sbLease = SysCall.Call(scoreboard.RequestLease(i))
             SysCall.Call(sbLease.Release())
             SysCall.Call(windowLease.ForceCommit())
