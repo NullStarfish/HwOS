@@ -31,8 +31,9 @@ object HwOSLanguage {
   
 
   implicit class SecureVecAccess[T <: Data](val vec: Vec[T]) extends AnyVal {
-    // 支持动态索引 (UInt) 和静态索引 (Int)
-    def at(idx: UInt): T = propagateOwnership(vec(idx))
+    // 动态索引会生成瞬时派生节点，不能作为 ACL/ownership 的稳定锚点。
+    // 只允许上层把权限挂在稳定资源上，再通过专门端口协议驱动动态访问。
+    def at(idx: UInt): T = vec(idx)
     def at(idx: Int): T  = propagateOwnership(vec(idx))
 
     private def propagateOwnership(childNode: T): T = {

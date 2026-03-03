@@ -336,103 +336,145 @@ object sync {
 
 
 
-  // ==========================================
-  // 5. 硬件通用记分板 (Generic Scoreboard Process)
-  // 用于管理一组资源的预约与释放，支持 RAW/WAW 冲突拦截，适用于 Regfile、缓存行或多Bank外设
-  // ==========================================
-  class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-    
-    // 核心资产：Busy 状态表
+  class BaseScoreboardProcess(val resourceCount: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     private val busyTable = this.own(RegInit(VecInit(Seq.fill(resourceCount)(false.B))))
+    private val busyCells = Array.tabulate(resourceCount)(i => busyTable.at(i))
 
-    // 交互线缆：支持多端口并发 set/clear
-    val setIdx = WireInit(VecInit(Seq.fill(maxConcurrentPorts)(0.U(log2Ceil(resourceCount).W))))
-    val setEn  = WireInit(VecInit(Seq.fill(maxConcurrentPorts)(false.B)))
-    
-    val clrIdx = WireInit(VecInit(Seq.fill(maxConcurrentPorts)(0.U(log2Ceil(resourceCount).W))))
-    val clrEn  = WireInit(VecInit(Seq.fill(maxConcurrentPorts)(false.B)))
+    override def entry(): Unit = {}
 
-    for(i <- 0 until maxConcurrentPorts) {
-      this.own(setIdx(i)); this.own(setEn(i))
-      this.own(clrIdx(i)); this.own(clrEn(i))
+    def ReadBusy(addr: UInt): HwFunction[Bool] = HwFunction.stateless("BaseSB_ReadBusy") { _ =>
+      if (zeroAlwaysFree) Mux(addr === 0.U, false.B, busyTable(addr)) else busyTable(addr)
     }
 
-    // 守护进程：处理 Busy 表翻转
-    override def entry(): Unit = {
-      val sbDaemon = createLogic("SBDaemon")
-      this.grant(busyTable, sbDaemon)
-      
-      sbDaemon.run {
-        // 先 clear 后 set，支持单拍内的 Bypassing
-        for(i <- 0 until maxConcurrentPorts) {
-          when(clrEn(i)) { busyTable.at(clrIdx(i)) <== false.B }
+    def SetBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless("BaseSB_SetBusy") { agent =>
+      busyCells.foreach(cell => this.grant(cell, agent))
+      for (resIdx <- 0 until resourceCount) {
+        when(addr === resIdx.U) {
+          if (!zeroAlwaysFree || resIdx != 0) {
+            busyCells(resIdx) <== true.B
+          }
         }
-        for(i <- 0 until maxConcurrentPorts) {
-          when(setEn(i)) { busyTable.at(setIdx(i)) <== true.B }
+      }
+      ()
+    }
+
+    def ClearBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless("BaseSB_ClearBusy") { agent =>
+      busyCells.foreach(cell => this.grant(cell, agent))
+      for (resIdx <- 0 until resourceCount) {
+        when(addr === resIdx.U) {
+          busyCells(resIdx) <== false.B
         }
-        // 若某些资源（如 RISC-V 0号寄存器）免预约
-        if (zeroAlwaysFree) { busyTable.at(0) <== false.B }
+      }
+      ()
+    }
+  }
+
+  class SemaphoreScoreboardProcess(
+      val resourceCount: Int,
+      val maxClients: Int,
+      val maxUpdateSlots: Int,
+      val zeroAlwaysFree: Boolean = false,
+      localName: String,
+  )(implicit kernel: Kernel)
+      extends HwProcess(localName) {
+
+    private val base = spawn(new BaseScoreboardProcess(resourceCount, zeroAlwaysFree, "Base"))
+    private val updateSlots = spawn(new SemaphoreProcess(maxClients, initialCount = maxUpdateSlots, "UpdateSlots"))
+
+    override def entry(): Unit = {}
+
+    def ReadBusy(addr: UInt): HwFunction[Bool] = base.ReadBusy(addr)
+
+    class BusyPort(val clientId: Int) {
+      def Acquire(): HwFunction[Unit] = HwFunction.atomic(s"AcquireBusySlot_$clientId") { t =>
+        val slotLease = SysCall.Call(updateSlots.RequestLease(clientId))
+        SysCall.Call(slotLease.Acquire())
+      }
+
+      def SetBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"SetBusy_$clientId") { _ =>
+        SysCall.Call(base.SetBusy(addr))
+      }
+
+      def ClearBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"ClearBusy_$clientId") { _ =>
+        SysCall.Call(base.ClearBusy(addr))
+      }
+
+      def Release(): HwFunction[Unit] = HwFunction.stateless(s"ReleaseBusySlot_$clientId") { _ =>
+        val slotLease = SysCall.Call(updateSlots.RequestLease(clientId))
+        SysCall.Call(slotLease.Release())
       }
     }
 
-    // --- 高阶 HwFunction 接口 ---
+    private val busyPorts = Array.tabulate(maxClients)(i => new BusyPort(i))
 
-    // 纯阻塞守卫：只等不占 (适用于 RAW 冲突场景)
+    def RequestBusyPort(clientId: Int): HwFunction[BusyPort] = HwFunction.bindings(s"ReqSemaSBPort_$clientId") { _ =>
+      busyPorts(clientId)
+    }
+  }
+
+  // ==========================================
+  // 5. 协议记分板 (Protocol Wrapper)
+  // 在 BaseScoreboard + SemaphoreScoreboard 之上实现 Guard / Reserve / Release 协议
+  // ==========================================
+  class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+    private val semaScoreboard =
+      spawn(new SemaphoreScoreboardProcess(resourceCount, maxConcurrentPorts, maxConcurrentPorts, zeroAlwaysFree, "Sema"))
+
+    override def entry(): Unit = {}
+
     def Guard(addr: UInt): HwFunction[Bool] = HwFunction.atomic("Guard") { t =>
-      val isBusy = busyTable.at(addr)
+      val isBusy = SysCall.Call(semaScoreboard.ReadBusy(addr))
       t.waitCondition(!isBusy)
-      when(!isBusy) { t.Next.hijack() } // 纯组合逻辑前递，hijack 完全合法
-      !isBusy 
+      when(!isBusy) { t.Next.hijack() }
+      !isBusy
     }
 
     class ScoreboardLease(val portIdx: Int) extends HwLease {
       val isReserved = RegInit(false.B)
-      // 【核心】：必须记录当前契约锁定了哪个地址！
-      val reservedAddr = RegInit(0.U(log2Ceil(resourceCount).W)) 
+      val reservedAddr = RegInit(0.U(log2Ceil(resourceCount).W))
 
       ScoreboardProcess.this.own(isReserved)
       ScoreboardProcess.this.own(reservedAddr)
       override def isActive: Bool = isReserved
 
       def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
-        val isBusy = busyTable.at(addr)
+        val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
+        val isBusy = SysCall.Call(semaScoreboard.ReadBusy(addr))
         val alreadyReserved = isReserved && (reservedAddr === addr)
         val canReserve = alreadyReserved || !isBusy
         t.waitCondition(canReserve)
-        
-        when(!alreadyReserved && !isBusy) {
-          ScoreboardProcess.this.grant(setIdx(portIdx), t); ScoreboardProcess.this.grant(setEn(portIdx), t)
-          ScoreboardProcess.this.grant(isReserved, t);      ScoreboardProcess.this.grant(reservedAddr, t)
 
-          setIdx(portIdx) <== addr
-          setEn(portIdx)  <== true.B
-          isReserved    <== true.B
-          reservedAddr  <== addr // 锁存动态地址，供未来释放用
+        when(!alreadyReserved && !isBusy) {
+          ScoreboardProcess.this.grant(isReserved, t)
+          ScoreboardProcess.this.grant(reservedAddr, t)
+          SysCall.Call(busyPort.Acquire())
+          SysCall.Call(busyPort.SetBusy(addr))
+          isReserved <== true.B
+          reservedAddr <== addr
         }
         t.ctx.registerLease(this)
       }
 
       def Release(): HwFunction[Unit] = HwFunction.stateless(s"Release_$portIdx") { agent =>
-        ScoreboardProcess.this.grant(clrIdx(portIdx), agent)
-        ScoreboardProcess.this.grant(clrEn(portIdx), agent)
+        val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
         ScoreboardProcess.this.grant(isReserved, agent)
-
-        // 释放锁存的地址
-        clrIdx(portIdx) <== reservedAddr
-        clrEn(portIdx)  <== true.B
-        isReserved    <== false.B
+        when(isReserved) {
+          SysCall.Call(busyPort.ClearBusy(reservedAddr))
+          SysCall.Call(busyPort.Release())
+          isReserved <== false.B
+        }
       }
 
       override def forceReclaim(agent: HardwareAgent): Unit = {
-        ScoreboardProcess.this.grant(clrIdx(portIdx), agent)
-        ScoreboardProcess.this.grant(clrEn(portIdx), agent)
+        val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
         ScoreboardProcess.this.grant(isReserved, agent)
-        clrIdx(portIdx) <==! reservedAddr
-        clrEn(portIdx)  <==! true.B
-        isReserved    <==! false.B
+        when(isReserved) {
+          SysCall.Call(busyPort.ClearBusy(reservedAddr))
+          SysCall.Call(busyPort.Release())
+          isReserved <==! false.B
+        }
       }
     }
-
 
     private val leases = Array.tabulate(maxConcurrentPorts)(i => new ScoreboardLease(i))
 

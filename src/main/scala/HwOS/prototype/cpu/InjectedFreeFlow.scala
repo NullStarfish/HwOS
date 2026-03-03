@@ -307,9 +307,9 @@ object InjectedFreeFlow {
         this.grant(io.x3, daemon)
         this.grant(io.activeThreads, daemon)
         daemon.run {
-          io.x1 <== SysCall.Call(fetch.decode.regFile.baseReg.Read(1.U))
-          io.x2 <== SysCall.Call(fetch.decode.regFile.baseReg.Read(2.U))
-          io.x3 <== SysCall.Call(fetch.decode.regFile.baseReg.Read(3.U))
+          io.x1 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
+          io.x2 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))
+          io.x3 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(3.U))
           io.activeThreads <== PopCount(fetch.slots.map(_.thread.active))
         }
       }

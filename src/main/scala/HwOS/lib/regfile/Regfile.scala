@@ -6,124 +6,128 @@ import HwOS.kernel.function.HwFunction
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
-import HwOS.kernel.thread.HardwareAgent
 import HwOS.stdlib.sync._
 
 object RegfileLib {
 
   // ==========================================
   // Layer 1: 基础寄存器堆 (纯物理数据通路)
-  // 提供多端口的并发读写，无任何调度与阻塞逻辑
+  // 不提供端口分配，仅保留最薄的读写接口
   // ==========================================
-  class BaseRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-    
-    // 1. 物理核心资产 (整体 own)
+  class BaseRegfileProcess(val depth: Int, val width: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel)
+      extends HwProcess(localName) {
+
     private val regs = this.own(RegInit(VecInit(Seq.fill(depth)(0.U(width.W)))))
+    private val regCells = Array.tabulate(depth)(i => regs.at(i))
 
-    // 2. C/S 架构写入端口线缆 (独立 own，供外部并发连线)
-    val wAddrs   = WireInit(VecInit(Seq.fill(maxWriters)(0.U(log2Ceil(depth).W))))
-    val wDatas   = WireInit(VecInit(Seq.fill(maxWriters)(0.U(width.W))))
-    val wEnables = WireInit(VecInit(Seq.fill(maxWriters)(false.B)))
+    override def entry(): Unit = {}
 
-    for (i <- 0 until maxWriters) {
-      this.own(wAddrs(i))
-      this.own(wDatas(i))
-      this.own(wEnables(i))
-    }
-
-    // 3. 核心守护进程：统一管理物理资源的写入
-    override def entry(): Unit = {
-      val daemon = createLogic("WriteDaemon")
-      this.grant(regs, daemon)
-      val regCells = (0 until depth).map(i => regs.at(i))
-      regCells.foreach(cell => this.grant(cell, daemon))
-      
-      daemon.run {
-        for (i <- 0 until maxWriters) {
-          when(wEnables(i)) {
-            for (regIdx <- 0 until depth) {
-              when(wAddrs(i) === regIdx.U) {
-                if (!zeroReg || regIdx != 0) {
-                  regCells(regIdx) <== wDatas(i)
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // --- L1 暴露的 HwFunction 接口 ---
-    
-    // 纯组合逻辑读取，不需要权限拦截
     def Read(addr: UInt): HwFunction[UInt] = HwFunction.stateless("Base_Read") { _ =>
       if (zeroReg) Mux(addr === 0.U, 0.U, regs(addr)) else regs(addr)
     }
 
+    def Write(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless("Base_Write") { agent =>
+      regCells.foreach(cell => this.grant(cell, agent))
+      for (regIdx <- 0 until depth) {
+        when(addr === regIdx.U) {
+          if (!zeroReg || regIdx != 0) {
+            regCells(regIdx) <== data
+          }
+        }
+      }
+      ()
+    }
   }
 
- // ==========================================
-  // Layer 2: 记分板寄存器堆 (带调度拦截器) - 重构版
-  // 组装 BaseRegfile 和 Stdlib.Scoreboard
   // ==========================================
-  class ScoreboardRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+  // Layer 2: 信号量寄存器堆
+  // 在基础寄存器堆之上挂写槽仲裁，不引入冲突协议
+  // ==========================================
+  class SemaphoreRegfileProcess(
+      val depth: Int,
+      val width: Int,
+      val maxClients: Int,
+      val maxWriteSlots: Int,
+      val zeroReg: Boolean,
+      localName: String,
+  )(implicit kernel: Kernel)
+      extends HwProcess(localName) {
 
-    // 1. 孵化 L1 数据通路 (BaseRegfile)
-    val baseReg = spawn(new BaseRegfileProcess(depth, width, maxWriters, zeroReg, "Base"))
-    
-    // 2. 孵化 L2 操作系统控制通路 (Stdlib.Scoreboard)
-    val scoreboard = spawn(new ScoreboardProcess(resourceCount=depth, maxConcurrentPorts = maxWriters, zeroAlwaysFree = zeroReg, "Control"))
+    private val baseReg = spawn(new BaseRegfileProcess(depth, width, zeroReg, "Base"))
+    private val writeSlots = spawn(new SemaphoreProcess(maxClients, initialCount = maxWriteSlots, "WriteSlots"))
 
     override def entry(): Unit = {}
 
-    private def DriveBaseWrite(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"DriveBaseWrite_$portIdx") { agent =>
-      baseReg.grant(baseReg.wAddrs(portIdx), agent)
-      baseReg.grant(baseReg.wDatas(portIdx), agent)
-      baseReg.grant(baseReg.wEnables(portIdx), agent)
+    def Read(addr: UInt): HwFunction[UInt] = baseReg.Read(addr)
 
-      baseReg.wAddrs(portIdx) <== addr
-      baseReg.wDatas(portIdx) <== data
-      baseReg.wEnables(portIdx) <== true.B
+    class RegWritePort(val clientId: Int) {
+      def Acquire(): HwFunction[Unit] = HwFunction.atomic(s"AcquireWriteSlot_$clientId") { t =>
+        val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
+        SysCall.Call(slotLease.Acquire())
+      }
+
+      def Write(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"Write_$clientId") { _ =>
+        SysCall.Call(baseReg.Write(addr, data))
+      }
+
+      def Release(): HwFunction[Unit] = HwFunction.stateless(s"ReleaseWriteSlot_$clientId") { _ =>
+        val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
+        SysCall.Call(slotLease.Release())
+      }
     }
 
-    // ==========================================
-    // 消费者接口：安全读取 (RAW 护盾)
-    // ==========================================
+    private val writePorts = Array.tabulate(maxClients)(i => new RegWritePort(i))
+
+    def RequestWritePort(clientId: Int): HwFunction[RegWritePort] = HwFunction.bindings(s"ReqSemaRegPort_$clientId") { _ =>
+      writePorts(clientId)
+    }
+  }
+
+  // ==========================================
+  // Layer 3: 记分板寄存器堆
+  // 组装 SemaphoreRegfile 和 Stdlib.Scoreboard
+  // ==========================================
+  class ScoreboardRegfileProcess(val depth: Int, val width: Int, val maxWriters: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel)
+      extends HwProcess(localName) {
+
+    val semaReg = spawn(new SemaphoreRegfileProcess(depth, width, maxWriters, maxWriters, zeroReg, "Sema"))
+    val scoreboard = spawn(new ScoreboardProcess(resourceCount = depth, maxConcurrentPorts = maxWriters, zeroAlwaysFree = zeroReg, "Control"))
+
+    override def entry(): Unit = {}
+
+    def ReadCommitted(addr: UInt): HwFunction[UInt] = semaReg.Read(addr)
+
     def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("GuardedRead") { t =>
-      // 1. 获取 Stdlib 记分板的就绪信号 (如果冲突，当前线程 pc 会在此挂起)
       val ready = SysCall.Call(scoreboard.Guard(addr))
-      
+
       val rdata = this.own(WireInit(0.U(width.W)))
       grant(rdata, t)
-      
-      // 2. 只有当 ready (无 RAW 冲突) 时，才执行物理读取
+
       when(ready) {
-        rdata <== SysCall.Call(baseReg.Read(addr))
+        rdata <== SysCall.Call(semaReg.Read(addr))
       }
       rdata
     }
 
-    // ==========================================
-    // 生产者接口：写端口智能句柄 (RegWritePort)
-    // ==========================================
     class RegWritePort(val portIdx: Int) {
-      // 预约占位：底层的 ScoreboardLease 在 Reserve 时，会自动把契约挂载到 t.ctx (PCB) 中！
       def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
+        val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
         val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
+        SysCall.Call(writePort.Acquire())
         SysCall.Call(sbLease.Reserve(addr))
       }
 
-      // 写回并释放资源：将 BaseReg 的数据写入与 Lease 的释放绑定在一起
-      def WritebackAndClear(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"WB_$portIdx") { agent =>
+      def WritebackAndClear(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"WB_$portIdx") { _ =>
+        val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
         val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
-        SysCall.Call(DriveBaseWrite(portIdx, addr, data))
+        SysCall.Call(writePort.Write(addr, data))
         SysCall.Call(sbLease.Release())
+        SysCall.Call(writePort.Release())
       }
     }
 
     private val writePorts = Array.tabulate(maxWriters)(i => new RegWritePort(i))
 
-    // 显式接口：向 Regfile 申请一个写端口的控制权
     def RequestWritePort(portIdx: Int): HwFunction[RegWritePort] = HwFunction.bindings(s"ReqRegPort_$portIdx") { _ =>
       writePorts(portIdx)
     }
@@ -142,7 +146,7 @@ object RegfileLib {
     private val addrWidth = log2Ceil(depth max 2)
     private case class PendingPort(busy: Bool, addr: UInt, data: UInt, ready: Bool)
 
-    val baseReg = spawn(new BaseRegfileProcess(depth, width, 1, zeroReg, "Base"))
+    val semaReg = spawn(new SemaphoreRegfileProcess(depth, width, maxWriters, maxWriters, zeroReg, "Sema"))
     val scoreboard = spawn(new ScoreboardProcess(depth, maxWriters, zeroAlwaysFree = zeroReg, "Control"))
     val orderWindow = spawn(new OrderedWindowProcess(maxWriters, maxInFlight, "OrderWindow"))
 
@@ -197,14 +201,11 @@ object RegfileLib {
         for ((pending, i) <- pendingPorts.zipWithIndex) {
           val windowLease = SysCall.Call(orderWindow.RequestLease(i))
           when(pending.busy && pending.ready && SysCall.Call(windowLease.Committed())) {
-            baseReg.grant(baseReg.wAddrs(0), daemon)
-            baseReg.grant(baseReg.wDatas(0), daemon)
-            baseReg.grant(baseReg.wEnables(0), daemon)
-            baseReg.wAddrs(0) <== pending.addr
-            baseReg.wDatas(0) <== pending.data
-            baseReg.wEnables(0) <== true.B
+            val writePort = SysCall.Call(semaReg.RequestWritePort(i))
+            SysCall.Call(writePort.Write(pending.addr, pending.data))
             val sbLease = SysCall.Call(scoreboard.RequestLease(i))
             SysCall.Call(sbLease.Release())
+            SysCall.Call(writePort.Release())
             SysCall.Call(windowLease.ForceCommit())
             pending.busy <== false.B
             pending.ready <== false.B
@@ -213,6 +214,8 @@ object RegfileLib {
         }
       }
     }
+
+    def ReadCommitted(addr: UInt): HwFunction[UInt] = semaReg.Read(addr)
 
     def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("OrderedGuardedRead") { t =>
       val matchingReady = matchingPorts(addr, requireReady = true.B)
@@ -228,15 +231,17 @@ object RegfileLib {
       }.elsewhen(matchingReady.asUInt.orR) {
         rdata <== Mux1H(matchingReady, VecInit(pendingPorts.toIndexedSeq.map(_.data)))
       }.otherwise {
-        rdata <== SysCall.Call(baseReg.Read(addr))
+        rdata <== SysCall.Call(semaReg.Read(addr))
       }
       rdata
     }
 
     class OrderedRegWritePort(val portIdx: Int) {
       def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
+        val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
         val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
         val windowLease = SysCall.Call(orderWindow.RequestLease(portIdx))
+        SysCall.Call(writePort.Acquire())
         SysCall.Call(sbLease.Reserve(addr))
         SysCall.Call(windowLease.Reserve())
         SysCall.Call(BeginPendingWrite(portIdx, addr))
