@@ -51,6 +51,27 @@ object sync {
       leases(id) // 无状态返回预分配的句柄
     }
 
+    def Lock(id: Int): HwFunction[Unit] = HwFunction.atomic(s"MutexLock_$id") { _ =>
+      val lease = SysCall.Call(RequestLease(id))
+      SysCall.Call(lease.Lock())
+    }
+
+    def Unlock(id: Int): HwFunction[Unit] = HwFunction.stateless(s"MutexUnlock_$id") { _ =>
+      val lease = SysCall.Call(RequestLease(id))
+      SysCall.Call(lease.Unlock())
+    }
+
+    def WithLock(id: Int)(body: HardwareThread => Unit): HwFunction[Unit] = HwFunction.thread(s"WithLock_$id") { t =>
+      t.Step(s"AcquireLock_$id") {
+        SysCall.Call(Lock(id))
+      }
+      body(t)
+      t.Step(s"ReleaseLock_$id") {
+        SysCall.Call(Unlock(id))
+      }
+      ()
+    }
+
   }
 
   // ==========================================
@@ -134,6 +155,27 @@ object sync {
 
     def Available(): HwFunction[Bool] = HwFunction.stateless("SemAvailable") { _ =>
       count > 0.U
+    }
+
+    def Acquire(id: Int): HwFunction[Unit] = HwFunction.atomic(s"SemAcquire_$id") { _ =>
+      val lease = SysCall.Call(RequestLease(id))
+      SysCall.Call(lease.Acquire())
+    }
+
+    def Release(id: Int): HwFunction[Unit] = HwFunction.stateless(s"SemRelease_$id") { _ =>
+      val lease = SysCall.Call(RequestLease(id))
+      SysCall.Call(lease.Release())
+    }
+
+    def WithPermit(id: Int)(body: HardwareThread => Unit): HwFunction[Unit] = HwFunction.thread(s"WithPermit_$id") { t =>
+      t.Step(s"AcquirePermit_$id") {
+        SysCall.Call(Acquire(id))
+      }
+      body(t)
+      t.Step(s"ReleasePermit_$id") {
+        SysCall.Call(Release(id))
+      }
+      ()
     }
   }
 
@@ -336,7 +378,7 @@ object sync {
 
 
 
-  class BaseScoreboardProcess(val resourceCount: Int, val maxUpdates: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+  class BaseScoreboardProcess(val resourceCount: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     private val busyTable = this.exemptVectorAcl(this.own(RegInit(VecInit(Seq.fill(resourceCount)(false.B)))))
     
     override def entry(): Unit = {}
@@ -345,7 +387,7 @@ object sync {
       if (zeroAlwaysFree) Mux(addr === 0.U, false.B, busyTable(addr)) else busyTable(addr)
     }
 
-    def SetBusy(slotIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"BaseSB_SetBusy_$slotIdx") { agent =>
+    def SetBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless("BaseSB_SetBusy") { agent =>
       if (zeroAlwaysFree) {
         when(addr =/= 0.U) {
           busyTable.at(addr) <== true.B
@@ -356,7 +398,7 @@ object sync {
       ()
     }
 
-    def ClearBusy(slotIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"BaseSB_ClearBusy_$slotIdx") { agent =>
+    def ClearBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless("BaseSB_ClearBusy") { agent =>
       busyTable.at(addr) <== false.B
       ()
     }
@@ -371,7 +413,7 @@ object sync {
   )(implicit kernel: Kernel)
       extends HwProcess(localName) {
 
-    private val base = spawn(new BaseScoreboardProcess(resourceCount, maxClients, zeroAlwaysFree, "Base"))
+    private val base = spawn(new BaseScoreboardProcess(resourceCount, zeroAlwaysFree, "Base"))
     private val updateSlots = spawn(new SemaphoreProcess(maxClients, initialCount = maxUpdateSlots, "UpdateSlots"))
 
     override def entry(): Unit = {}
@@ -385,11 +427,11 @@ object sync {
       }
 
       def SetBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"SetBusy_$clientId") { _ =>
-        SysCall.Call(base.SetBusy(clientId, addr))
+        SysCall.Call(base.SetBusy(addr))
       }
 
       def ClearBusy(addr: UInt): HwFunction[Unit] = HwFunction.stateless(s"ClearBusy_$clientId") { _ =>
-        SysCall.Call(base.ClearBusy(clientId, addr))
+        SysCall.Call(base.ClearBusy(addr))
       }
 
       def Release(): HwFunction[Unit] = HwFunction.stateless(s"ReleaseBusySlot_$clientId") { _ =>
@@ -474,5 +516,32 @@ object sync {
     def RequestLease(portIdx: Int): HwFunction[ScoreboardLease] = HwFunction.bindings(s"ReqSBLease_$portIdx") { _ =>
       leases(portIdx)
     }
+
+    def WaitUntilFree(addr: UInt): HwFunction[Unit] = HwFunction.atomic("WaitUntilFree") { _ =>
+      SysCall.Call(Guard(addr))
+      ()
+    }
+
+    def Reserve(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"SBReserve_$portIdx") { _ =>
+      val lease = SysCall.Call(RequestLease(portIdx))
+      SysCall.Call(lease.Reserve(addr))
+    }
+
+    def Release(portIdx: Int): HwFunction[Unit] = HwFunction.stateless(s"SBRelease_$portIdx") { _ =>
+      val lease = SysCall.Call(RequestLease(portIdx))
+      SysCall.Call(lease.Release())
+    }
+
+    def WithReservation(portIdx: Int, addr: UInt)(body: HardwareThread => Unit): HwFunction[Unit] =
+      HwFunction.thread(s"WithReservation_$portIdx") { t =>
+        t.Step(s"ReserveBusy_$portIdx") {
+          SysCall.Call(Reserve(portIdx, addr))
+        }
+        body(t)
+        t.Step(s"ReleaseBusy_$portIdx") {
+          SysCall.Call(Release(portIdx))
+        }
+        ()
+      }
   }
 }

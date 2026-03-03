@@ -34,15 +34,14 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
 
     // Worker 模板逻辑：抢锁 -> 执行关键区 -> 释放并汇报 -> 退出
     def workerLogic(t: HardwareThread, lockId: Int, wgId: Int): Unit = {
-      val lease = SysCall.Call(mutex.RequestLease(lockId))
       t.Step("AcquireLock") {
-        SysCall.Call(lease.Lock())
+        SysCall.Call(mutex.Lock(lockId))
       }
       t.Step("CriticalSection") {
         sharedCounter <== sharedCounter + 10.U
       }
       t.Step("ReleaseAndDone") {
-        SysCall.Call(lease.Unlock())
+        SysCall.Call(mutex.Unlock(lockId))
         SysCall.Call(wg.Done(wgId))
         t.exit() // 必须显式退出
       }

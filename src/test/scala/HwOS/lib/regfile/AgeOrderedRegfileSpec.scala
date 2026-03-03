@@ -43,10 +43,9 @@ class AgeOrderedRegfileModule extends Module {
         val delay = oldWriter.own(RegInit(0.U(3.W)))
 
         oldWriter.Step("ReserveOld") {
-          val gate = SysCall.Call(ingress.RequestLease(0))
-          SysCall.Call(gate.Lock())
+          SysCall.Call(ingress.Lock(0))
           SysCall.Call(writePort.Reserve(1.U))
-          SysCall.Call(gate.Unlock())
+          SysCall.Call(ingress.Unlock(0))
         }
 
         oldWriter.Step("DelayOld") {
@@ -67,10 +66,9 @@ class AgeOrderedRegfileModule extends Module {
         val writePort = SysCall.Call(regFile.RequestWritePort(1))
 
         youngWriter.Step("ReserveYoung") {
-          val gate = SysCall.Call(ingress.RequestLease(1))
-          SysCall.Call(gate.Lock())
+          SysCall.Call(ingress.Lock(1))
           SysCall.Call(writePort.Reserve(2.U))
-          SysCall.Call(gate.Unlock())
+          SysCall.Call(ingress.Unlock(1))
         }
 
         youngWriter.Step("CompleteYoung") {
@@ -93,7 +91,7 @@ class AgeOrderedRegfileModule extends Module {
         }
 
         reader.Step("ReadForwarded") {
-          seen <== SysCall.Call(regFile.GuardedRead(2.U))
+          seen <== SysCall.Call(regFile.Read(2.U))
         }
 
         reader.Step("Publish") {

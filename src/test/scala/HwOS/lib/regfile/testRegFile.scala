@@ -69,8 +69,7 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
         when(flagReserved) { consumer.Next.hijack() }
       }
       consumer.Step("ReadOperand") {
-        // GuardedRead 内部的 hijack 现在会安全地跳向下面的 "Retire"
-        val rdata = SysCall.Call(regfile.GuardedRead(addr = 5.U))
+        val rdata = SysCall.Call(regfile.Read(addr = 5.U))
         resultReg <== rdata 
       }
       // [修复]：提供一个独立的着陆点

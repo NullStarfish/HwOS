@@ -58,6 +58,14 @@ object RegfileLib {
 
     def Read(addr: UInt): HwFunction[UInt] = baseReg.Read(addr)
 
+    def Write(clientId: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"SemaWrite_$clientId") { _ =>
+      val writePort = SysCall.Call(RequestWritePort(clientId))
+      SysCall.Call(writePort.Acquire())
+      SysCall.Call(writePort.Write(addr, data))
+      SysCall.Call(writePort.Release())
+      ()
+    }
+
     class RegWritePort(val clientId: Int) {
       def Acquire(): HwFunction[Unit] = HwFunction.atomic(s"AcquireWriteSlot_$clientId") { t =>
         val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
@@ -94,6 +102,7 @@ object RegfileLib {
     override def entry(): Unit = {}
 
     def ReadCommitted(addr: UInt): HwFunction[UInt] = semaReg.Read(addr)
+    def Read(addr: UInt): HwFunction[UInt] = GuardedRead(addr)
 
     def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("GuardedRead") { t =>
       val ready = SysCall.Call(scoreboard.Guard(addr))
@@ -122,6 +131,13 @@ object RegfileLib {
         SysCall.Call(sbLease.Release())
         SysCall.Call(writePort.Release())
       }
+    }
+
+    def Write(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"RegWrite_$portIdx") { _ =>
+      val writePort = SysCall.Call(RequestWritePort(portIdx))
+      SysCall.Call(writePort.Reserve(addr))
+      SysCall.Call(writePort.WritebackAndClear(addr, data))
+      ()
     }
 
     private val writePorts = Array.tabulate(maxWriters)(i => new RegWritePort(i))
@@ -214,6 +230,7 @@ object RegfileLib {
     }
 
     def ReadCommitted(addr: UInt): HwFunction[UInt] = semaReg.Read(addr)
+    def Read(addr: UInt): HwFunction[UInt] = GuardedRead(addr)
 
     def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("OrderedGuardedRead") { t =>
       val matchingReady = matchingPorts(addr, requireReady = true.B)
@@ -252,6 +269,13 @@ object RegfileLib {
         t.waitCondition(publishDone(portIdx))
         ()
       }
+    }
+
+    def Write(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"OrderedRegWrite_$portIdx") { _ =>
+      val writePort = SysCall.Call(RequestWritePort(portIdx))
+      SysCall.Call(writePort.Reserve(addr))
+      SysCall.Call(writePort.WritebackAndClear(addr, data))
+      ()
     }
 
     private val writePorts = Array.tabulate(maxWriters)(i => new OrderedRegWritePort(i))

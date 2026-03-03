@@ -25,17 +25,14 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
     // 1. Victim 线程：抢到锁之后，进入死循环 (永远不调 Unlock)
     // ---------------------------------------------------------
     victim.entry {
-      // 静态获取专属于自己的锁句柄 (能力/Capability)
-      val myLock = SysCall.Call(mutex.RequestLease(0)) 
-      
       victim.Step("AcquireLock") {
-        SysCall.Call(myLock.Lock()) // 直接通过句柄上锁
+        SysCall.Call(mutex.Lock(0))
       }
       victim.Step("InfiniteLoop") {
         victim.waitCondition(false.B) 
       }
       victim.Step("NeverReachesHere") {
-        SysCall.Call(myLock.Unlock())
+        SysCall.Call(mutex.Unlock(0))
         victim.exit()
       }
     }
@@ -44,14 +41,12 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
     // 2. Observer 线程：尝试抢锁。如果 OS 没回收，它会卡死在这里
     // ---------------------------------------------------------
     observer.entry {
-      val myLock = SysCall.Call(mutex.RequestLease(1))
-
       observer.Step("TryAcquireLock") {
-        SysCall.Call(myLock.Lock())
+        SysCall.Call(mutex.Lock(1))
       }
       observer.Step("Success") {
         observerSuccess <== true.B 
-        SysCall.Call(myLock.Unlock())
+        SysCall.Call(mutex.Unlock(1))
         observer.exit()
       }
     }

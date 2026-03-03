@@ -117,7 +117,7 @@ object InjectedFreeFlow {
 
       def guardedRead(stepName: String, addr: UInt): Unit =
         t.Step(stepName) {
-          decodedSrc <== SysCall.Call(regFile.GuardedRead(addr))
+          decodedSrc <== SysCall.Call(regFile.Read(addr))
         }
 
       def acquireArith(stepName: String): Unit =
