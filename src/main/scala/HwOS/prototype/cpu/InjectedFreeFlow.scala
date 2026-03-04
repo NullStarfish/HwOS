@@ -40,21 +40,27 @@ object InjectedFreeFlow {
     val service = spawn(new sync.SemaphoreProcess(maxClients, ports, "Ports"))
     override def entry(): Unit = {}
 
-    def Acquire(clientId: Int): HwFunction[Unit] = HwFunction.atomic(s"${name}_Acquire_$clientId") { t =>
-      val lease = SysCall.Call(service.RequestLease(clientId))
-      SysCall.Call(lease.Acquire())
-      ()
-    }
+    def Acquire(clientId: Int): HwFunction[Unit] = service.Acquire(clientId)
 
-    def Execute(lhs: UInt, rhs: UInt): HwFunction[UInt] = HwFunction.stateless(s"${name}_Execute") { agent =>
+    def Execute(lhs: UInt, rhs: UInt): HwFunction[UInt] = HwFunction.stateless(s"${name}_Execute") { _ =>
       lhs + rhs
     }
 
-    def Release(clientId: Int): HwFunction[Unit] = HwFunction.atomic(s"${name}_Release_$clientId") { t =>
-      val lease = SysCall.Call(service.RequestLease(clientId))
-      SysCall.Call(lease.Release())
-      ()
-    }
+    def Release(clientId: Int): HwFunction[Unit] = service.Release(clientId)
+
+    def Available(): HwFunction[Bool] = service.Available()
+
+    def WithPort(clientId: Int, entryLabel: String)(body: HardwareThread => Unit): HwFunction[Unit] =
+      HwFunction.thread(s"${name}_WithPort_$clientId") { t =>
+        t.Step(entryLabel) {
+          SysCall.Call(Acquire(clientId))
+        }
+        body(t)
+        t.Step(s"${entryLabel}_Release") {
+          SysCall.Call(Release(clientId))
+        }
+        ()
+      }
   }
 
   class LoadProcess(val maxClients: Int, val ports: Int, val initData: Seq[Int], localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
@@ -64,27 +70,33 @@ object InjectedFreeFlow {
 
     override def entry(): Unit = {}
 
-    def Acquire(clientId: Int): HwFunction[Unit] = HwFunction.atomic(s"${name}_Acquire_$clientId") { t =>
+    def Load(clientId: Int, delay: UInt, addr: UInt): HwFunction[UInt] = HwFunction.atomic(s"${name}_Load_$clientId") { t =>
       val lease = SysCall.Call(service.RequestLease(clientId))
-      SysCall.Call(lease.Acquire())
-      ()
-    }
-
-    def Wait(delay: UInt): HwFunction[Unit] = HwFunction.atomic(s"${name}_Wait") { t =>
+      when(!lease.isActive) {
+        SysCall.Call(service.Acquire(clientId))
+      }
       delay <== delay + 1.U
-      t.waitCondition(delay >= 2.U)
-      ()
-    }
-
-    def Read(addr: UInt): HwFunction[UInt] = HwFunction.stateless(s"${name}_Read") { agent =>
+      val done = delay >= 2.U
+      t.waitCondition(done)
+      when(done) {
+        SysCall.Call(service.Release(clientId))
+      }
       mem(addr(log2Ceil(memDepth) - 1, 0))
     }
 
-    def Release(clientId: Int): HwFunction[Unit] = HwFunction.atomic(s"${name}_Release_$clientId") { t =>
-      val lease = SysCall.Call(service.RequestLease(clientId))
-      SysCall.Call(lease.Release())
-      ()
-    }
+    def Available(): HwFunction[Bool] = service.Available()
+
+    def WithPort(clientId: Int, entryLabel: String)(body: HardwareThread => Unit): HwFunction[Unit] =
+      HwFunction.thread(s"${name}_WithPort_$clientId") { t =>
+        t.Step(entryLabel) {
+          SysCall.Call(service.Acquire(clientId))
+        }
+        body(t)
+        t.Step(s"${entryLabel}_Release") {
+          SysCall.Call(service.Release(clientId))
+        }
+        ()
+      }
   }
 
   class DecodeProcess(
@@ -108,33 +120,19 @@ object InjectedFreeFlow {
       val rd = ISA.rd(instBits)
       val rs1 = ISA.rs1(instBits)
       val imm = ISA.imm(instBits)
+      val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
 
-      def reserveWrite(stepName: String): Unit =
-        t.Step(stepName) {
-          val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
+      def withReservedWrite(entryLabel: String)(body: HardwareThread => Unit): Unit = {
+        t.Step(entryLabel) {
           SysCall.Call(writePort.Reserve(rd))
         }
-
-      def guardedRead(stepName: String, addr: UInt): Unit =
-        t.Step(stepName) {
-          decodedSrc <== SysCall.Call(regFile.Read(addr))
-        }
-
-      def acquireArith(stepName: String): Unit =
-        t.Step(stepName) {
-          SysCall.Call(arith.Acquire(slotId))
-        }
-
-      def acquireLoad(stepName: String): Unit =
-        t.Step(stepName) {
-          SysCall.Call(load.Acquire(slotId))
-          loadDelay <== 0.U
-        }
+        body(t)
+      }
 
       t.Step(s"RouteDispatch_$slotId") {
-        val canArith = opcode === ISA.OP_ADDI && SysCall.Call(arith.service.Available())
-        val canLoad = opcode === ISA.OP_LOAD && SysCall.Call(load.service.Available())
-        val canLoadAdd = opcode === ISA.OP_LOADADD && SysCall.Call(load.service.Available())
+        val canArith = opcode === ISA.OP_ADDI && SysCall.Call(arith.Available())
+        val canLoad = opcode === ISA.OP_LOAD && SysCall.Call(load.Available())
+        val canLoadAdd = opcode === ISA.OP_LOADADD && SysCall.Call(load.Available())
         t.waitCondition(canArith || canLoad || canLoadAdd)
 
         when(canArith) {
@@ -148,72 +146,72 @@ object InjectedFreeFlow {
         }
       }
 
-      reserveWrite(s"ArithReserve_$slotId")
-      guardedRead(s"ArithGuard_$slotId", rs1)
-
-      t.Step(s"ArithRead_$slotId") {
-        t.jump(s"ArithAcquire_$slotId")
-      }
-
-      acquireArith(s"ArithAcquire_$slotId")
-
-      t.Step(s"ArithExec_$slotId") {
-        result <== SysCall.Call(arith.Execute(decodedSrc, imm))
-        SysCall.Call(arith.Release(slotId))
-        t.jump(s"RouteWriteback_$slotId")
-      }
-
-      reserveWrite(s"LoadReserve_$slotId")
-      acquireLoad(s"LoadAcquire_$slotId")
-
-      t.Step(s"LoadWait_$slotId") {
-        SysCall.Call(load.Wait(loadDelay))
-      }
-
-      t.Step(s"LoadRead_$slotId") {
-        result <== SysCall.Call(load.Read(imm))
-        SysCall.Call(load.Release(slotId))
-        t.jump(s"RouteWriteback_$slotId")
-      }
-
-      reserveWrite(s"LoadAddLoadReserve_$slotId")
-      acquireLoad(s"LoadAddLoadAcquire_$slotId")
-
-      t.Step(s"LoadAddLoadWait_$slotId") {
-        SysCall.Call(load.Wait(loadDelay))
-      }
-
-      t.Step(s"LoadAddLoadRead_$slotId") {
-        loadedValue <== SysCall.Call(load.Read(imm))
-        SysCall.Call(load.Release(slotId))
-        t.jump(s"LoadAddArithDispatch_$slotId")
-      }
-
-      t.Step(s"LoadAddArithDispatch_$slotId") {
-        val canArith = SysCall.Call(arith.service.Available())
-        t.waitCondition(canArith)
-        when(canArith) {
-          t.jump(s"LoadAddArithGuard_$slotId")
+      withReservedWrite(s"ArithReserve_$slotId") { tx =>
+        tx.Step(s"ArithRead_$slotId") {
+          decodedSrc <== SysCall.Call(regFile.Read(rs1))
+        }
+        SysCall.Call(arith.WithPort(slotId, s"ArithAcquire_$slotId") { ax =>
+          ax.Step(s"ArithExec_$slotId") {
+            result <== SysCall.Call(arith.Execute(decodedSrc, imm))
+          }
+        })
+        tx.Step(s"ArithAfterExec_$slotId") {
+          tx.jump(s"RouteWriteback_$slotId")
         }
       }
 
-      guardedRead(s"LoadAddArithGuard_$slotId", rs1)
-
-      t.Step(s"LoadAddArithRead_$slotId") {
-        t.jump(s"LoadAddArithAcquire_$slotId")
+      withReservedWrite(s"LoadReserve_$slotId") { tx =>
+        tx.Step(s"LoadPrepare_$slotId") {
+          loadDelay <== 0.U
+        }
+        SysCall.Call(load.WithPort(slotId, s"LoadAcquire_$slotId") { lx =>
+          lx.Step(s"LoadExec_$slotId") {
+            result <== SysCall.Call(load.Load(slotId, loadDelay, imm))
+          }
+        })
+        tx.Step(s"LoadAfterExec_$slotId") {
+          tx.jump(s"RouteWriteback_$slotId")
+        }
       }
 
-      acquireArith(s"LoadAddArithAcquire_$slotId")
+      withReservedWrite(s"LoadAddLoadReserve_$slotId") { tx =>
+        tx.Step(s"LoadAddPrepare_$slotId") {
+          loadDelay <== 0.U
+        }
+        SysCall.Call(load.WithPort(slotId, s"LoadAddLoadAcquire_$slotId") { lx =>
+          lx.Step(s"LoadAddLoadExec_$slotId") {
+            loadedValue <== SysCall.Call(load.Load(slotId, loadDelay, imm))
+          }
+        })
+        tx.Step(s"LoadAddAfterLoad_$slotId") {
+          tx.jump(s"LoadAddArithDispatch_$slotId")
+        }
+      }
 
-      t.Step(s"LoadAddArithExec_$slotId") {
-        result <== SysCall.Call(arith.Execute(loadedValue, decodedSrc))
-        SysCall.Call(arith.Release(slotId))
+      t.Step(s"LoadAddArithDispatch_$slotId") {
+        val canArith = SysCall.Call(arith.Available())
+        t.waitCondition(canArith)
+        when(canArith) {
+          t.jump(s"LoadAddArithRead_$slotId")
+        }
+      }
+
+      t.Step(s"LoadAddArithRead_$slotId") {
+        decodedSrc <== SysCall.Call(regFile.Read(rs1))
+      }
+
+      SysCall.Call(arith.WithPort(slotId, s"LoadAddArithAcquire_$slotId") { ax =>
+        ax.Step(s"LoadAddArithExec_$slotId") {
+          result <== SysCall.Call(arith.Execute(loadedValue, decodedSrc))
+        }
+      })
+
+      t.Step(s"LoadAddAfterArith_$slotId") {
         t.jump(s"RouteWriteback_$slotId")
       }
 
       t.Step(s"RouteWriteback_$slotId") {
-        val writePort = SysCall.Call(regFile.RequestWritePort(slotId))
-        SysCall.Call(writePort.WritebackAndClear(ISA.rd(instBits), result))
+        SysCall.Call(writePort.WritebackAndClear(rd, result))
       }
 
       t.Step(s"ThreadExit_$slotId") {
