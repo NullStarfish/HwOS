@@ -1,2 +1,2 @@
-Init/Init/CounterApp/MainThread_thread 0 Init 0 None 0 None
-Init/Init/CounterApp/MainThread_thread 1 CountUp 0 None 0 None
+Init/CounterApp/MainThread_thread 0 Init 0 None 0 None
+Init/CounterApp/MainThread_thread 1 CountUp 0 None 0 None
