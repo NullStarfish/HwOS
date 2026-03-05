@@ -1,6 +1,7 @@
 package HwOS.prototype.cpu
 
 import HwOS.prototype.cpu.InjectedFreeFlow._
+import HwOS.prototype.cpu.ServerInjectedFreeFlow._
 import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
