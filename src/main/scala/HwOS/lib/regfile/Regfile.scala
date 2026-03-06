@@ -73,7 +73,10 @@ object RegfileLib {
       }
 
       def Write(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"Write_$clientId") { _ =>
+        val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
+        chisel3.assert(slotLease.isActive, s"RegWritePort[$clientId].Write requires an acquired write-slot lease")
         SysCall.Call(baseReg.Write(addr, data))
+        ()
       }
 
       def Release(): HwFunction[Unit] = HwFunction.stateless(s"ReleaseWriteSlot_$clientId") { _ =>

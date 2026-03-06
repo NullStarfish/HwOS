@@ -157,23 +157,14 @@ object sync {
       count > 0.U
     }
 
-    def Acquire(id: Int): HwFunction[Unit] = HwFunction.atomic(s"SemAcquire_$id") { _ =>
-      val lease = SysCall.Call(RequestLease(id))
-      SysCall.Call(lease.Acquire())
-    }
-
-    def Release(id: Int): HwFunction[Unit] = HwFunction.stateless(s"SemRelease_$id") { _ =>
-      val lease = SysCall.Call(RequestLease(id))
-      SysCall.Call(lease.Release())
-    }
-
     def WithPermit(id: Int)(body: HardwareThread => Unit): HwFunction[Unit] = HwFunction.thread(s"WithPermit_$id") { t =>
+      val lease = SysCall.Call(RequestLease(id))
       t.Step(s"AcquirePermit_$id") {
-        SysCall.Call(Acquire(id))
+        SysCall.Call(lease.Acquire())
       }
       body(t)
       t.Step(s"ReleasePermit_$id") {
-        SysCall.Call(Release(id))
+        SysCall.Call(lease.Release())
       }
       ()
     }

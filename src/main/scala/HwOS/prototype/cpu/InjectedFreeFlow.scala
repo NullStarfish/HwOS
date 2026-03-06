@@ -40,24 +40,21 @@ object InjectedFreeFlow {
     val service = spawn(new sync.SemaphoreProcess(maxClients, ports, "Ports"))
     override def entry(): Unit = {}
 
-    def Acquire(clientId: Int): HwFunction[Unit] = service.Acquire(clientId)
-
     def Execute(lhs: UInt, rhs: UInt): HwFunction[UInt] = HwFunction.stateless(s"${name}_Execute") { _ =>
       lhs + rhs
     }
-
-    def Release(clientId: Int): HwFunction[Unit] = service.Release(clientId)
 
     def Available(): HwFunction[Bool] = service.Available()
 
     def WithPort(clientId: Int, entryLabel: String)(body: HardwareThread => Unit): HwFunction[Unit] =
       HwFunction.thread(s"${name}_WithPort_$clientId") { t =>
+        val lease = SysCall.Call(service.RequestLease(clientId))
         t.Step(entryLabel) {
-          SysCall.Call(Acquire(clientId))
+          SysCall.Call(lease.Acquire())
         }
         body(t)
         t.Step(s"${entryLabel}_Release") {
-          SysCall.Call(Release(clientId))
+          SysCall.Call(lease.Release())
         }
         ()
       }
@@ -73,13 +70,13 @@ object InjectedFreeFlow {
     def Load(clientId: Int, delay: UInt, addr: UInt): HwFunction[UInt] = HwFunction.atomic(s"${name}_Load_$clientId") { t =>
       val lease = SysCall.Call(service.RequestLease(clientId))
       when(!lease.isActive) {
-        SysCall.Call(service.Acquire(clientId))
+        SysCall.Call(lease.Acquire())
       }
       delay <== delay + 1.U
       val done = delay >= 2.U
       t.waitCondition(done)
       when(done) {
-        SysCall.Call(service.Release(clientId))
+        SysCall.Call(lease.Release())
       }
       mem(addr(log2Ceil(memDepth) - 1, 0))
     }
@@ -88,12 +85,13 @@ object InjectedFreeFlow {
 
     def WithPort(clientId: Int, entryLabel: String)(body: HardwareThread => Unit): HwFunction[Unit] =
       HwFunction.thread(s"${name}_WithPort_$clientId") { t =>
+        val lease = SysCall.Call(service.RequestLease(clientId))
         t.Step(entryLabel) {
-          SysCall.Call(service.Acquire(clientId))
+          SysCall.Call(lease.Acquire())
         }
         body(t)
         t.Step(s"${entryLabel}_Release") {
-          SysCall.Call(service.Release(clientId))
+          SysCall.Call(lease.Release())
         }
         ()
       }
