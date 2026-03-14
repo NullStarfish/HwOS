@@ -9,6 +9,7 @@ import HwOS.prototype.cpu.InjectedFreeFlow.{DecodeProcess, ISA, Slot}
 import HwOS.stdlib.sync
 import chisel3._
 import chisel3.util._
+import _root_.circt.stage.ChiselStage
 
 object ServerInjectedFreeFlow {
   class ServerDecodeProcess(
@@ -233,4 +234,99 @@ object ServerInjectedFreeFlow {
 
     Init.build()
   }
+
+  class ServerDecodeWrapperModule(
+      maxClients: Int = 2,
+      decodeServers: Int = 2,
+      initData: Seq[Int] = Seq.empty,
+  ) extends Module {
+    val io = IO(new Bundle {
+      val reqValid = Input(Vec(maxClients, Bool()))
+      val reqInst = Input(Vec(maxClients, UInt(ISA.instWidth.W)))
+      val reqBusy = Output(Vec(maxClients, Bool()))
+      val reqDone = Output(Vec(maxClients, Bool()))
+      val x1 = Output(UInt(32.W))
+      val x2 = Output(UInt(32.W))
+      val x3 = Output(UInt(32.W))
+      val activeThreads = Output(UInt(8.W))
+    })
+
+    io.reqBusy := DontCare
+    io.reqDone := DontCare
+    io.x1 := DontCare
+    io.x2 := DontCare
+    io.x3 := DontCare
+    io.activeThreads := DontCare
+
+    implicit val kernel: Kernel = new Kernel()
+
+    object Init extends HwProcess("Init") {
+      this.own(io.reqBusy)
+      this.own(io.reqDone)
+      this.own(io.x1)
+      this.own(io.x2)
+      this.own(io.x3)
+      this.own(io.activeThreads)
+
+      val decode = spawn(new ServerDecodeProcess(maxClients, decodeServers, initData, "Decode"))
+      val daemon = createLogic("Daemon")
+
+      private val clientSlots = (0 until maxClients).map { clientId =>
+        val thread = createThread(s"Client${clientId}_driver")
+        val instArg = thread.own(RegInit(0.U(ISA.instWidth.W)))
+        (thread, instArg)
+      }
+
+      override def entry(): Unit = {
+        this.grant(io.reqBusy, daemon)
+        this.grant(io.reqDone, daemon)
+        this.grant(io.x1, daemon)
+        this.grant(io.x2, daemon)
+        this.grant(io.x3, daemon)
+        this.grant(io.activeThreads, daemon)
+
+        for (((thread, instArg), clientId) <- clientSlots.zipWithIndex) {
+          thread.grant(instArg, this)
+          thread.entry {
+            thread.Step(s"SubmitDecode_$clientId") {
+              SysCall.Call(decode.RequestDecode(clientId, instArg))
+            }
+            thread.Step(s"Retire_$clientId") {
+              thread.exit()
+            }
+          }
+          this.grantLifecycle(thread, daemon)
+          this.grant(instArg, daemon)
+        }
+
+        daemon.run {
+          for ((((thread, instArg), reqValid), clientId) <- clientSlots.zip(io.reqValid).zipWithIndex) {
+            io.reqBusy.at(clientId) <== thread.active
+            io.reqDone.at(clientId) <== thread.done
+            when(reqValid && !thread.active) {
+              instArg <== io.reqInst(clientId)
+              SysCall.Call(SysCall.start(thread))
+            }
+          }
+
+          io.x1 <== SysCall.Call(decode.regFile.ReadCommitted(1.U))
+          io.x2 <== SysCall.Call(decode.regFile.ReadCommitted(2.U))
+          io.x3 <== SysCall.Call(decode.regFile.ReadCommitted(3.U))
+          io.activeThreads <== PopCount(clientSlots.map(_._1.active)) + SysCall.Call(decode.ActiveServerCount())
+        }
+      }
+    }
+
+    Init.build()
+  }
+}
+
+object ExportServerDecodeWrapper extends App {
+  ChiselStage.emitSystemVerilogFile(
+    new ServerInjectedFreeFlow.ServerDecodeWrapperModule(),
+    Array("--target-dir", "generated/server_decode_wrapper"),
+    firtoolOpts = Array(
+      "--lowering-options=disallowLocalVariables,disallowPackedArrays,locationInfoStyle=none,disallowPortDeclSharing"
+    ),
+  )
 }

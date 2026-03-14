@@ -1,0 +1,3 @@
+verification/assert/ServerDecodeWrapperModule_Verification_Assert.sv
+verification/ServerDecodeWrapperModule_Verification.sv
+ServerDecodeWrapperModule.sv
