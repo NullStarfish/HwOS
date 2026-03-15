@@ -10,10 +10,14 @@ import HwOS.kernel.thread._
 //命名永远让上一级来命名
 
 object ProcessBuilder {
-  private val stack = scala.collection.mutable.Stack[HwProcess]()
-  def push(p: HwProcess): Unit = stack.push(p)
-  def pop(): Unit = stack.pop()
-  def currentParent: Option[HwProcess] = stack.headOption
+  private val stack = new ThreadLocal[scala.collection.mutable.Stack[HwProcess]] {
+    override def initialValue(): scala.collection.mutable.Stack[HwProcess] =
+      scala.collection.mutable.Stack.empty[HwProcess]
+  }
+
+  def push(p: HwProcess): Unit = stack.get().push(p)
+  def pop(): Unit = stack.get().pop()
+  def currentParent: Option[HwProcess] = stack.get().headOption
 }
 
 

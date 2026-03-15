@@ -1,5 +1,6 @@
 package HwOS.prototype.cpu
 
+import HwOS.kernel.control.StructuredControl
 import HwOS.kernel.function.HwFunction
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
@@ -127,86 +128,89 @@ object InjectedFreeFlow {
         body(t)
       }
 
-      t.Step(s"RouteDispatch_$slotId") {
-        val canArith = opcode === ISA.OP_ADDI && SysCall.Call(arith.Available())
-        val canLoad = opcode === ISA.OP_LOAD && SysCall.Call(load.Available())
-        val canLoadAdd = opcode === ISA.OP_LOADADD && SysCall.Call(load.Available())
-        t.waitCondition(canArith || canLoad || canLoadAdd)
-
-        when(canArith) {
-          t.jump(s"ArithReserve_$slotId")
+      val addiPath = HwFunction.thread(s"${name}_AddiPath_$slotId") { tx =>
+        tx.Step(s"ArithWait_$slotId") {
+          tx.waitCondition(SysCall.Call(arith.Available()))
         }
-        when(canLoad) {
-          t.jump(s"LoadReserve_$slotId")
-        }
-        when(canLoadAdd) {
-          t.jump(s"LoadAddLoadReserve_$slotId")
-        }
-      }
-
-      withReservedWrite(s"ArithReserve_$slotId") { tx =>
-        tx.Step(s"ArithRead_$slotId") {
-          decodedSrc <== SysCall.Call(regFile.Read(rs1))
-        }
-        SysCall.Call(arith.WithPort(slotId, s"ArithAcquire_$slotId") { ax =>
-          ax.Step(s"ArithExec_$slotId") {
-            result <== SysCall.Call(arith.Execute(decodedSrc, imm))
+        withReservedWrite(s"ArithReserve_$slotId") { rx =>
+          rx.Step(s"ArithRead_$slotId") {
+            decodedSrc <== SysCall.Call(regFile.Read(rs1))
           }
-        })
-        tx.Step(s"ArithAfterExec_$slotId") {
-          tx.jump(s"RouteWriteback_$slotId")
-        }
-      }
-
-      withReservedWrite(s"LoadReserve_$slotId") { tx =>
-        tx.Step(s"LoadPrepare_$slotId") {
-          loadDelay <== 0.U
-        }
-        SysCall.Call(load.WithPort(slotId, s"LoadAcquire_$slotId") { lx =>
-          lx.Step(s"LoadExec_$slotId") {
-            result <== SysCall.Call(load.Load(slotId, loadDelay, imm))
+          SysCall.Call(arith.WithPort(slotId, s"ArithAcquire_$slotId") { ax =>
+            ax.Step(s"ArithExec_$slotId") {
+              result <== SysCall.Call(arith.Execute(decodedSrc, imm))
+            }
+          })
+          rx.Step(s"ArithAfterExec_$slotId") {
+            rx.jump(s"RouteWriteback_$slotId")
           }
-        })
-        tx.Step(s"LoadAfterExec_$slotId") {
-          tx.jump(s"RouteWriteback_$slotId")
         }
+        ()
       }
 
-      withReservedWrite(s"LoadAddLoadReserve_$slotId") { tx =>
-        tx.Step(s"LoadAddPrepare_$slotId") {
-          loadDelay <== 0.U
+      val loadPath = HwFunction.thread(s"${name}_LoadPath_$slotId") { tx =>
+        tx.Step(s"LoadWait_$slotId") {
+          tx.waitCondition(SysCall.Call(load.Available()))
         }
-        SysCall.Call(load.WithPort(slotId, s"LoadAddLoadAcquire_$slotId") { lx =>
-          lx.Step(s"LoadAddLoadExec_$slotId") {
-            loadedValue <== SysCall.Call(load.Load(slotId, loadDelay, imm))
+        withReservedWrite(s"LoadReserve_$slotId") { rx =>
+          rx.Step(s"LoadPrepare_$slotId") {
+            loadDelay <== 0.U
           }
-        })
-        tx.Step(s"LoadAddAfterLoad_$slotId") {
-          tx.jump(s"LoadAddArithDispatch_$slotId")
+          SysCall.Call(load.WithPort(slotId, s"LoadAcquire_$slotId") { lx =>
+            lx.Step(s"LoadExec_$slotId") {
+              result <== SysCall.Call(load.Load(slotId, loadDelay, imm))
+            }
+          })
+          rx.Step(s"LoadAfterExec_$slotId") {
+            rx.jump(s"RouteWriteback_$slotId")
+          }
         }
+        ()
       }
 
-      t.Step(s"LoadAddArithDispatch_$slotId") {
-        val canArith = SysCall.Call(arith.Available())
-        t.waitCondition(canArith)
-        when(canArith) {
-          t.jump(s"LoadAddArithRead_$slotId")
+      val loadAddPath = HwFunction.thread(s"${name}_LoadAddPath_$slotId") { tx =>
+        tx.Step(s"LoadAddLoadWait_$slotId") {
+          tx.waitCondition(SysCall.Call(load.Available()))
         }
-      }
-
-      t.Step(s"LoadAddArithRead_$slotId") {
-        decodedSrc <== SysCall.Call(regFile.Read(rs1))
-      }
-
-      SysCall.Call(arith.WithPort(slotId, s"LoadAddArithAcquire_$slotId") { ax =>
-        ax.Step(s"LoadAddArithExec_$slotId") {
-          result <== SysCall.Call(arith.Execute(loadedValue, decodedSrc))
+        withReservedWrite(s"LoadAddLoadReserve_$slotId") { rx =>
+          rx.Step(s"LoadAddPrepare_$slotId") {
+            loadDelay <== 0.U
+          }
+          SysCall.Call(load.WithPort(slotId, s"LoadAddLoadAcquire_$slotId") { lx =>
+            lx.Step(s"LoadAddLoadExec_$slotId") {
+              loadedValue <== SysCall.Call(load.Load(slotId, loadDelay, imm))
+            }
+          })
+          rx.Step(s"LoadAddArithWait_$slotId") {
+            rx.waitCondition(SysCall.Call(arith.Available()))
+          }
+          rx.Step(s"LoadAddArithRead_$slotId") {
+            decodedSrc <== SysCall.Call(regFile.Read(rs1))
+          }
+          SysCall.Call(arith.WithPort(slotId, s"LoadAddArithAcquire_$slotId") { ax =>
+            ax.Step(s"LoadAddArithExec_$slotId") {
+              result <== SysCall.Call(arith.Execute(loadedValue, decodedSrc))
+            }
+          })
+          rx.Step(s"LoadAddAfterArith_$slotId") {
+            rx.jump(s"RouteWriteback_$slotId")
+          }
         }
-      })
-
-      t.Step(s"LoadAddAfterArith_$slotId") {
-        t.jump(s"RouteWriteback_$slotId")
+        ()
       }
+
+      val invalidPath = HwFunction.thread(s"${name}_InvalidPath_$slotId") { tx =>
+        tx.Step(s"UnsupportedOpcode_$slotId") {
+          tx.jump(s"ThreadExit_$slotId")
+        }
+        ()
+      }
+
+      StructuredControl
+        .If(t, "DecodeIsAddi", opcode === ISA.OP_ADDI)(addiPath)
+        .ElseIf(opcode === ISA.OP_LOAD)(loadPath)
+        .ElseIf(opcode === ISA.OP_LOADADD)(loadAddPath)
+        .Else(invalidPath)
 
       t.Step(s"RouteWriteback_$slotId") {
         SysCall.Call(writePort.WritebackAndClear(rd, result))

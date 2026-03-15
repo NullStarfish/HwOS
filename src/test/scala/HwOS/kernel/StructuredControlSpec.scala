@@ -12,12 +12,14 @@ import org.scalatest.flatspec.AnyFlatSpec
 class StructuredControlProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
   val branchOut = this.own(RegInit(0.U(8.W)))
+  val elifOut = this.own(RegInit(0.U(8.W)))
   val acc = this.own(RegInit(0.U(8.W)))
   val loopOut = this.own(RegInit(0.U(8.W)))
   val returnOut = this.own(RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
     this.grant(branchOut, worker)
+    this.grant(elifOut, worker)
     this.grant(acc, worker)
     this.grant(loopOut, worker)
     this.grant(returnOut, worker)
@@ -40,6 +42,32 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
           HwFunction.thread("BranchElse") { t =>
             t.Step("BranchElseWrite") {
               branchOut <== 9.U
+            }
+            ()
+          },
+        )
+
+      StructuredControl
+        .If(worker, "ElifChain", 0.U === 1.U)(
+          HwFunction.thread("ElifThen") { t =>
+            t.Step("ElifThenWrite") {
+              elifOut <== 1.U
+            }
+            ()
+          },
+        )
+        .ElseIf(2.U === 2.U)(
+          HwFunction.thread("ElifMid") { t =>
+            t.Step("ElifMidWrite") {
+              elifOut <== 2.U
+            }
+            ()
+          },
+        )
+        .Else(
+          HwFunction.thread("ElifElse") { t =>
+            t.Step("ElifElseWrite") {
+              elifOut <== 3.U
             }
             ()
           },
@@ -103,6 +131,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
 class StructuredControlModule extends Module {
   val io = IO(new Bundle {
     val branchOut = Output(UInt(8.W))
+    val elifOut = Output(UInt(8.W))
     val acc = Output(UInt(8.W))
     val loopOut = Output(UInt(8.W))
     val returnOut = Output(UInt(8.W))
@@ -110,6 +139,7 @@ class StructuredControlModule extends Module {
   })
 
   io.branchOut := DontCare
+  io.elifOut := DontCare
   io.acc := DontCare
   io.loopOut := DontCare
   io.returnOut := DontCare
@@ -119,6 +149,7 @@ class StructuredControlModule extends Module {
 
   object Init extends HwProcess("Init") {
     this.own(io.branchOut)
+    this.own(io.elifOut)
     this.own(io.acc)
     this.own(io.loopOut)
     this.own(io.returnOut)
@@ -128,10 +159,11 @@ class StructuredControlModule extends Module {
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.branchOut, daemon)
-      this.grant(io.acc, daemon)
-      this.grant(io.loopOut, daemon)
-      this.grant(io.returnOut, daemon)
+        this.grant(io.branchOut, daemon)
+        this.grant(io.elifOut, daemon)
+        this.grant(io.acc, daemon)
+        this.grant(io.loopOut, daemon)
+        this.grant(io.returnOut, daemon)
       this.grant(io.done, daemon)
       this.grantLifecycle(proc.worker, daemon)
 
@@ -140,6 +172,7 @@ class StructuredControlModule extends Module {
           SysCall.Call(SysCall.start(proc.worker))
         }
         io.branchOut <== proc.branchOut
+        io.elifOut <== proc.elifOut
         io.acc <== proc.acc
         io.loopOut <== proc.loopOut
         io.returnOut <== proc.returnOut
@@ -166,6 +199,7 @@ class StructuredControlSpec extends AnyFlatSpec {
 
       c.io.done.expect(true.B)
       c.io.branchOut.expect(7.U)
+      c.io.elifOut.expect(2.U)
       c.io.acc.expect(13.U)
       c.io.loopOut.expect(13.U)
       c.io.returnOut.expect(5.U)

@@ -8,6 +8,7 @@ import chisel3._
 
 object StructuredControl {
   private val counters = scala.collection.mutable.HashMap.empty[Int, Int]
+  private final case class Branch(label: String, cond: () => Bool, body: HwFunction[Unit])
 
   final class LoopControl private[control] (
       thread: HardwareThread,
@@ -33,66 +34,75 @@ object StructuredControl {
   final class IfBuilder private[control] (
       thread: HardwareThread,
       base: String,
-      cond: => Bool,
-      thenBody: HwFunction[Unit],
+      branches: Vector[Branch],
   ) {
-    def Else(elseBody: HwFunction[Unit]): Unit = {
-      thread.Step(s"${base}_Cond") {
-        when(cond) {
-          thread.jump(s"${base}_ThenEnter")
-        }.otherwise {
-          thread.jump(s"${base}_ElseEnter")
+    private def condStepName(index: Int): String =
+      if (index == 0) s"${base}_Cond" else s"${base}_${branches(index).label}_Cond"
+
+    private def enterStepName(index: Int): String = s"${base}_${branches(index).label}_Enter"
+
+    private def exitStepName(index: Int): String = s"${base}_${branches(index).label}_Exit"
+
+    private def lower(elseBody: Option[HwFunction[Unit]]): Unit = {
+      for ((branch, index) <- branches.zipWithIndex) {
+        val nextFailTarget =
+          if (index + 1 < branches.length) condStepName(index + 1)
+          else if (elseBody.isDefined) s"${base}_ElseEnter"
+          else s"${base}_End"
+
+        thread.Step(condStepName(index)) {
+          when(branch.cond()) {
+            thread.jump(enterStepName(index))
+          }.otherwise {
+            thread.jump(nextFailTarget)
+          }
         }
-      }
 
-      thread.Step(s"${base}_ThenEnter") {
-        thread.Next.hijack()
-      }
+        thread.Step(enterStepName(index)) {
+          thread.Next.hijack()
+        }
 
-      SysCall.Call(thenBody, s"${base}_ThenExit")
+        SysCall.Call(branch.body, exitStepName(index))
 
-      thread.Step(s"${base}_ThenExit") {
-        thread.jump(s"${base}_End")
-      }
-
-      thread.Step(s"${base}_ElseEnter") {
-        thread.Next.hijack()
-      }
-
-      SysCall.Call(elseBody, s"${base}_ElseExit")
-
-      thread.Step(s"${base}_ElseExit") {
-        thread.jump(s"${base}_End")
-      }
-
-      thread.Step(s"${base}_End") {}
-    }
-
-    def End(): Unit = {
-      thread.Step(s"${base}_Cond") {
-        when(cond) {
-          thread.jump(s"${base}_ThenEnter")
-        }.otherwise {
+        thread.Step(exitStepName(index)) {
           thread.jump(s"${base}_End")
         }
       }
 
-      thread.Step(s"${base}_ThenEnter") {
-        thread.Next.hijack()
-      }
+      elseBody.foreach { body =>
+        thread.Step(s"${base}_ElseEnter") {
+          thread.Next.hijack()
+        }
 
-      SysCall.Call(thenBody, s"${base}_ThenExit")
+        SysCall.Call(body, s"${base}_ElseExit")
 
-      thread.Step(s"${base}_ThenExit") {
-        thread.jump(s"${base}_End")
+        thread.Step(s"${base}_ElseExit") {
+          thread.jump(s"${base}_End")
+        }
       }
 
       thread.Step(s"${base}_End") {}
     }
+
+    def ElseIf(cond: => Bool)(body: HwFunction[Unit]): IfBuilder = {
+      new IfBuilder(
+        thread = thread,
+        base = base,
+        branches = branches :+ Branch(s"ElseIf${branches.length}", () => cond, body),
+      )
+    }
+
+    def Else(elseBody: HwFunction[Unit]): Unit = {
+      lower(Some(elseBody))
+    }
+
+    def End(): Unit = {
+      lower(None)
+    }
   }
 
   def If(thread: HardwareThread, prefix: String, cond: => Bool)(thenBody: HwFunction[Unit]): IfBuilder =
-    new IfBuilder(thread, freshBase(thread, prefix), cond, thenBody)
+    new IfBuilder(thread, freshBase(thread, prefix), Vector(Branch("Then", () => cond, thenBody)))
 
   def While(thread: HardwareThread, prefix: String, cond: => Bool)(body: LoopControl => HwFunction[Unit]): Unit = {
     val base = freshBase(thread, prefix)
