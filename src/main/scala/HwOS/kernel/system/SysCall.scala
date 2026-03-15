@@ -4,12 +4,11 @@ import chisel3._
 import scala.util.Try // 引入 Try
 import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.debug.CallStack
-import HwOS.kernel.function.{HwFunction}
+import HwOS.kernel.function.HwFunction
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.thread.HardwareThread
 import HwOS.kernel.thread.backend.ThreadBackendDebugApi
 object SysCall {
-
   // ==========================================
   // 1. Function Linker Layer (逻辑注入)
   // ==========================================
@@ -32,6 +31,39 @@ object SysCall {
       func.emit(ContextScope.getCurrentAgent())
     } finally {
       CallStack.pop()
+    }
+  }
+
+  /**
+   * 线程级函数调用：为被调用的 thread-function 静态绑定一个返回地址。
+   * Return() 将跳转到该返回地址。
+   */
+  def Call[T](func: HwFunction[T], returnTo: String): T = {
+    val returnRef = new CallStack.ReturnTargetRef(Some(returnTo))
+    CallStack.push(func.name, returnTarget = Some(returnRef))
+    try {
+      scala.util.Try {
+        ContextScope.current match {
+          case ThreadCtx(_) =>
+          case _ =>
+            throw new Exception(s"[HwOS] Call('$returnTo') with explicit return target must be used inside ThreadCtx.")
+        }
+      }
+      func.emit(ContextScope.getCurrentAgent())
+    } finally {
+      CallStack.pop()
+    }
+  }
+
+  /**
+   * 从当前 thread-function 的静态调用帧返回到预绑定的 continuation。
+   */
+  def Return(): HwFunction[Unit] = HwFunction.thread("SysCall return") { t =>
+    val target = CallStack.currentReturnTargetRef.flatMap(_.get).getOrElse {
+      throw new Exception("[HwOS] Return() used without a bound thread-function return target.")
+    }
+    t.Step(CallStack.freshReturnStepName(System.identityHashCode(t), target)) {
+      t.jump(target)
     }
   }
 

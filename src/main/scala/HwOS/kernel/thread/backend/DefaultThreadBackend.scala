@@ -4,6 +4,7 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
 import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
+import HwOS.kernel.debug.CallStack
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.thread._
 

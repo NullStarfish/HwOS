@@ -1,10 +1,27 @@
 package HwOS.kernel.control
 
+import HwOS.kernel.function.HwFunction
+import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.system.SysCall
 import HwOS.kernel.thread.HardwareThread
 import chisel3._
 
 object StructuredControl {
   private val counters = scala.collection.mutable.HashMap.empty[Int, Int]
+
+  final class LoopControl private[control] (
+      thread: HardwareThread,
+      val breakTarget: String,
+      val continueTarget: String,
+  ) {
+    def Break(): Unit = {
+      thread.jump(breakTarget)
+    }
+
+    def Continue(): Unit = {
+      thread.jump(continueTarget)
+    }
+  }
 
   private def freshBase(thread: HardwareThread, prefix: String): String = {
     val key = System.identityHashCode(thread)
@@ -17,74 +34,89 @@ object StructuredControl {
       thread: HardwareThread,
       base: String,
       cond: => Bool,
-      thenBlock: => Unit,
+      thenBody: HwFunction[Unit],
   ) {
-    def Else(elseBlock: => Unit): Unit = {
-      AutoControl.Chain(thread, base)
-        .Anchor("Cond") { ac =>
+    def Else(elseBody: HwFunction[Unit]): Unit = {
+      thread.Step(s"${base}_Cond") {
         when(cond) {
-            ac.Jump(s"${base}_Then")
+          thread.jump(s"${base}_ThenEnter")
         }.otherwise {
-            ac.Jump(s"${base}_Else")
+          thread.jump(s"${base}_ElseEnter")
         }
-        }
-        .Anchor("Then") { _ =>
-          thenBlock
-        }
-        .AutoStep("ThenExit") { ac =>
-          ac.Jump(s"${base}_End")
-        }
-        .Anchor("Else") { _ =>
-          elseBlock
-        }
-        .AutoStep("ElseExit") { ac =>
-          ac.Jump(s"${base}_End")
-        }
-        .Anchor("End") { _ => }
-        .emit()
+      }
+
+      thread.Step(s"${base}_ThenEnter") {
+        thread.Next.hijack()
+      }
+
+      SysCall.Call(thenBody, s"${base}_ThenExit")
+
+      thread.Step(s"${base}_ThenExit") {
+        thread.jump(s"${base}_End")
+      }
+
+      thread.Step(s"${base}_ElseEnter") {
+        thread.Next.hijack()
+      }
+
+      SysCall.Call(elseBody, s"${base}_ElseExit")
+
+      thread.Step(s"${base}_ElseExit") {
+        thread.jump(s"${base}_End")
+      }
+
+      thread.Step(s"${base}_End") {}
     }
 
     def End(): Unit = {
-      AutoControl.Chain(thread, base)
-        .Anchor("Cond") { ac =>
+      thread.Step(s"${base}_Cond") {
         when(cond) {
-            ac.Jump(s"${base}_Then")
+          thread.jump(s"${base}_ThenEnter")
         }.otherwise {
-            ac.Jump(s"${base}_End")
+          thread.jump(s"${base}_End")
         }
-        }
-        .Anchor("Then") { _ =>
-          thenBlock
-        }
-        .AutoStep("ThenExit") { ac =>
-          ac.Jump(s"${base}_End")
-        }
-        .Anchor("End") { _ => }
-        .emit()
+      }
+
+      thread.Step(s"${base}_ThenEnter") {
+        thread.Next.hijack()
+      }
+
+      SysCall.Call(thenBody, s"${base}_ThenExit")
+
+      thread.Step(s"${base}_ThenExit") {
+        thread.jump(s"${base}_End")
+      }
+
+      thread.Step(s"${base}_End") {}
     }
   }
 
-  def If(thread: HardwareThread, prefix: String, cond: => Bool)(thenBlock: => Unit): IfBuilder =
-    new IfBuilder(thread, freshBase(thread, prefix), cond, thenBlock)
+  def If(thread: HardwareThread, prefix: String, cond: => Bool)(thenBody: HwFunction[Unit]): IfBuilder =
+    new IfBuilder(thread, freshBase(thread, prefix), cond, thenBody)
 
-  def While(thread: HardwareThread, prefix: String, cond: => Bool)(body: => Unit): Unit = {
+  def While(thread: HardwareThread, prefix: String, cond: => Bool)(body: LoopControl => HwFunction[Unit]): Unit = {
     val base = freshBase(thread, prefix)
-    AutoControl.Chain(thread, base)
-      .Anchor("Cond") { ac =>
-        when(cond) {
-          ac.Jump(s"${base}_Body")
-        }.otherwise {
-          ac.Jump(s"${base}_End")
-        }
+    val loop = new LoopControl(thread, breakTarget = s"${base}_End", continueTarget = s"${base}_Cond")
+
+    thread.Step(s"${base}_Cond") {
+      when(cond) {
+        thread.jump(s"${base}_BodyEnter")
+      }.otherwise {
+        thread.jump(s"${base}_End")
       }
-      .Anchor("Body") { _ =>
-        body
-      }
-      .AutoStep("BodyExit") { ac =>
-        ac.Jump(s"${base}_Cond")
-      }
-      .Anchor("End") { _ => }
-      .emit()
+    }
+
+    thread.Step(s"${base}_BodyEnter") {
+      thread.Next.hijack()
+    }
+
+    SysCall.Call(body(loop), s"${base}_BodyExit")
+
+    thread.Step(s"${base}_BodyExit") {
+      thread.jump(s"${base}_Cond")
+    }
+
+    thread.Step(s"${base}_End") {}
   }
 
   def ForRange(
@@ -93,33 +125,41 @@ object StructuredControl {
       start: Int,
       endExclusive: Int,
       width: Int = 32,
-  )(body: UInt => Unit): UInt = {
+  )(body: (UInt, LoopControl) => HwFunction[Unit]): UInt = {
     require(endExclusive >= start, s"ForRange endExclusive ($endExclusive) must be >= start ($start)")
 
     val base = freshBase(thread, prefix)
     val idx = thread.own(RegInit(start.U(width.W)))
-    AutoControl.Chain(thread, base)
-      .Anchor("Init") { _ =>
-        idx := start.U(width.W)
+    val loop = new LoopControl(thread, breakTarget = s"${base}_End", continueTarget = s"${base}_Inc")
+
+    thread.Step(s"${base}_Init") {
+      idx <== start.U(width.W)
+    }
+
+    thread.Step(s"${base}_Cond") {
+      when(idx < endExclusive.U(width.W)) {
+        thread.jump(s"${base}_BodyEnter")
+      }.otherwise {
+        thread.jump(s"${base}_End")
       }
-      .Anchor("Cond") { ac =>
-        when(idx < endExclusive.U(width.W)) {
-          ac.Jump(s"${base}_Body")
-        }.otherwise {
-          ac.Jump(s"${base}_End")
-        }
-      }
-      .Anchor("Body") { _ =>
-        body(idx)
-      }
-      .AutoStep("Inc") { _ =>
-        idx := idx + 1.U
-      }
-      .AutoStep("BackEdge") { ac =>
-        ac.Jump(s"${base}_Cond")
-      }
-      .Anchor("End") { _ => }
-      .emit()
+    }
+
+    thread.Step(s"${base}_BodyEnter") {
+      thread.Next.hijack()
+    }
+
+    SysCall.Call(body(idx, loop), s"${base}_Inc")
+
+    thread.Step(s"${base}_Inc") {
+      idx <== idx + 1.U
+      thread.Next.hijack()
+    }
+
+    thread.Step(s"${base}_BackEdge") {
+      thread.jump(s"${base}_Cond")
+    }
+
+    thread.Step(s"${base}_End") {}
 
     idx
   }
