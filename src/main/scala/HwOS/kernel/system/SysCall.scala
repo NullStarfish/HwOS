@@ -18,7 +18,7 @@ object SysCall {
    * 目标线程在此过程中直接获取生成的逻辑所属权。
    */
   def Call[T](func: HwFunction[T]): T = {
-    CallStack.push(func.name)
+    CallStack.push(func.name, returnTarget = CallStack.currentReturnTarget)
     try {
       scala.util.Try {
         ContextScope.current match {
@@ -39,8 +39,7 @@ object SysCall {
    * Return() 将跳转到该返回地址。
    */
   def Call[T](func: HwFunction[T], returnTo: String): T = {
-    val returnRef = new CallStack.ReturnTargetRef(Some(returnTo))
-    CallStack.push(func.name, returnTarget = Some(returnRef))
+    CallStack.push(func.name, returnTarget = Some(returnTo))
     try {
       scala.util.Try {
         ContextScope.current match {
@@ -59,7 +58,7 @@ object SysCall {
    * 从当前 thread-function 的静态调用帧返回到预绑定的 continuation。
    */
   def Return(): HwFunction[Unit] = HwFunction.thread("SysCall return") { t =>
-    val target = CallStack.currentReturnTargetRef.flatMap(_.get).getOrElse {
+    val target = CallStack.currentReturnTarget.getOrElse {
       throw new Exception("[HwOS] Return() used without a bound thread-function return target.")
     }
     t.Step(CallStack.freshReturnStepName(System.identityHashCode(t), target)) {

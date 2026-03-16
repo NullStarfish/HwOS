@@ -8,31 +8,20 @@ import scala.collection.mutable.Stack
  */
 object CallStack {
   private val returnCounters = scala.collection.mutable.HashMap.empty[(Int, String), Int]
-
-  final class ReturnTargetRef(private var bound: Option[String]) {
-    def bind(target: String): Unit = {
-      if (bound.isEmpty) {
-        bound = Some(target)
-      }
-    }
-
-    def get: Option[String] = bound
-  }
-
-  final case class Frame(name: String, returnTarget: Option[ReturnTargetRef])
+  final case class Frame(name: String, returnTarget: Option[String])
 
   // 使用 ThreadLocal 确保并行编译时的安全性
   private val stack = new ThreadLocal[Stack[Frame]] {
     override def initialValue(): Stack[Frame] = Stack[Frame]()
   }
 
-  def push(name: String, returnTarget: Option[ReturnTargetRef] = None): Unit = stack.get().push(Frame(name, returnTarget))
+  def push(name: String, returnTarget: Option[String] = None): Unit = stack.get().push(Frame(name, returnTarget))
   
   def pop(): Unit = {
     if (stack.get().nonEmpty) stack.get().pop()
   }
 
-  def currentReturnTargetRef: Option[ReturnTargetRef] = {
+  def currentReturnTarget: Option[String] = {
     stack.get().iterator.collectFirst { case Frame(_, Some(target)) => target }
   }
 

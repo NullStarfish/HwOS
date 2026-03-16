@@ -23,6 +23,28 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     ()
   }
 
+  private def innerMost: HwFunction[Unit] = HwFunction.thread("InnerMost") { t =>
+    t.Step("InnerMostWrite") {
+      out <== 10.U
+    }
+    SysCall.Call(SysCall.Return())
+    t.Step("InnerMostDead") {
+      out <== 77.U
+    }
+    ()
+  }
+
+  private def middle: HwFunction[Unit] = HwFunction.thread("Middle") { t =>
+    t.Step("MiddleWrite") {
+      out <== 5.U
+    }
+    SysCall.Call(innerMost)
+    t.Step("MiddleDead") {
+      out <== 66.U
+    }
+    ()
+  }
+
   private def outer: HwFunction[Unit] = HwFunction.thread("Outer") { t =>
     t.Step("OuterInit") {
       out <== 1.U
@@ -34,11 +56,23 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     ()
   }
 
+  private def outerNested: HwFunction[Unit] = HwFunction.thread("OuterNested") { t =>
+    t.Step("OuterNestedInit") {
+      out <== 2.U
+    }
+    SysCall.Call(middle, "OuterNestedResume")
+    t.Step("OuterNestedResume") {
+      out <== out + 1.U
+    }
+    ()
+  }
+
   override def entry(): Unit = {
     this.grant(out, worker)
 
     worker.entry {
       SysCall.Call(outer)
+      SysCall.Call(outerNested)
       worker.Step("Finish") {
         worker.exit()
       }
@@ -96,7 +130,7 @@ class ReturnSpec extends AnyFlatSpec {
       }
 
       c.io.done.expect(true.B)
-      c.io.out.expect(8.U)
+      c.io.out.expect(11.U)
     }
   }
 }
