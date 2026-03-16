@@ -84,7 +84,8 @@ trait InlineThreadBackend
   private def verifyExitPath(): Unit = {}
   private def maybePrintCapabilitySummary(): Unit = ()
 
-  override def threadNodes: Seq[ThreadStepNode] = nodes.toSeq
+  override def debugSteps: Seq[DebugStepRecord] =
+    nodes.map(node => new DebugStepRecord(node.name, node.allocatedPC, !node.isHijacked, node.threadCallStack, node.invokedCalls)).toSeq
 
   override def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
     if (currentGeneratingNode != null) {

@@ -4,6 +4,7 @@ import chisel3._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import HwOS.kernel.lang.HwOSLanguage._
+import HwOS.kernel.system.Kernel
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 // ==========================================
@@ -37,6 +38,7 @@ class HwContext(val self: HwContextEntity) {
 
   def own[T <: Data](signal: T): T = {
     owns += signal
+    scala.util.Try(self.kernel.registerOwnedSignal(self.name, signal))
     ResourceManager.registerOwner(signal, this)
     signal
   }
@@ -75,6 +77,7 @@ object HwContext {
 // ---------------------------------------------------------
 trait HwContextEntity {
   def name: String 
+  def kernel: Kernel
 
   // 每个实体都显式持有一个 context。
   // context 是受保护赋值、resource ACL、kernel kill cut-off 的中心；

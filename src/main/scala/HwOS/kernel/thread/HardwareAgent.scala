@@ -3,12 +3,14 @@ package HwOS.kernel.thread
 import chisel3._
 import HwOS.kernel.context.{ContextScope, HwContext, HwContextEntity, LogicCtx}
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.thread.backend.{DefaultThreadBackend, InlineThreadBackend}
+import HwOS.kernel.system.Kernel
+import HwOS.kernel.thread.backend.{DefaultThreadBackend, InlineThreadBackend, VirtualCursorThreadBackend}
 
 trait HardwareAgent extends HwContextEntity {
   val owner: HwProcess
   val name: String
   val debugEnable: Boolean
+  override def kernel: Kernel = owner.kernel
 
 
   def agentPrint(p:Printable): Unit = {
@@ -77,3 +79,11 @@ private[kernel] final class InlineHardwareThread(
     backend: ThreadBackendKind = ThreadBackendKind.Inline,
 ) extends HardwareThread(name, owner, debugEnable, backend)
     with InlineThreadBackend
+
+private[kernel] final class VirtualCursorHardwareThread(
+    name: String,
+    owner: HwProcess,
+    debugEnable: Boolean = true,
+    backend: ThreadBackendKind = ThreadBackendKind.Virtual,
+) extends HardwareThread(name, owner, debugEnable, backend)
+    with VirtualCursorThreadBackend

@@ -17,6 +17,7 @@ final class DefaultThreadLifecycleLease(
     activeReg: Bool,
     doneReg: Bool,
     pcAccessor: () => UInt,
+    entryPcAccessor: () => UInt = () => 0.U,
 ) extends ThreadLifecycleLease {
   override def isActive: Bool = activeReg
 
@@ -26,14 +27,14 @@ final class DefaultThreadLifecycleLease(
   override def startLifecycle(): Unit = {
     ContextScope.withContext(AtomicCtx(thread)) {
       activeReg <==! true.B
-      pcAccessor() <==! 0.U
+      pcAccessor() <==! entryPcAccessor()
       doneReg <==! false.B
     }
   }
 
   override def exitLifecycle(): Unit = {
     val pc = pcAccessor()
-    pc <== 0.U
+    pc <== entryPcAccessor()
     doneReg <== true.B
     activeReg <== false.B
   }
@@ -45,7 +46,7 @@ final class DefaultThreadLifecycleLease(
 
     activeReg <==! false.B
     doneReg <==! false.B
-    pcAccessor() <==! 0.U
+    pcAccessor() <==! entryPcAccessor()
   }
 }
 

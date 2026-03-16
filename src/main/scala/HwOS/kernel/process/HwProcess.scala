@@ -67,6 +67,8 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
         new DefaultHardwareThread(threadName, this, debugEnable, backend)
       case ThreadBackendKind.Inline =>
         new InlineHardwareThread(threadName, this, debugEnable, backend)
+      case ThreadBackendKind.Virtual =>
+        new VirtualCursorHardwareThread(threadName, this, debugEnable, backend)
     }
     kernel.registerThread(threadName, t)
     kernel.registerContext(t)
