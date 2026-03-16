@@ -20,8 +20,8 @@ class DefaultBackendProcess(localName: String)(implicit kernel: Kernel) extends 
         value <== 7.U
       }
       worker.Step("Finish") {
-        worker.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

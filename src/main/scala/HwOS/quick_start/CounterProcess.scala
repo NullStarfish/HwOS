@@ -43,8 +43,8 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
 
       mainThread.Step("Finish") {
         isDone <== true.B
-        mainThread.exit() // 终结当前线程的生命周期
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 
@@ -57,9 +57,11 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
         cnt <== cnt + 1.U
       }
       t.waitAndAct(cnt >= n.U) {
-        t.exit()
+        t.jump("Done")
       }
     }
+    t.Step("Done") {}
+    SysCall.Call(SysCall.Return())
     ()
   }
 }

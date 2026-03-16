@@ -54,11 +54,11 @@ trait InlineThreadBackend
     pcEntity
   }
 
-  override def start(): Unit = {
+  override private[kernel] def runtimeStart(): Unit = {
     lifecycleLease.startLifecycle()
   }
 
-  override def exit(): Unit = {
+  override private[kernel] def runtimeExit(): Unit = {
     hasExitPath = true
     lifecycleLease.exitLifecycle()
   }

@@ -63,8 +63,8 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
       SysCall.Call(NetworkTX())
       
       main.Step("Finish") {
-        main.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

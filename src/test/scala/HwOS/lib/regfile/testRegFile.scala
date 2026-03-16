@@ -58,8 +58,8 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
       }
       // [修复]：提供一个独立的着陆点供 hijack 跳转
       producer.Step("Retire") {
-        producer.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
 
     // --- 消费者：等待预约 -> 尝试读取 (阻塞) -> 成功读取 -> 退出 ---
@@ -74,8 +74,8 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
       }
       // [修复]：提供一个独立的着陆点
       consumer.Step("Retire") {
-        consumer.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

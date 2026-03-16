@@ -122,8 +122,8 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
       }
 
       worker.Step("Finish") {
-        worker.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

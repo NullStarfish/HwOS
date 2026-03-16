@@ -217,8 +217,8 @@ object InjectedFreeFlow {
       }
 
       t.Step(s"ThreadExit_$slotId") {
-        t.exit()
       }
+      SysCall.Call(SysCall.Return())
       ()
     }
   }

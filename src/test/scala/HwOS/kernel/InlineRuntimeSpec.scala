@@ -22,8 +22,8 @@ class InlineWorkerProcess(localName: String)(implicit kernel: Kernel) extends Hw
         counter <== counter + 1.U
       }
       worker.Step("Finish") {
-        worker.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

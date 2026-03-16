@@ -43,8 +43,8 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
       t.Step("ReleaseAndDone") {
         SysCall.Call(mutex.Unlock(lockId))
         SysCall.Call(wg.Done(wgId))
-        t.exit() // 必须显式退出
       }
+      SysCall.Call(SysCall.Return())
     }
 
     // 分配 ID 并注入逻辑
@@ -64,8 +64,8 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
         SysCall.Call(wg.Wait())
       }
       main.Step("Finish") {
-        main.exit() // 必须显式退出
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

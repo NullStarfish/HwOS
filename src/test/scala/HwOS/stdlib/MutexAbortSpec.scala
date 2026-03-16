@@ -33,8 +33,8 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
       }
       victim.Step("NeverReachesHere") {
         SysCall.Call(mutex.Unlock(0))
-        victim.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
 
     // ---------------------------------------------------------
@@ -47,8 +47,8 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
       observer.Step("Success") {
         observerSuccess <== true.B 
         SysCall.Call(mutex.Unlock(1))
-        observer.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
 
 
@@ -77,8 +77,8 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
         when(observer.done) { main.Next.hijack() }
       }
       main.Step("Finish") {
-        main.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

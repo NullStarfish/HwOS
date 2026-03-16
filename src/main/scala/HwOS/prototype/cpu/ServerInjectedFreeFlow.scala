@@ -155,8 +155,8 @@ object ServerInjectedFreeFlow {
             SysCall.Call(decode.RequestDecode(slot.slotId, slot.instArg))
           }
           slot.thread.Step(s"Retire_${slot.slotId}") {
-            slot.thread.exit()
           }
+          SysCall.Call(SysCall.Return())
         }
         this.grantLifecycle(slot.thread, this)
       }
@@ -292,8 +292,8 @@ object ServerInjectedFreeFlow {
               SysCall.Call(decode.RequestDecode(clientId, instArg))
             }
             thread.Step(s"Retire_$clientId") {
-              thread.exit()
             }
+            SysCall.Call(SysCall.Return())
           }
           this.grantLifecycle(thread, daemon)
           this.grant(instArg, daemon)

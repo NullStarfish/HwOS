@@ -57,6 +57,9 @@ abstract class HardwareThread(
       )
     }
   }
+
+  private[kernel] def runtimeStart(): Unit
+  private[kernel] def runtimeExit(): Unit
 }
 
 private[kernel] final class DefaultHardwareThread(

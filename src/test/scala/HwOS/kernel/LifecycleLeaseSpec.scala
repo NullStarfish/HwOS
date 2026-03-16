@@ -22,8 +22,8 @@ class LifecycleLeaseProcess(localName: String)(implicit kernel: Kernel) extends 
         worker.waitCondition(false.B)
       }
       worker.Step("Never") {
-        worker.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
 
     controller.entry {
@@ -44,8 +44,8 @@ class LifecycleLeaseProcess(localName: String)(implicit kernel: Kernel) extends 
       }
       controller.Step("Gap2") {}
       controller.Step("Finish") {
-        controller.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

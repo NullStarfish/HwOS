@@ -58,8 +58,8 @@ class AgeOrderedRegfileModule extends Module {
         }
 
         oldWriter.Step("ExitOld") {
-          oldWriter.exit()
         }
+        SysCall.Call(SysCall.Return())
       }
 
       youngWriter.entry {
@@ -76,8 +76,8 @@ class AgeOrderedRegfileModule extends Module {
         }
 
         youngWriter.Step("ExitYoung") {
-          youngWriter.exit()
         }
+        SysCall.Call(SysCall.Return())
       }
 
       reader.entry {
@@ -99,8 +99,8 @@ class AgeOrderedRegfileModule extends Module {
         }
 
         reader.Step("ExitReader") {
-          reader.exit()
         }
+        SysCall.Call(SysCall.Return())
       }
 
       this.grantLifecycle(oldWriter, starter)

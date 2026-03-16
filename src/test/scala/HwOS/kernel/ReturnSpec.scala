@@ -73,9 +73,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     worker.entry {
       SysCall.Call(outer)
       SysCall.Call(outerNested)
-      worker.Step("Finish") {
-        worker.exit()
-      }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

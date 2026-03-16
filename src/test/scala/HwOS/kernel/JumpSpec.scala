@@ -23,8 +23,8 @@ class JumpProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
         out <== 2.U
       }
       worker.Step("Finish") {
-        worker.exit()
       }
+      SysCall.Call(SysCall.Return())
     }
   }
 }

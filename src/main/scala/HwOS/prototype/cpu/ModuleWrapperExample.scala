@@ -58,8 +58,8 @@ object ModuleWrapperExample {
         worker.entry {
           SysCall.Call(adder.Invoke(lhsReg, rhsReg, resultReg))
           worker.Step("Finish") {
-            worker.exit()
           }
+          SysCall.Call(SysCall.Return())
         }
 
         this.grantLifecycle(worker, daemon)

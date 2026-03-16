@@ -58,11 +58,15 @@ object SysCall {
    * 从当前 thread-function 的静态调用帧返回到预绑定的 continuation。
    */
   def Return(): HwFunction[Unit] = HwFunction.thread("SysCall return") { t =>
-    val target = CallStack.currentReturnTarget.getOrElse {
-      throw new Exception("[HwOS] Return() used without a bound thread-function return target.")
-    }
-    t.Step(CallStack.freshReturnStepName(System.identityHashCode(t), target)) {
-      t.jump(target)
+    CallStack.currentReturnTarget match {
+      case Some(target) =>
+        t.Step(CallStack.freshReturnStepName(System.identityHashCode(t), target)) {
+          t.jump(target)
+        }
+      case None =>
+        t.Step(CallStack.freshReturnStepName(System.identityHashCode(t), "ThreadExit")) {
+          Call(exit())
+        }
     }
   }
 
@@ -86,7 +90,15 @@ object SysCall {
    */
   def start(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall start"){ agent =>
     target.requireLifecycleAccess(agent.ctx, "start")
-    target.start()
+    target.runtimeStart()
+  }
+
+  /**
+   * 当前线程主动结束生命周期。
+   * 这是系统级 runtime 操作，只允许内核在 root Return() 等场景内部使用。
+   */
+  private[kernel] def exit(): HwFunction[Unit] = HwFunction.atomic("SysCall exit current") { _ =>
+    ContextScope.getCurrentThread().runtimeExit()
   }
 
   /**
