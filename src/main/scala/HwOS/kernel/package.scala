@@ -28,6 +28,8 @@ package object kernel {
   type DefaultThreadLifecycleLease = thread.DefaultThreadLifecycleLease
   type InlineThreadLifecycleLease = thread.InlineThreadLifecycleLease
 
+  type HwInline[T] = function.HwInline[T]
+  val HwInline = function.HwInline
   type HwFunction[T] = function.HwFunction[T]
   val HwFunction = function.HwFunction
 

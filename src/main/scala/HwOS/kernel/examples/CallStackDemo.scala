@@ -1,6 +1,6 @@
 package HwOS.kernel.examples
 import chisel3._
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -14,12 +14,12 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
   // [A] 微观组合逻辑层 (Atomic / Stateless)
   // 它们会在单个 Step 内部展开，生成 invokedCalls 树
   // ==========================================
-  def HashData(in: UInt): HwFunction[UInt] = HwFunction.stateless("HashData") { _ =>
+  def HashData(in: UInt): HwInline[UInt] = HwInline.stateless("HashData") { _ =>
     // 假装做了一些哈希计算
     in ^ "hDEADBEEF".U
   }
 
-  def StoreData(v: UInt): HwFunction[Unit] = HwFunction.atomic("StoreData") { t =>
+  def StoreData(v: UInt): HwInline[Unit] = HwInline.atomic("StoreData") { t =>
     this.grant(dataReg, t)
     dataReg <== v
   }
@@ -28,7 +28,7 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
   // [B] 宏观时序逻辑层 (Thread)
   // 它们会劫持线程，注入多个 Step，生成 threadCallStack
   // ==========================================
-  def SendPayload(): HwFunction[Unit] = HwFunction.thread("SendPayload") { t =>
+  def SendPayload(): HwInline[Unit] = HwInline.thread("SendPayload") { t =>
     t.Step("PrepareHeader") {
       // 这里的 SysCall.Call 将会被记录在当前 Step 的 invokedCalls 中
       val hashed = SysCall.Call(HashData(100.U))
@@ -39,7 +39,7 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
     }
   }
 
-  def NetworkTX(): HwFunction[Unit] = HwFunction.thread("NetworkTX") { t =>
+  def NetworkTX(): HwInline[Unit] = HwInline.thread("NetworkTX") { t =>
     t.Step("WaitLink") {
       // 模拟等待网卡就绪
     }

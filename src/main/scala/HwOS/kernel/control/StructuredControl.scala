@@ -1,6 +1,6 @@
 package HwOS.kernel.control
 
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.system.SysCall
 import HwOS.kernel.thread.HardwareThread
@@ -8,7 +8,7 @@ import chisel3._
 
 object StructuredControl {
   private val counters = scala.collection.mutable.HashMap.empty[Int, Int]
-  private final case class Branch(label: String, cond: () => Bool, body: HwFunction[Unit])
+  private final case class Branch(label: String, cond: () => Bool, body: HwInline[Unit])
 
   final class LoopControl private[control] (
       thread: HardwareThread,
@@ -43,7 +43,7 @@ object StructuredControl {
 
     private def exitStepName(index: Int): String = s"${base}_${branches(index).label}_Exit"
 
-    private def lower(elseBody: Option[HwFunction[Unit]]): Unit = {
+    private def lower(elseBody: Option[HwInline[Unit]]): Unit = {
       for ((branch, index) <- branches.zipWithIndex) {
         val nextFailTarget =
           if (index + 1 < branches.length) condStepName(index + 1)
@@ -84,7 +84,7 @@ object StructuredControl {
       thread.Step(s"${base}_End") {}
     }
 
-    def ElseIf(cond: => Bool)(body: HwFunction[Unit]): IfBuilder = {
+    def ElseIf(cond: => Bool)(body: HwInline[Unit]): IfBuilder = {
       new IfBuilder(
         thread = thread,
         base = base,
@@ -92,7 +92,7 @@ object StructuredControl {
       )
     }
 
-    def Else(elseBody: HwFunction[Unit]): Unit = {
+    def Else(elseBody: HwInline[Unit]): Unit = {
       lower(Some(elseBody))
     }
 
@@ -101,10 +101,10 @@ object StructuredControl {
     }
   }
 
-  def If(thread: HardwareThread, prefix: String, cond: => Bool)(thenBody: HwFunction[Unit]): IfBuilder =
+  def If(thread: HardwareThread, prefix: String, cond: => Bool)(thenBody: HwInline[Unit]): IfBuilder =
     new IfBuilder(thread, freshBase(thread, prefix), Vector(Branch("Then", () => cond, thenBody)))
 
-  def While(thread: HardwareThread, prefix: String, cond: => Bool)(body: LoopControl => HwFunction[Unit]): Unit = {
+  def While(thread: HardwareThread, prefix: String, cond: => Bool)(body: LoopControl => HwInline[Unit]): Unit = {
     val base = freshBase(thread, prefix)
     val loop = new LoopControl(thread, breakTarget = s"${base}_End", continueTarget = s"${base}_Cond")
 
@@ -135,7 +135,7 @@ object StructuredControl {
       start: Int,
       endExclusive: Int,
       width: Int = 32,
-  )(body: (UInt, LoopControl) => HwFunction[Unit]): UInt = {
+  )(body: (UInt, LoopControl) => HwInline[Unit]): UInt = {
     require(endExclusive >= start, s"ForRange endExclusive ($endExclusive) must be >= start ($start)")
 
     val base = freshBase(thread, prefix)

@@ -2,7 +2,7 @@ package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
 import HwOS.kernel.control.StructuredControl
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.SysCall
 import chisel3._
@@ -27,7 +27,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
     worker.entry {
       StructuredControl
         .If(worker, "Branch", 3.U > 1.U)(
-          HwFunction.thread("BranchThen") { t =>
+          HwInline.thread("BranchThen") { t =>
             t.Step("BranchThenWrite") {
               branchOut <== 7.U
             }
@@ -39,7 +39,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
           },
         )
         .Else(
-          HwFunction.thread("BranchElse") { t =>
+          HwInline.thread("BranchElse") { t =>
             t.Step("BranchElseWrite") {
               branchOut <== 9.U
             }
@@ -49,7 +49,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
 
       StructuredControl
         .If(worker, "ElifChain", 0.U === 1.U)(
-          HwFunction.thread("ElifThen") { t =>
+          HwInline.thread("ElifThen") { t =>
             t.Step("ElifThenWrite") {
               elifOut <== 1.U
             }
@@ -57,7 +57,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
           },
         )
         .ElseIf(2.U === 2.U)(
-          HwFunction.thread("ElifMid") { t =>
+          HwInline.thread("ElifMid") { t =>
             t.Step("ElifMidWrite") {
               elifOut <== 2.U
             }
@@ -65,7 +65,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
           },
         )
         .Else(
-          HwFunction.thread("ElifElse") { t =>
+          HwInline.thread("ElifElse") { t =>
             t.Step("ElifElseWrite") {
               elifOut <== 3.U
             }
@@ -75,7 +75,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
 
       StructuredControl
         .If(worker, "ReturnProbe", 1.U === 1.U)(
-          HwFunction.thread("ReturnThen") { t =>
+          HwInline.thread("ReturnThen") { t =>
             t.Step("ReturnArm") {
               returnOut <== 5.U
             }
@@ -89,7 +89,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         .End()
 
       StructuredControl.ForRange(worker, "Loop", start = 0, endExclusive = 6, width = 8) { (i, loop) =>
-        HwFunction.thread("LoopBody") { t =>
+        HwInline.thread("LoopBody") { t =>
           t.Step("LoopSkipEven") {
             when(i(0) === 0.U) {
               loop.Continue()
@@ -106,7 +106,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
       }
 
       StructuredControl.While(worker, "WhileAcc", acc < 12.U) { loop =>
-        HwFunction.thread("WhileBody") { t =>
+        HwInline.thread("WhileBody") { t =>
           t.Step("WhileBump") {
             acc <== acc + 2.U
             when(acc >= 10.U) {

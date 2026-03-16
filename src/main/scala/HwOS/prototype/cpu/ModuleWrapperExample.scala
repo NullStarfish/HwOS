@@ -1,6 +1,6 @@
 package HwOS.prototype.cpu
 
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -12,7 +12,7 @@ object ModuleWrapperExample {
   class WrappedAdderProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     override def entry(): Unit = {}
 
-    def Invoke(lhs: UInt, rhs: UInt, dst: UInt): HwFunction[Unit] = HwFunction.thread(s"${name}_Invoke") { t =>
+    def Invoke(lhs: UInt, rhs: UInt, dst: UInt): HwInline[Unit] = HwInline.thread(s"${name}_Invoke") { t =>
       val sumReg = t.own(RegInit(0.U(32.W)))
       t.Step("Add") {
         sumReg <== lhs + rhs

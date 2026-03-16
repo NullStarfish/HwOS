@@ -2,7 +2,7 @@ package HwOS.lib.regfile
 
 import chisel3._
 import chisel3.util._
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -21,11 +21,11 @@ object RegfileLib {
     
     override def entry(): Unit = {}
 
-    def Read(addr: UInt): HwFunction[UInt] = HwFunction.stateless("Base_Read") { _ =>
+    def Read(addr: UInt): HwInline[UInt] = HwInline.stateless("Base_Read") { _ =>
       if (zeroReg) Mux(addr === 0.U, 0.U, regs(addr)) else regs(addr)
     }
 
-    def Write(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless("Base_Write") { _ =>
+    def Write(addr: UInt, data: UInt): HwInline[Unit] = HwInline.stateless("Base_Write") { _ =>
       if (zeroReg) {
         when(addr =/= 0.U) {
           regs.at(addr) <== data
@@ -56,9 +56,9 @@ object RegfileLib {
 
     override def entry(): Unit = {}
 
-    def Read(addr: UInt): HwFunction[UInt] = baseReg.Read(addr)
+    def Read(addr: UInt): HwInline[UInt] = baseReg.Read(addr)
 
-    def Write(clientId: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"SemaWrite_$clientId") { _ =>
+    def Write(clientId: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"SemaWrite_$clientId") { _ =>
       val writePort = SysCall.Call(RequestWritePort(clientId))
       SysCall.Call(writePort.Acquire())
       SysCall.Call(writePort.Write(addr, data))
@@ -67,19 +67,19 @@ object RegfileLib {
     }
 
     class RegWritePort(val clientId: Int) {
-      def Acquire(): HwFunction[Unit] = HwFunction.atomic(s"AcquireWriteSlot_$clientId") { t =>
+      def Acquire(): HwInline[Unit] = HwInline.atomic(s"AcquireWriteSlot_$clientId") { t =>
         val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
         SysCall.Call(slotLease.Acquire())
       }
 
-      def Write(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"Write_$clientId") { _ =>
+      def Write(addr: UInt, data: UInt): HwInline[Unit] = HwInline.stateless(s"Write_$clientId") { _ =>
         val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
         chisel3.assert(slotLease.isActive, s"RegWritePort[$clientId].Write requires an acquired write-slot lease")
         SysCall.Call(baseReg.Write(addr, data))
         ()
       }
 
-      def Release(): HwFunction[Unit] = HwFunction.stateless(s"ReleaseWriteSlot_$clientId") { _ =>
+      def Release(): HwInline[Unit] = HwInline.stateless(s"ReleaseWriteSlot_$clientId") { _ =>
         val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
         SysCall.Call(slotLease.Release())
       }
@@ -87,7 +87,7 @@ object RegfileLib {
 
     private val writePorts = Array.tabulate(maxClients)(i => new RegWritePort(i))
 
-    def RequestWritePort(clientId: Int): HwFunction[RegWritePort] = HwFunction.bindings(s"ReqSemaRegPort_$clientId") { _ =>
+    def RequestWritePort(clientId: Int): HwInline[RegWritePort] = HwInline.bindings(s"ReqSemaRegPort_$clientId") { _ =>
       writePorts(clientId)
     }
   }
@@ -104,10 +104,10 @@ object RegfileLib {
 
     override def entry(): Unit = {}
 
-    def ReadCommitted(addr: UInt): HwFunction[UInt] = semaReg.Read(addr)
-    def Read(addr: UInt): HwFunction[UInt] = GuardedRead(addr)
+    def ReadCommitted(addr: UInt): HwInline[UInt] = semaReg.Read(addr)
+    def Read(addr: UInt): HwInline[UInt] = GuardedRead(addr)
 
-    def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("GuardedRead") { t =>
+    def GuardedRead(addr: UInt): HwInline[UInt] = HwInline.atomic("GuardedRead") { t =>
       val ready = SysCall.Call(scoreboard.Guard(addr))
 
       val rdata = this.own(WireInit(0.U(width.W)))
@@ -120,14 +120,14 @@ object RegfileLib {
     }
 
     class RegWritePort(val portIdx: Int) {
-      def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
+      def Reserve(addr: UInt): HwInline[Unit] = HwInline.atomic(s"Reserve_$portIdx") { t =>
         val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
         val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
         SysCall.Call(writePort.Acquire())
         SysCall.Call(sbLease.Reserve(addr))
       }
 
-      def WritebackAndClear(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.stateless(s"WB_$portIdx") { _ =>
+      def WritebackAndClear(addr: UInt, data: UInt): HwInline[Unit] = HwInline.stateless(s"WB_$portIdx") { _ =>
         val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
         val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
         SysCall.Call(writePort.Write(addr, data))
@@ -136,7 +136,7 @@ object RegfileLib {
       }
     }
 
-    def Write(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"RegWrite_$portIdx") { _ =>
+    def Write(portIdx: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"RegWrite_$portIdx") { _ =>
       val writePort = SysCall.Call(RequestWritePort(portIdx))
       SysCall.Call(writePort.Reserve(addr))
       SysCall.Call(writePort.WritebackAndClear(addr, data))
@@ -145,7 +145,7 @@ object RegfileLib {
 
     private val writePorts = Array.tabulate(maxWriters)(i => new RegWritePort(i))
 
-    def RequestWritePort(portIdx: Int): HwFunction[RegWritePort] = HwFunction.bindings(s"ReqRegPort_$portIdx") { _ =>
+    def RequestWritePort(portIdx: Int): HwInline[RegWritePort] = HwInline.bindings(s"ReqRegPort_$portIdx") { _ =>
       writePorts(portIdx)
     }
   }
@@ -180,7 +180,7 @@ object RegfileLib {
     private def matchingPorts(addr: UInt, requireReady: Bool): Vec[Bool] =
       VecInit(pendingPorts.toIndexedSeq.map(p => p.busy && p.addr === addr && (!requireReady || p.ready)))
 
-    private def BeginPendingWrite(portIdx: Int, addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"BeginPendingWrite_$portIdx") { t =>
+    private def BeginPendingWrite(portIdx: Int, addr: UInt): HwInline[Unit] = HwInline.atomic(s"BeginPendingWrite_$portIdx") { t =>
       val pending = pendingPorts(portIdx)
       this.grant(pending.busy, t)
       this.grant(pending.addr, t)
@@ -193,7 +193,7 @@ object RegfileLib {
       ()
     }
 
-    private def FinishPendingWrite(portIdx: Int, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"FinishPendingWrite_$portIdx") { t =>
+    private def FinishPendingWrite(portIdx: Int, data: UInt): HwInline[Unit] = HwInline.atomic(s"FinishPendingWrite_$portIdx") { t =>
       val pending = pendingPorts(portIdx)
       this.grant(pending.data, t)
       this.grant(pending.ready, t)
@@ -232,10 +232,10 @@ object RegfileLib {
       }
     }
 
-    def ReadCommitted(addr: UInt): HwFunction[UInt] = semaReg.Read(addr)
-    def Read(addr: UInt): HwFunction[UInt] = GuardedRead(addr)
+    def ReadCommitted(addr: UInt): HwInline[UInt] = semaReg.Read(addr)
+    def Read(addr: UInt): HwInline[UInt] = GuardedRead(addr)
 
-    def GuardedRead(addr: UInt): HwFunction[UInt] = HwFunction.atomic("OrderedGuardedRead") { t =>
+    def GuardedRead(addr: UInt): HwInline[UInt] = HwInline.atomic("OrderedGuardedRead") { t =>
       val matchingReady = matchingPorts(addr, requireReady = true.B)
       val matchingBusy = matchingPorts(addr, requireReady = false.B)
       val canRead = (if (zeroReg) addr === 0.U else false.B) || !matchingBusy.asUInt.orR || matchingReady.asUInt.orR
@@ -255,7 +255,7 @@ object RegfileLib {
     }
 
     class OrderedRegWritePort(val portIdx: Int) {
-      def Reserve(addr: UInt): HwFunction[Unit] = HwFunction.atomic(s"Reserve_$portIdx") { t =>
+      def Reserve(addr: UInt): HwInline[Unit] = HwInline.atomic(s"Reserve_$portIdx") { t =>
         val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
         val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
         val windowLease = SysCall.Call(orderWindow.RequestLease(portIdx))
@@ -265,7 +265,7 @@ object RegfileLib {
         SysCall.Call(BeginPendingWrite(portIdx, addr))
       }
 
-      def WritebackAndClear(addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"WB_$portIdx") { t =>
+      def WritebackAndClear(addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"WB_$portIdx") { t =>
         val windowLease = SysCall.Call(orderWindow.RequestLease(portIdx))
         SysCall.Call(FinishPendingWrite(portIdx, data))
         SysCall.Call(windowLease.Commit())
@@ -274,7 +274,7 @@ object RegfileLib {
       }
     }
 
-    def Write(portIdx: Int, addr: UInt, data: UInt): HwFunction[Unit] = HwFunction.atomic(s"OrderedRegWrite_$portIdx") { _ =>
+    def Write(portIdx: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"OrderedRegWrite_$portIdx") { _ =>
       val writePort = SysCall.Call(RequestWritePort(portIdx))
       SysCall.Call(writePort.Reserve(addr))
       SysCall.Call(writePort.WritebackAndClear(addr, data))
@@ -283,7 +283,7 @@ object RegfileLib {
 
     private val writePorts = Array.tabulate(maxWriters)(i => new OrderedRegWritePort(i))
 
-    def RequestWritePort(portIdx: Int): HwFunction[OrderedRegWritePort] = HwFunction.bindings(s"ReqOrderedRegPort_$portIdx") { _ =>
+    def RequestWritePort(portIdx: Int): HwInline[OrderedRegWritePort] = HwInline.bindings(s"ReqOrderedRegPort_$portIdx") { _ =>
       writePorts(portIdx)
     }
   }

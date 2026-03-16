@@ -4,7 +4,7 @@ import chisel3._
 import scala.util.Try // 引入 Try
 import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.debug.CallStack
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.thread.HardwareThread
 import HwOS.kernel.thread.backend.ThreadBackendDebugApi
@@ -17,7 +17,7 @@ object SysCall {
    * 硬件函数调用：纯粹的代码内联展开，不涉及生命周期权限。
    * 目标线程在此过程中直接获取生成的逻辑所属权。
    */
-  def Call[T](func: HwFunction[T]): T = {
+  def Call[T](func: HwInline[T]): T = {
     CallStack.push(func.name, returnTarget = CallStack.currentReturnTarget)
     try {
       scala.util.Try {
@@ -34,11 +34,15 @@ object SysCall {
     }
   }
 
+  def Call[T](func: HwFunction[T]): T = {
+    Call(func.inline)
+  }
+
   /**
    * 线程级函数调用：为被调用的 thread-function 静态绑定一个返回地址。
    * Return() 将跳转到该返回地址。
    */
-  def Call[T](func: HwFunction[T], returnTo: String): T = {
+  def Call[T](func: HwInline[T], returnTo: String): T = {
     CallStack.push(func.name, returnTarget = Some(returnTo))
     try {
       scala.util.Try {
@@ -54,10 +58,14 @@ object SysCall {
     }
   }
 
+  def Call[T](func: HwFunction[T], returnTo: String): T = {
+    Call(func.inline, returnTo)
+  }
+
   /**
    * 从当前 thread-function 的静态调用帧返回到预绑定的 continuation。
    */
-  def Return(): HwFunction[Unit] = HwFunction.thread("SysCall return") { t =>
+  def Return(): HwInline[Unit] = HwInline.thread("SysCall return") { t =>
     CallStack.currentReturnTarget match {
       case Some(target) =>
         t.Step(CallStack.freshReturnStepName(System.identityHashCode(t), target)) {
@@ -78,7 +86,7 @@ object SysCall {
   /**
    * 远程杀手：强制中止目标线程 (他杀)
    */
-  def kill(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall kill"){ agent =>
+  def kill(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall kill"){ agent =>
     target.requireLifecycleAccess(agent.ctx, "kill")
     ContextScope.withContext(AtomicCtx(target)) {
       target.ctx.kernelKillSignal <==! true.B
@@ -88,7 +96,7 @@ object SysCall {
   /**
    * 远程启动：唤醒目标线程
    */
-  def start(target: HardwareThread): HwFunction[Unit] = HwFunction.stateless("SysCall start"){ agent =>
+  def start(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall start"){ agent =>
     target.requireLifecycleAccess(agent.ctx, "start")
     target.runtimeStart()
   }
@@ -97,7 +105,7 @@ object SysCall {
    * 当前线程主动结束生命周期。
    * 这是系统级 runtime 操作，只允许内核在 root Return() 等场景内部使用。
    */
-  private[kernel] def exit(): HwFunction[Unit] = HwFunction.atomic("SysCall exit current") { _ =>
+  private[kernel] def exit(): HwInline[Unit] = HwInline.atomic("SysCall exit current") { _ =>
     ContextScope.getCurrentThread().runtimeExit()
   }
 

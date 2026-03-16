@@ -1,7 +1,7 @@
 package HwOS.prototype.cpu
 
 import HwOS.kernel.control.StructuredControl
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -41,14 +41,14 @@ object InjectedFreeFlow {
     val service = spawn(new sync.SemaphoreProcess(maxClients, ports, "Ports"))
     override def entry(): Unit = {}
 
-    def Execute(lhs: UInt, rhs: UInt): HwFunction[UInt] = HwFunction.stateless(s"${name}_Execute") { _ =>
+    def Execute(lhs: UInt, rhs: UInt): HwInline[UInt] = HwInline.stateless(s"${name}_Execute") { _ =>
       lhs + rhs
     }
 
-    def Available(): HwFunction[Bool] = service.Available()
+    def Available(): HwInline[Bool] = service.Available()
 
-    def WithPort(clientId: Int, entryLabel: String)(body: HardwareThread => Unit): HwFunction[Unit] =
-      HwFunction.thread(s"${name}_WithPort_$clientId") { t =>
+    def WithPort(clientId: Int, entryLabel: String)(body: HardwareThread => Unit): HwInline[Unit] =
+      HwInline.thread(s"${name}_WithPort_$clientId") { t =>
         val lease = SysCall.Call(service.RequestLease(clientId))
         t.Step(entryLabel) {
           SysCall.Call(lease.Acquire())
@@ -68,7 +68,7 @@ object InjectedFreeFlow {
 
     override def entry(): Unit = {}
 
-    def Load(clientId: Int, delay: UInt, addr: UInt): HwFunction[UInt] = HwFunction.atomic(s"${name}_Load_$clientId") { t =>
+    def Load(clientId: Int, delay: UInt, addr: UInt): HwInline[UInt] = HwInline.atomic(s"${name}_Load_$clientId") { t =>
       val lease = SysCall.Call(service.RequestLease(clientId))
       when(!lease.isActive) {
         SysCall.Call(lease.Acquire())
@@ -82,10 +82,10 @@ object InjectedFreeFlow {
       mem(addr(log2Ceil(memDepth) - 1, 0))
     }
 
-    def Available(): HwFunction[Bool] = service.Available()
+    def Available(): HwInline[Bool] = service.Available()
 
-    def WithPort(clientId: Int, entryLabel: String)(body: HardwareThread => Unit): HwFunction[Unit] =
-      HwFunction.thread(s"${name}_WithPort_$clientId") { t =>
+    def WithPort(clientId: Int, entryLabel: String)(body: HardwareThread => Unit): HwInline[Unit] =
+      HwInline.thread(s"${name}_WithPort_$clientId") { t =>
         val lease = SysCall.Call(service.RequestLease(clientId))
         t.Step(entryLabel) {
           SysCall.Call(lease.Acquire())
@@ -110,7 +110,7 @@ object InjectedFreeFlow {
 
     override def entry(): Unit = {}
 
-    def install(slotId: Int, instBits: UInt): HwFunction[Unit] = HwFunction.thread(s"${name}_Install_$slotId") { t =>
+    def install(slotId: Int, instBits: UInt): HwInline[Unit] = HwInline.thread(s"${name}_Install_$slotId") { t =>
       val decodedSrc = t.own(RegInit(0.U(32.W)))
       val loadedValue = t.own(RegInit(0.U(32.W)))
       val result = t.own(RegInit(0.U(32.W)))
@@ -128,7 +128,7 @@ object InjectedFreeFlow {
         body(t)
       }
 
-      val addiPath = HwFunction.thread(s"${name}_AddiPath_$slotId") { tx =>
+      val addiPath = HwInline.thread(s"${name}_AddiPath_$slotId") { tx =>
         tx.Step(s"ArithWait_$slotId") {
           tx.waitCondition(SysCall.Call(arith.Available()))
         }
@@ -148,7 +148,7 @@ object InjectedFreeFlow {
         ()
       }
 
-      val loadPath = HwFunction.thread(s"${name}_LoadPath_$slotId") { tx =>
+      val loadPath = HwInline.thread(s"${name}_LoadPath_$slotId") { tx =>
         tx.Step(s"LoadWait_$slotId") {
           tx.waitCondition(SysCall.Call(load.Available()))
         }
@@ -168,7 +168,7 @@ object InjectedFreeFlow {
         ()
       }
 
-      val loadAddPath = HwFunction.thread(s"${name}_LoadAddPath_$slotId") { tx =>
+      val loadAddPath = HwInline.thread(s"${name}_LoadAddPath_$slotId") { tx =>
         tx.Step(s"LoadAddLoadWait_$slotId") {
           tx.waitCondition(SysCall.Call(load.Available()))
         }
@@ -199,7 +199,7 @@ object InjectedFreeFlow {
         ()
       }
 
-      val invalidPath = HwFunction.thread(s"${name}_InvalidPath_$slotId") { tx =>
+      val invalidPath = HwInline.thread(s"${name}_InvalidPath_$slotId") { tx =>
         tx.Step(s"UnsupportedOpcode_$slotId") {
           tx.jump(s"ThreadExit_$slotId")
         }

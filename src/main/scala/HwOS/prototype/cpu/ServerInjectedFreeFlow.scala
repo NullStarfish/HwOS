@@ -1,6 +1,6 @@
 package HwOS.prototype.cpu
 
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -99,11 +99,11 @@ object ServerInjectedFreeFlow {
       }
     }
 
-    def ActiveServerCount(): HwFunction[UInt] = HwFunction.stateless(s"${name}_ActiveServerCount") { _ =>
+    def ActiveServerCount(): HwInline[UInt] = HwInline.stateless(s"${name}_ActiveServerCount") { _ =>
       PopCount(servers.map(_.thread.active))
     }
 
-    def RequestDecode(clientId: Int, instBits: UInt): HwFunction[Unit] = HwFunction.atomic(s"${name}_RequestDecode_$clientId") { t =>
+    def RequestDecode(clientId: Int, instBits: UInt): HwInline[Unit] = HwInline.atomic(s"${name}_RequestDecode_$clientId") { t =>
       val req = clientReqs(clientId)
       val slotLease = SysCall.Call(serverSlots.RequestLease(clientId))
       this.grant(req.pending, t)
@@ -193,7 +193,7 @@ object ServerInjectedFreeFlow {
       }
     }
 
-    def ActiveThreadCount(): HwFunction[UInt] = HwFunction.stateless(s"${name}_ActiveThreadCount") { _ =>
+    def ActiveThreadCount(): HwInline[UInt] = HwInline.stateless(s"${name}_ActiveThreadCount") { _ =>
       PopCount(slots.map(_.thread.active)) + SysCall.Call(decode.ActiveServerCount())
     }
   }

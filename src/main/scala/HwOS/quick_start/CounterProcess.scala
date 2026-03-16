@@ -1,7 +1,7 @@
 package HwOS.quick_start
 
 import chisel3._
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -48,7 +48,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
     }
   }
 
-  def DoNTimes(n: Int): HwFunction[Unit] = HwFunction.thread("do n times") {t =>
+  def DoNTimes(n: Int): HwInline[Unit] = HwInline.thread("do n times") {t =>
     this.grantLifecycle(mainThread, t)
     val cnt = this.own(RegInit(0.U(log2Ceil(n + 1).W)))
     t.Step("Start") {

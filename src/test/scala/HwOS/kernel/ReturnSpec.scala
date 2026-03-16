@@ -1,7 +1,7 @@
 package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
-import HwOS.kernel.function.HwFunction
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.SysCall
 import chisel3._
@@ -12,7 +12,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
   val worker = createThread("Worker")
   val out = this.own(RegInit(0.U(8.W)))
 
-  private def inner: HwFunction[Unit] = HwFunction.thread("Inner") { t =>
+  private def inner: HwInline[Unit] = HwInline.thread("Inner") { t =>
     t.Step("InnerWrite") {
       out <== 7.U
     }
@@ -23,7 +23,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     ()
   }
 
-  private def innerMost: HwFunction[Unit] = HwFunction.thread("InnerMost") { t =>
+  private def innerMost: HwInline[Unit] = HwInline.thread("InnerMost") { t =>
     t.Step("InnerMostWrite") {
       out <== 10.U
     }
@@ -34,7 +34,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     ()
   }
 
-  private def middle: HwFunction[Unit] = HwFunction.thread("Middle") { t =>
+  private def middle: HwInline[Unit] = HwInline.thread("Middle") { t =>
     t.Step("MiddleWrite") {
       out <== 5.U
     }
@@ -45,7 +45,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     ()
   }
 
-  private def outer: HwFunction[Unit] = HwFunction.thread("Outer") { t =>
+  private def outer: HwInline[Unit] = HwInline.thread("Outer") { t =>
     t.Step("OuterInit") {
       out <== 1.U
     }
@@ -56,7 +56,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     ()
   }
 
-  private def outerNested: HwFunction[Unit] = HwFunction.thread("OuterNested") { t =>
+  private def outerNested: HwInline[Unit] = HwInline.thread("OuterNested") { t =>
     t.Step("OuterNestedInit") {
       out <== 2.U
     }
