@@ -45,8 +45,8 @@ class BackendSelectionModule extends Module {
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.value, daemon)
-      this.grant(io.done, daemon)
+      this.grant(io.value, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
       this.grantLifecycle(proc.worker, daemon)
 
       daemon.run {

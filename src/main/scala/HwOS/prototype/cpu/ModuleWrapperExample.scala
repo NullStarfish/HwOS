@@ -1,6 +1,7 @@
 package HwOS.prototype.cpu
 
 import HwOS.kernel.function.HwInline
+import HwOS.kernel.GrantAbi
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -65,9 +66,9 @@ object ModuleWrapperExample {
         this.grantLifecycle(worker, daemon)
         this.grant(lhsReg, daemon)
         this.grant(rhsReg, daemon)
-        this.grant(io.busy, daemon)
-        this.grant(io.done, daemon)
-        this.grant(io.result, daemon)
+        this.grant(io.busy, daemon, GrantAbi.LevelDrivenWire)
+        this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
+        this.grant(io.result, daemon, GrantAbi.LevelDrivenWire)
 
         daemon.run {
           when(io.start && !worker.active) {

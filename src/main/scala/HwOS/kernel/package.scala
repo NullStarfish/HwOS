@@ -41,6 +41,10 @@ package object kernel {
   val ProcEnv = process.ProcEnv
 
   type Kernel = system.Kernel
+  type KernelAddressSpace = system.KernelAddressSpace
+  type RuntimeContext = system.RuntimeContext
+  type GrantAbi = system.GrantAbi
+  val GrantAbi = system.GrantAbi
   type OSReaperProcess = system.OSReaperProcess
   val SysCall = system.SysCall
 

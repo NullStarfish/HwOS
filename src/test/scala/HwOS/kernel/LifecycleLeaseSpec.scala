@@ -73,9 +73,9 @@ class LifecycleLeaseModule extends Module {
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.hits, daemon)
-      this.grant(io.done, daemon)
-      this.grant(io.workerActive, daemon)
+      this.grant(io.hits, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.workerActive, daemon, GrantAbi.LevelDrivenWire)
       this.grantLifecycle(proc.controller, daemon)
 
       daemon.run {

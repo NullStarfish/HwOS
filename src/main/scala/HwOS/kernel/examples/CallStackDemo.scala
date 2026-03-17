@@ -1,5 +1,6 @@
 package HwOS.kernel.examples
 import chisel3._
+import HwOS.kernel.GrantAbi
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
@@ -89,7 +90,7 @@ class CallStackIntegrationModule extends Module {
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.done, daemon)
+      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
       this.grantLifecycle(demo.main, daemon)
       daemon.run {
         when(io.start) { SysCall.Call(SysCall.start(demo.main)) }

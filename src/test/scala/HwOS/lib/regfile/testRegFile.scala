@@ -108,9 +108,9 @@ class RegfileIntegrationModule extends Module {
 
     override def entry(): Unit = {
 
-      this.grant(io.result, daemon)
-      this.grant(io.stalls, daemon)
-      this.grant(io.done, daemon)
+      this.grant(io.result, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.stalls, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
       this.grantLifecycle(client.producer, daemon)
       this.grantLifecycle(client.consumer, daemon)
       daemon.run {

@@ -93,7 +93,7 @@ class SyncIntegrationModule extends Module {
     val sync = spawn(new SyncProcess("Sync"))
 
     val daemon = createLogic("daemon")
-    grant(io.finalCount, daemon); grant(io.allDone, daemon)
+    grant(io.finalCount, daemon, GrantAbi.LevelDrivenWire); grant(io.allDone, daemon, GrantAbi.LevelDrivenWire)
     grantLifecycle(sync.main, daemon)
     override def entry(): Unit = {
       daemon.run {

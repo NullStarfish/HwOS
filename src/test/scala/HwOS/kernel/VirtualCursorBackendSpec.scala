@@ -52,8 +52,8 @@ class VirtualCursorModule extends Module {
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.out, daemon)
-      this.grant(io.done, daemon)
+      this.grant(io.out, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
       this.grantLifecycle(proc.worker, daemon)
 
       daemon.run {

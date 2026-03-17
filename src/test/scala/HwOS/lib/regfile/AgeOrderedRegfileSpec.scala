@@ -120,9 +120,9 @@ class AgeOrderedRegfileModule extends Module {
         }
       }
 
-      this.grant(io.committedX1, monitor)
-      this.grant(io.committedX2, monitor)
-      this.grant(io.forwardedX2, monitor)
+      this.grant(io.committedX1, monitor, GrantAbi.LevelDrivenWire)
+      this.grant(io.committedX2, monitor, GrantAbi.LevelDrivenWire)
+      this.grant(io.forwardedX2, monitor, GrantAbi.LevelDrivenWire)
       this.grant(forwardedValue, monitor)
       monitor.run {
         io.committedX1 <== SysCall.Call(regFile.ReadCommitted(1.U))

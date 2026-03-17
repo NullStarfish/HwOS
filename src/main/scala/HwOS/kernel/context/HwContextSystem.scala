@@ -4,7 +4,7 @@ import chisel3._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import HwOS.kernel.lang.HwOSLanguage._
-import HwOS.kernel.system.Kernel
+import HwOS.kernel.system.{GrantAbi, Kernel}
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 // ==========================================
@@ -38,7 +38,7 @@ class HwContext(val self: HwContextEntity) {
 
   def own[T <: Data](signal: T): T = {
     owns += signal
-    scala.util.Try(self.kernel.registerOwnedSignal(self.name, signal))
+    scala.util.Try(self.kernel.addressSpace.registerOwnedSignal(self.name, signal))
     ResourceManager.registerOwner(signal, this)
     signal
   }
@@ -51,7 +51,21 @@ class HwContext(val self: HwContextEntity) {
   private[kernel] val kernelKillSignal = own(RegInit(false.B))
 
   def grant(signal: Data, target: HwContext): Unit = {
+    grant(signal, target, self.kernel.addressSpace.inferGrantAbi(signal))
+  }
+
+  def grant(signal: Data, target: HwContext, abi: GrantAbi): Unit = {
+    ResourceManager.getOwner(signal) match {
+      case None =>
+        ResourceManager.registerOwner(signal, this)
+      case Some(owner) if owner == this =>
+        // Re-assert the owner's ACL membership in case the signal was created
+        // during an early-init path that registered ownership before grant-time.
+        ResourceManager.registerOwner(signal, this)
+      case _ =>
+    }
     ResourceManager.delegatePermission(signal, this, target)
+    self.kernel.addressSpace.registerGrant(self.name, target.name, signal, abi)
     target.granteds += signal
   }
 
@@ -94,6 +108,10 @@ trait HwContextEntity {
 
   def grant(signal: Data, target: HwContextEntity): Unit = {
     ctx.grant(signal, target.ctx)
+  }
+
+  def grant(signal: Data, target: HwContextEntity, abi: GrantAbi): Unit = {
+    ctx.grant(signal, target.ctx, abi)
   }
 
 

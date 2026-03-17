@@ -4,7 +4,7 @@ import chisel3._
 import scala.collection.mutable.ArrayBuffer
 import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.lang.HwOSLanguage._
-import HwOS.kernel.system.Kernel
+import HwOS.kernel.system.{VirtualCursor, VirtualProgram, VirtualStepRecord}
 import HwOS.kernel.thread._
 
 trait VirtualCursorThreadBackend
@@ -13,7 +13,7 @@ trait VirtualCursorThreadBackend
     with ThreadBackendDebugApi { self: HardwareThread =>
   private val activeReg = this.own(RegInit(false.B))
   private val doneReg = this.own(RegInit(false.B))
-  private var virtualCursor: Option[Kernel#VirtualCursor] = None
+  private var virtualCursor: Option[VirtualCursor] = None
   private lazy val lifecycleLease = new DefaultThreadLifecycleLease(
     thread = this,
     activeReg = activeReg,
@@ -27,13 +27,13 @@ trait VirtualCursorThreadBackend
   private[kernel] var hasExitPath: Boolean = false
   private[kernel] val freeze: Bool = WireInit(false.B)
 
-  private var program: Option[Kernel#VirtualProgram] = None
+  private var program: Option[VirtualProgram] = None
   private val stepNameSet = scala.collection.mutable.Set[String]()
   private var jumpPcByName = Map.empty[String, UInt]
   private var currentLoweringIndex: Int = -1
   private var loweredStandalone = scala.collection.mutable.Set[Int]()
   private var suppressedStandalone = scala.collection.mutable.Set[Int]()
-  private var currentDebugRecord: Option[Kernel#VirtualStepRecord] = None
+  private var currentDebugRecord: Option[VirtualStepRecord] = None
   private val globals = ArrayBuffer[() => Unit]()
 
   override def active: Bool = lifecycleLease.active
@@ -59,13 +59,13 @@ trait VirtualCursorThreadBackend
     ctx.bindIsActive(lifecycleLease.active)
   }
 
-  private def allocateVirtualCursor(): Kernel#VirtualCursor = {
+  private def allocateVirtualCursor(): VirtualCursor = {
     if (virtualCursor.isDefined) {
       throw new Exception(s"[HwOS] Virtual cursor allocated twice for thread '$name'")
     }
     val labels = program.map(_.labels).getOrElse(Seq.empty)
-    val segment = owner.kernel.reserveCodeSegment(name, labels)
-    val cursor = owner.kernel.allocateVirtualCursor(this, s"${name}_virtual_cursor", segment)
+    val segment = owner.kernel.addressSpace.reserveCodeSegment(name, labels)
+    val cursor = owner.kernel.addressSpace.allocateVirtualCursor(this, s"${name}_virtual_cursor", segment)
     virtualCursor = Some(cursor)
     cursor
   }
@@ -88,7 +88,7 @@ trait VirtualCursorThreadBackend
     currentDebugRecord.foreach(_.invokedCalls += snapshot)
   }
 
-  private def currentProgram: Kernel#VirtualProgram =
+  private def currentProgram: VirtualProgram =
     program.getOrElse(throw new Exception(s"[HwOS] Virtual program not initialized for thread '$name'."))
 
   private def lowerStepAt(index: Int): Unit = {
@@ -108,7 +108,7 @@ trait VirtualCursorThreadBackend
     ((after + 1) until steps.length).find(idx => !suppressedStandalone.contains(idx))
   }
 
-  private def lowerMainPass(cursor: Kernel#VirtualCursor): Unit = {
+  private def lowerMainPass(cursor: VirtualCursor): Unit = {
     val steps = currentProgram.steps
     for ((step, index) <- steps.zipWithIndex if !suppressedStandalone.contains(index)) {
       step.allocatedAddress = cursor.segment.addressOf(step.name)
@@ -185,7 +185,7 @@ trait VirtualCursorThreadBackend
     }
     generatedEntry = true
 
-    program = Some(owner.kernel.createVirtualProgram(name))
+    program = Some(owner.kernel.addressSpace.createVirtualProgram(name))
     ContextScope.withContext(ThreadCtx(this)) { block }
     if (currentProgram.steps.isEmpty) { return }
 

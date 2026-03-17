@@ -44,9 +44,11 @@ final class DefaultThreadLifecycleLease(
     thread.grant(doneReg, agent)
     thread.grant(pcAccessor(), agent)
 
-    activeReg <==! false.B
-    doneReg <==! false.B
-    pcAccessor() <==! entryPcAccessor()
+    ContextScope.withContext(AtomicCtx(thread)) {
+      activeReg <==! false.B
+      doneReg <==! false.B
+      pcAccessor() <==! entryPcAccessor()
+    }
   }
 }
 
@@ -70,6 +72,8 @@ final class InlineThreadLifecycleLease(
 
   override private[kernel] def forceReclaim(agent: HardwareAgent): Unit = {
     thread.grant(pcAccessor(), agent)
-    pcAccessor() <==! terminalPcAccessor()
+    ContextScope.withContext(AtomicCtx(thread)) {
+      pcAccessor() <==! terminalPcAccessor()
+    }
   }
 }

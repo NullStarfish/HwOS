@@ -1,6 +1,7 @@
 package HwOS.quick_start
 
 import chisel3._
+import HwOS.kernel.GrantAbi
 import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -26,8 +27,8 @@ class TopModule extends Module {
     val daemon = createLogic("DaemonLogic")
 
     override def entry(): Unit = {
-      this.grant(io.result, daemon)
-      this.grant(io.done, daemon)
+      this.grant(io.result, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
       
       // 允许 daemon 逻辑控制子线程的生命周期
       this.grantLifecycle(counterProc.mainThread, daemon)

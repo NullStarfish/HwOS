@@ -159,12 +159,12 @@ class StructuredControlModule extends Module {
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-        this.grant(io.branchOut, daemon)
-        this.grant(io.elifOut, daemon)
-        this.grant(io.acc, daemon)
-        this.grant(io.loopOut, daemon)
-        this.grant(io.returnOut, daemon)
-      this.grant(io.done, daemon)
+        this.grant(io.branchOut, daemon, GrantAbi.LevelDrivenWire)
+        this.grant(io.elifOut, daemon, GrantAbi.LevelDrivenWire)
+        this.grant(io.acc, daemon, GrantAbi.LevelDrivenWire)
+        this.grant(io.loopOut, daemon, GrantAbi.LevelDrivenWire)
+        this.grant(io.returnOut, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
       this.grantLifecycle(proc.worker, daemon)
 
       daemon.run {

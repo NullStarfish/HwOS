@@ -101,7 +101,7 @@ class MutexAbortModule extends Module {
     val daemon = createLogic("Daemon")
     
     override def entry(): Unit = {
-      this.grant(io.success, daemon); this.grant(io.done, daemon)
+      this.grant(io.success, daemon, GrantAbi.LevelDrivenWire); this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
       this.grantLifecycle(testProc.main, daemon)
       
       daemon.run {

@@ -219,10 +219,10 @@ object ServerInjectedFreeFlow {
       val daemon = createLogic("Daemon")
 
       override def entry(): Unit = {
-        this.grant(io.x1, daemon)
-        this.grant(io.x2, daemon)
-        this.grant(io.x3, daemon)
-        this.grant(io.activeThreads, daemon)
+        this.grant(io.x1, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
+        this.grant(io.x2, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
+        this.grant(io.x3, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
+        this.grant(io.activeThreads, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
         daemon.run {
           io.x1 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
           io.x2 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))
@@ -278,12 +278,12 @@ object ServerInjectedFreeFlow {
       }
 
       override def entry(): Unit = {
-        this.grant(io.reqBusy, daemon)
-        this.grant(io.reqDone, daemon)
-        this.grant(io.x1, daemon)
-        this.grant(io.x2, daemon)
-        this.grant(io.x3, daemon)
-        this.grant(io.activeThreads, daemon)
+        this.grant(io.reqBusy, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
+        this.grant(io.reqDone, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
+        this.grant(io.x1, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
+        this.grant(io.x2, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
+        this.grant(io.x3, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
+        this.grant(io.activeThreads, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
 
         for (((thread, instArg), clientId) <- clientSlots.zipWithIndex) {
           thread.grant(instArg, this)

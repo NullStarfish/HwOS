@@ -45,8 +45,8 @@ class InlineRuntimeModule extends Module {
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.counter, daemon)
-      this.grant(io.done, daemon)
+      this.grant(io.counter, daemon, GrantAbi.LevelDrivenWire)
+      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
       daemon.run {
         io.counter <== proc.counter
         io.done <== proc.worker.done

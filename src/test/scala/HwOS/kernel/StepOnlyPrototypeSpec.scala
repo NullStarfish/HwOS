@@ -1,6 +1,7 @@
 package HwOS.kernel
 
 import HwOS.kernel.control.StepOnlyPrototype
+import HwOS.kernel.system.RuntimeLifecycle
 import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -14,6 +15,11 @@ class StepOnlyPrototypeModule extends Module {
     val entityTag = Output(UInt(8.W))
     val step1Addr = Output(UInt(8.W))
     val step2Standalone = Output(Bool())
+    val stateTableCount = Output(UInt(8.W))
+    val codeTableCount = Output(UInt(8.W))
+    val bindingCount = Output(UInt(8.W))
+    val runtimeStateBindingOk = Output(Bool())
+    val cursorBindingOk = Output(Bool())
   })
 
   io.mark := DontCare
@@ -23,6 +29,11 @@ class StepOnlyPrototypeModule extends Module {
   io.entityTag := DontCare
   io.step1Addr := DontCare
   io.step2Standalone := DontCare
+  io.stateTableCount := DontCare
+  io.codeTableCount := DontCare
+  io.bindingCount := DontCare
+  io.runtimeStateBindingOk := DontCare
+  io.cursorBindingOk := DontCare
 
   implicit val kernel: Kernel = new Kernel()
 
@@ -47,14 +58,20 @@ class StepOnlyPrototypeModule extends Module {
       val runtime = prog.build(this)
       val step1 = prog.layout.find(_.name == "step1").get
       val step2 = prog.layout.find(_.name == "step2").get
+      val runtimeStateObject = kernel.addressSpace.getAddressObject(runtime.stateReg).get
 
       io.mark := markReg
       io.pc := runtime.cursor.reg
-      io.active := runtime.stateReg === kernel.RuntimeLifecycle.Running.U(runtime.stateReg.getWidth.W)
-      io.done := runtime.stateReg === kernel.RuntimeLifecycle.Done.U(runtime.stateReg.getWidth.W)
+      io.active := runtime.stateReg === RuntimeLifecycle.Running.U(runtime.stateReg.getWidth.W)
+      io.done := runtime.stateReg === RuntimeLifecycle.Done.U(runtime.stateReg.getWidth.W)
       io.entityTag := runtime.entityTagReg
       io.step1Addr := step1.address.U
       io.step2Standalone := step2.standalone.B
+      io.stateTableCount := kernel.addressSpace.stateTableEntries.length.U
+      io.codeTableCount := kernel.addressSpace.codeTableEntries.length.U
+      io.bindingCount := kernel.addressSpace.bindingTableEntries.length.U
+      io.runtimeStateBindingOk := (runtime.binding.runtimeStateObject eq runtimeStateObject).B
+      io.cursorBindingOk := (runtime.binding.cursorObject eq runtime.cursor.addressObject).B
     }
   }
 
@@ -104,7 +121,7 @@ class StepOnlyWaitPrototypeModule extends Module {
 
       io.mark := markReg
       io.pc := runtime.cursor.reg
-      io.active := runtime.stateReg === kernel.RuntimeLifecycle.Running.U(runtime.stateReg.getWidth.W)
+      io.active := runtime.stateReg === RuntimeLifecycle.Running.U(runtime.stateReg.getWidth.W)
       io.step1Addr := step1.address.U
       io.step2Standalone := step2.standalone.B
     }
@@ -124,6 +141,10 @@ class StepOnlyPrototypeSpec extends AnyFlatSpec {
       c.io.active.expect(true.B)
       c.io.done.expect(false.B)
       c.io.entityTag.expect(0.U)
+      c.io.codeTableCount.expect(1.U)
+      c.io.bindingCount.expect(1.U)
+      c.io.runtimeStateBindingOk.expect(true.B)
+      c.io.cursorBindingOk.expect(true.B)
 
       c.clock.step()
       c.io.mark.expect(2.U)
