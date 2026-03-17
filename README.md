@@ -10,6 +10,12 @@ HwOS operates on a simple but radical philosophy: **"Hardware is an Operating Sy
 
 By replacing fragmented Finite State Machines (FSMs) and explicit `Valid-Ready` handshakes with a **Thread-Level RTL (TL-RTL)** paradigm, HwOS enables designers to write complex, concurrent hardware using an imperative, software-like mindset without sacrificing physical area or timing performance.
 
+For the current implementation architecture, see [docs/architecture.md](docs/architecture.md).  
+For a paper-style statement of vision and core definitions, see [docs/vision.md](docs/vision.md).  
+For the current philosophy and concept model, see [docs/philosophy.md](docs/philosophy.md), [docs/concepts.md](docs/concepts.md), and [docs/glossary.md](docs/glossary.md).  
+For practical kernel API usage, see [docs/api/README.md](docs/api/README.md).  
+`README.md` is the project overview; `docs/architecture.md` describes the current implementation; the philosophy/concept docs explain why the system is organized this way and what the core terms mean.
+
 ## ✨ Core Features
 
 * **Thread-Level RTL (TL-RTL):** Write sequential hardware logic using `HardwareThread` and `Step`. The compiler automatically flattens these into optimal FSMs with assigned Program Counters (PCs).
@@ -67,11 +73,11 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
         counter <== counter + 1.U
         // Hardware-level blocking: PC stalls here until condition is met
         mainThread.waitAndAct(counter === 10.U) {
-          mainThread.Next.hijack() // Zero-Bubble transition to the next step
+          mainThread.hijack(mainThread.Next) // 编译期 splice 下一个 step
         }
       }
       mainThread.Step("Finish") {
-        mainThread.exit() // Terminate thread lifecycle
+        SysCall.Call(SysCall.Return()) // 用户侧以 Return 结束，root 下会走内核 exit
       }
     }
   }
@@ -153,4 +159,3 @@ Concurrency},
 ## 📜 License
 
 This project is licensed under the Apache License 2.0
-
