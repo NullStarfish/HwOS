@@ -5,9 +5,9 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel.HwOSLanguage._
 
-class InlineWorkerProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+class ExplicitStartWorkerProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val counter = this.own(RegInit(0.U(8.W)))
-  val worker = createThread("InlineWorker", backend = ThreadBackendKind.Inline)
+  val worker = createThread("InlineWorker")
 
   override def entry(): Unit = {
     this.grant(counter, worker)
@@ -28,7 +28,7 @@ class InlineWorkerProcess(localName: String)(implicit kernel: Kernel) extends Hw
   }
 }
 
-class InlineRuntimeModule extends Module {
+class ExplicitStartRuntimeModule extends Module {
   val io = IO(new Bundle {
     val counter = Output(UInt(8.W))
     val done = Output(Bool())
@@ -41,13 +41,17 @@ class InlineRuntimeModule extends Module {
   object Init extends HwProcess("Init") {
     this.own(io.counter)
     this.own(io.done)
-    val proc = spawn(new InlineWorkerProcess("InlineProc"))
+    val proc = spawn(new ExplicitStartWorkerProcess("InlineProc"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
       this.grant(io.counter, daemon, GrantAbi.LevelDrivenWire)
       this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
+      this.grantLifecycle(proc.worker, daemon)
       daemon.run {
+        when(!proc.worker.active && !proc.worker.done) {
+          SysCall.Call(SysCall.start(proc.worker))
+        }
         io.counter <== proc.counter
         io.done <== proc.worker.done
       }
@@ -57,9 +61,9 @@ class InlineRuntimeModule extends Module {
   Init.build()
 }
 
-class InlineRuntimeSpec extends AnyFlatSpec {
-  "Inline backend thread" should "run to completion without explicit start/kill lifecycle" in {
-    simulate(new InlineRuntimeModule) { c =>
+class ExplicitStartRuntimeSpec extends AnyFlatSpec {
+  "Unified thread runtime" should "run to completion after an explicit start" in {
+    simulate(new ExplicitStartRuntimeModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()
       c.reset.poke(false.B)

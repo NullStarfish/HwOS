@@ -8,6 +8,7 @@ import scala.collection.mutable.Stack
  */
 object CallStack {
   private val returnCounters = scala.collection.mutable.HashMap.empty[(Int, String), Int]
+  private val functionCallCounters = scala.collection.mutable.HashMap.empty[(Int, String), Int]
   final case class Frame(name: String, returnTarget: Option[String])
 
   // 使用 ThreadLocal 确保并行编译时的安全性
@@ -37,6 +38,16 @@ object CallStack {
 
   def getSnapshot: Seq[String] = stack.get().toSeq.reverse.map(_.name)
 
+  def withIsolatedStack[T](block: => T): T = {
+    val saved = stack.get().clone()
+    stack.set(Stack.empty[Frame])
+    try {
+      block
+    } finally {
+      stack.set(saved)
+    }
+  }
+
   private def sanitizeStepName(part: String): String = {
     val cleaned = part.replaceAll("[^A-Za-z0-9_]", "_").replaceAll("_+", "_").stripPrefix("_").stripSuffix("_")
     if (cleaned.isEmpty) "Anon" else cleaned
@@ -49,6 +60,19 @@ object CallStack {
     val key = (threadKey, semanticBase)
     val nextId = returnCounters.getOrElse(key, 0)
     returnCounters.update(key, nextId + 1)
+    if (nextId == 0) semanticBase else s"${semanticBase}_$nextId"
+  }
+
+  def freshFunctionCallStepName(threadKey: Int, functionName: String, returnTo: String): String = {
+    val prefix = sanitizeStepName(getCurrentPrefix.stripSuffix("_"))
+    val functionPart = sanitizeStepName(functionName)
+    val targetPart = sanitizeStepName(returnTo)
+    val semanticBase =
+      if (prefix.isEmpty) s"${functionPart}_CallWait_to_${targetPart}"
+      else s"${prefix}_${functionPart}_CallWait_to_${targetPart}"
+    val key = (threadKey, semanticBase)
+    val nextId = functionCallCounters.getOrElse(key, 0)
+    functionCallCounters.update(key, nextId + 1)
     if (nextId == 0) semanticBase else s"${semanticBase}_$nextId"
   }
 }

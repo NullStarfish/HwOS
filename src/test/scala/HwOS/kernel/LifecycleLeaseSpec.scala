@@ -6,8 +6,8 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
 class LifecycleLeaseProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-  val worker = createThread("Worker", backend = ThreadBackendKind.Default)
-  val controller = createThread("Controller", backend = ThreadBackendKind.Default)
+  val worker = createThread("Worker")
+  val controller = createThread("Controller")
   val hits = this.own(RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
@@ -93,7 +93,7 @@ class LifecycleLeaseModule extends Module {
 }
 
 class LifecycleLeaseSpec extends AnyFlatSpec {
-  "Default thread lifecycle lease" should "support kill, reclaim, and restart" in {
+  "Unified thread runtime lifecycle" should "support kill, reclaim, and restart" in {
     simulate(new LifecycleLeaseModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()

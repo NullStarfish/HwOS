@@ -59,17 +59,9 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
 
   def createThread(
       name: String = "Main",
-      backend: ThreadBackendKind = ThreadBackendKind.Default,
   ): HardwareThread = {
     val threadName = s"${this.name}/${name}_thread"
-    val t = backend match {
-      case ThreadBackendKind.Default =>
-        new DefaultHardwareThread(threadName, this, debugEnable, backend)
-      case ThreadBackendKind.Inline =>
-        new InlineHardwareThread(threadName, this, debugEnable, backend)
-      case ThreadBackendKind.Virtual =>
-        new VirtualCursorHardwareThread(threadName, this, debugEnable, backend)
-    }
+    val t = new KernelStepHardwareThread(threadName, this, debugEnable)
     kernel.registerThread(threadName, t)
     kernel.registerContext(t)
     threads += t

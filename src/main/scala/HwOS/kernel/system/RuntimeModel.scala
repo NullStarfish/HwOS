@@ -12,5 +12,4 @@ final class RuntimeContext(
     val binding: BindingTableEntry,
     val cursor: VirtualCursor,
     val stateReg: UInt,
-    val entityTagReg: UInt,
 )

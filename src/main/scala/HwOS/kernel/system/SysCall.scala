@@ -6,8 +6,7 @@ import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.lang.HwOSLanguage._
-import HwOS.kernel.thread.HardwareThread
-import HwOS.kernel.thread.backend.ThreadBackendDebugApi
+import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 object SysCall {
   // ==========================================
   // 1. Function Linker Layer (逻辑注入)
@@ -22,7 +21,7 @@ object SysCall {
     try {
       scala.util.Try {
         ContextScope.current match {
-          case AtomicCtx(t: ThreadBackendDebugApi) =>
+          case AtomicCtx(t: ThreadDebugApi) =>
             t.recordAtomicCallSnapshot(CallStack.getSnapshot)
           case ThreadCtx(t) => // 线程级调用的暂不挂载到具体的 PC
           case _ =>
@@ -35,7 +34,19 @@ object SysCall {
   }
 
   def Call[T](func: HwFunction[T]): T = {
-    Call(func.inline)
+    ContextScope.current match {
+      case ThreadCtx(t) =>
+        CallStack.currentReturnTarget match {
+          case Some(target) => Call(func, target)
+          case None =>
+            throw new Exception(
+              s"[HwOS] Direct SysCall.Call(HwFunction '${func.name}') inside ThreadCtx requires an explicit continuation. " +
+                s"Use SysCall.Call(func, returnTo) or func.Invoke(returnTo).",
+            )
+        }
+      case _ =>
+        throw new Exception(s"[HwOS] HwFunction '${func.name}' can only be called from ThreadCtx in v1.")
+    }
   }
 
   /**
@@ -59,7 +70,37 @@ object SysCall {
   }
 
   def Call[T](func: HwFunction[T], returnTo: String): T = {
-    Call(func.inline, returnTo)
+    CallStack.push(func.name, returnTarget = Some(returnTo))
+    try {
+      ContextScope.current match {
+        case ThreadCtx(caller) =>
+          val activation = func.ensureActivation(caller.owner)
+          activation.grantLifecycleAccess(caller.ctx)
+          val result = func.ensureResultHandle(caller.owner)
+          val callPending = caller.own(RegInit(false.B))
+          val callStepName = CallStack.freshFunctionCallStepName(System.identityHashCode(caller), func.name, returnTo)
+
+          caller.Step(callStepName) {
+            when(!callPending) {
+              when(!activation.active) {
+                Call(start(activation))
+                callPending <== true.B
+              }
+              caller.waitCondition(false.B)
+            }.elsewhen(activation.done) {
+              callPending <== false.B
+              caller.jump(returnTo)
+            }.otherwise {
+              caller.waitCondition(false.B)
+            }
+          }
+          result
+        case _ =>
+          throw new Exception(s"[HwOS] Call('$returnTo') on HwFunction '${func.name}' must be used inside ThreadCtx.")
+      }
+    } finally {
+      CallStack.pop()
+    }
   }
 
   /**
@@ -88,9 +129,7 @@ object SysCall {
    */
   def kill(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall kill"){ agent =>
     target.requireLifecycleAccess(agent.ctx, "kill")
-    ContextScope.withContext(AtomicCtx(target)) {
-      target.ctx.kernelKillSignal <==! true.B
-    }
+    target.runtimeKill()
   }
 
   /**

@@ -52,32 +52,32 @@ object StructuredControl {
 
         thread.Step(condStepName(index)) {
           when(branch.cond()) {
-            thread.jump(enterStepName(index))
+            thread.jump(thread.stepRef(enterStepName(index)))
           }.otherwise {
-            thread.jump(nextFailTarget)
+            thread.jump(thread.stepRef(nextFailTarget))
           }
         }
 
         thread.Step(enterStepName(index)) {
-          thread.Next.hijack()
+          thread.hijack(thread.Next)
         }
 
         SysCall.Call(branch.body, exitStepName(index))
 
         thread.Step(exitStepName(index)) {
-          thread.jump(s"${base}_End")
+          thread.jump(thread.stepRef(s"${base}_End"))
         }
       }
 
       elseBody.foreach { body =>
         thread.Step(s"${base}_ElseEnter") {
-          thread.Next.hijack()
+          thread.hijack(thread.Next)
         }
 
         SysCall.Call(body, s"${base}_ElseExit")
 
         thread.Step(s"${base}_ElseExit") {
-          thread.jump(s"${base}_End")
+          thread.jump(thread.stepRef(s"${base}_End"))
         }
       }
 
@@ -110,20 +110,20 @@ object StructuredControl {
 
     thread.Step(s"${base}_Cond") {
       when(cond) {
-        thread.jump(s"${base}_BodyEnter")
+        thread.jump(thread.stepRef(s"${base}_BodyEnter"))
       }.otherwise {
-        thread.jump(s"${base}_End")
+        thread.jump(thread.stepRef(s"${base}_End"))
       }
     }
 
     thread.Step(s"${base}_BodyEnter") {
-      thread.Next.hijack()
+      thread.hijack(thread.Next)
     }
 
     SysCall.Call(body(loop), s"${base}_BodyExit")
 
     thread.Step(s"${base}_BodyExit") {
-      thread.jump(s"${base}_Cond")
+      thread.jump(thread.stepRef(s"${base}_Cond"))
     }
 
     thread.Step(s"${base}_End") {}
@@ -148,25 +148,25 @@ object StructuredControl {
 
     thread.Step(s"${base}_Cond") {
       when(idx < endExclusive.U(width.W)) {
-        thread.jump(s"${base}_BodyEnter")
+        thread.jump(thread.stepRef(s"${base}_BodyEnter"))
       }.otherwise {
-        thread.jump(s"${base}_End")
+        thread.jump(thread.stepRef(s"${base}_End"))
       }
     }
 
     thread.Step(s"${base}_BodyEnter") {
-      thread.Next.hijack()
+      thread.hijack(thread.Next)
     }
 
     SysCall.Call(body(idx, loop), s"${base}_Inc")
 
     thread.Step(s"${base}_Inc") {
       idx <== idx + 1.U
-      thread.Next.hijack()
+      thread.hijack(thread.Next)
     }
 
     thread.Step(s"${base}_BackEdge") {
-      thread.jump(s"${base}_Cond")
+      thread.jump(thread.stepRef(s"${base}_Cond"))
     }
 
     thread.Step(s"${base}_End") {}

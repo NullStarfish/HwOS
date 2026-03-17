@@ -37,7 +37,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
         // 硬件级阻塞：如果条件不满足，PC 寄存器将在此挂起
         
         mainThread.waitAndAct(counter === 10.U) {
-          mainThread.Next.hijack() // 零气泡 (Zero-Bubble) 抢占下一步逻辑
+          mainThread.hijack(mainThread.Next) // 零气泡 (Zero-Bubble) 抢占下一步逻辑
         }
       }
 
@@ -57,7 +57,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
         cnt <== cnt + 1.U
       }
       t.waitAndAct(cnt >= n.U) {
-        t.jump("Done")
+        t.jump(t.stepRef("Done"))
       }
     }
     t.Step("Done") {}

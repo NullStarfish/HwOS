@@ -217,7 +217,7 @@ object sync {
       // Wait 操作仅仅是纯组合逻辑读取 nextCount，不修改数据通路，因此不需要 grant 和 <==
       t.waitCondition(nextCount === 0.U)
       when(nextCount === 0.U) {
-        t.Next.hijack()
+        t.hijack(t.Next)
       }
       ()
     }
@@ -236,7 +236,7 @@ object sync {
         t.waitCondition(anyReady)
         when(anyReady) {
           selectedIdx := PriorityEncoder(readySignals)
-          t.Next.hijack()
+          t.hijack(t.Next)
         }
       case LogicCtx(l) =>
         selectedIdx := PriorityEncoder(readySignals)
@@ -451,7 +451,7 @@ object sync {
     def Guard(addr: UInt): HwInline[Bool] = HwInline.atomic("Guard") { t =>
       val isBusy = SysCall.Call(semaScoreboard.ReadBusy(addr))
       t.waitCondition(!isBusy)
-      when(!isBusy) { t.Next.hijack() }
+      when(!isBusy) { t.hijack(t.Next) }
       !isBusy
     }
 

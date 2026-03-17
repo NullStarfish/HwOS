@@ -5,8 +5,8 @@ import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
-class VirtualCursorProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-  val worker = createThread("Worker", backend = ThreadBackendKind.Virtual)
+class UnifiedCodeTableProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+  val worker = createThread("Worker")
   val out = this.own(RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
@@ -17,11 +17,11 @@ class VirtualCursorProcess(localName: String)(implicit kernel: Kernel) extends H
         out <== 1.U
       }
       worker.Step("Dispatch") {
-        worker.Next.hijack()
+        worker.hijack(worker.Next)
       }
       worker.Step("Merged") {
         out <== 7.U
-        worker.jump("Target")
+        worker.jump(worker.stepRef("Target"))
       }
       worker.Step("Target") {
         out <== out + 3.U
@@ -33,7 +33,7 @@ class VirtualCursorProcess(localName: String)(implicit kernel: Kernel) extends H
   }
 }
 
-class VirtualCursorModule extends Module {
+class UnifiedCodeTableModule extends Module {
   val io = IO(new Bundle {
     val out = Output(UInt(8.W))
     val done = Output(Bool())
@@ -48,7 +48,7 @@ class VirtualCursorModule extends Module {
     this.own(io.out)
     this.own(io.done)
 
-    val proc = spawn(new VirtualCursorProcess("VirtualProc"))
+    val proc = spawn(new UnifiedCodeTableProcess("VirtualProc"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
@@ -69,9 +69,9 @@ class VirtualCursorModule extends Module {
   Init.build()
 }
 
-class VirtualCursorBackendSpec extends AnyFlatSpec {
-  "Virtual cursor backend thread" should "execute on kernel-allocated global code addresses" in {
-    simulate(new VirtualCursorModule) { c =>
+class UnifiedCodeTableSpec extends AnyFlatSpec {
+  "Unified thread code table" should "execute on kernel-allocated global code addresses" in {
+    simulate(new UnifiedCodeTableModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()
       c.reset.poke(false.B)

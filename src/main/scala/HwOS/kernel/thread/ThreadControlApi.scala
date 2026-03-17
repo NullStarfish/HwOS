@@ -1,32 +1,27 @@
 package HwOS.kernel.thread
 
 import chisel3._
-import scala.collection.mutable.ArrayBuffer
-import HwOS.kernel.debug.CallStack
 
-final class ThreadStepNode(val name: String, val block: () => Unit) {
-  var prev: ThreadStepNode = _
-  var next: ThreadStepNode = _
-  var isHijacked: Boolean = false
-  var allocatedPC: Int = -1
-  val threadCallStack: Seq[String] = CallStack.getSnapshot
-  val invokedCalls = ArrayBuffer[Seq[String]]()
-}
+sealed trait StepRef
 
-trait ThreadNextApi {
-  def hijack(): Unit
+object StepRef {
+  final case class NamedStepRef(name: String) extends StepRef
+  case object NextStepRef extends StepRef
 }
 
 trait ThreadControlApi {
   // 抽象控制游标。它表示当前状态切片位置，不承诺具体后端必须用物理 PC 实现。
   def pc: UInt
-  def Next: ThreadNextApi
+  def Next: StepRef
+  def stepRef(name: String): StepRef = StepRef.NamedStepRef(name)
 
   // Step 是最小状态切片。它是 bottom-up 的时序语义，不是更高层 block DSL。
   def Step(name: String)(block: => Unit): Unit
   // hijack / jump / wait* 都是控制语义，而不是 runtime 细节。
-  def hijack(): Unit
-  def jump(target: String): Unit
+  def hijack(target: StepRef): Unit
+  def jump(target: StepRef): Unit
+  // Transitional wrapper while high-level DSLs finish converging on StepRef-first call sites.
+  def jump(targetName: String): Unit = jump(stepRef(targetName))
   def waitCondition(cond: Bool): Unit
   def waitAndAct(cond: Bool)(block: => Unit): Unit
   def Global(block: => Unit): Unit

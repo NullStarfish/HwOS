@@ -18,15 +18,10 @@ package object kernel {
   type HardwareAgent = thread.HardwareAgent
   type HardwareLogic = thread.HardwareLogic
   type HardwareThread = thread.HardwareThread
-  type ThreadStepNode = thread.ThreadStepNode
-  type ThreadNextApi = thread.ThreadNextApi
+  type StepRef = thread.StepRef
+  val StepRef = thread.StepRef
   type ThreadControlApi = thread.ThreadControlApi
   type ThreadRuntimeApi = thread.ThreadRuntimeApi
-  type ThreadBackendKind = thread.ThreadBackendKind
-  val ThreadBackendKind = thread.ThreadBackendKind
-  type ThreadLifecycleLease = thread.ThreadLifecycleLease
-  type DefaultThreadLifecycleLease = thread.DefaultThreadLifecycleLease
-  type InlineThreadLifecycleLease = thread.InlineThreadLifecycleLease
 
   type HwInline[T] = function.HwInline[T]
   val HwInline = function.HwInline

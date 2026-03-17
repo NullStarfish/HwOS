@@ -119,7 +119,7 @@ object ServerInjectedFreeFlow {
       t.waitCondition(req.completed)
       when(req.completed) {
         SysCall.Call(slotLease.Release())
-        t.Next.hijack()
+        t.hijack(t.Next)
       }
       ()
     }

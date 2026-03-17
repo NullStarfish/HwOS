@@ -5,12 +5,9 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel.HwOSLanguage._
 
-class DefaultBackendProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+class UnifiedThreadKernelProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val value = this.own(RegInit(0.U(8.W)))
-  val worker = createThread(
-    name = "PersistentWorker",
-    backend = ThreadBackendKind.Default,
-  )
+  val worker = createThread(name = "PersistentWorker")
 
   override def entry(): Unit = {
     this.grant(value, worker)
@@ -26,7 +23,7 @@ class DefaultBackendProcess(localName: String)(implicit kernel: Kernel) extends 
   }
 }
 
-class BackendSelectionModule extends Module {
+class UnifiedThreadKernelModule extends Module {
   val io = IO(new Bundle {
     val value = Output(UInt(8.W))
     val done = Output(Bool())
@@ -41,7 +38,7 @@ class BackendSelectionModule extends Module {
     this.own(io.value)
     this.own(io.done)
 
-    val proc = spawn(new DefaultBackendProcess("BackendProc"))
+    val proc = spawn(new UnifiedThreadKernelProcess("BackendProc"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
@@ -62,9 +59,9 @@ class BackendSelectionModule extends Module {
   Init.build()
 }
 
-class BackendSelectionSpec extends AnyFlatSpec {
-  "HardwareThread backend selection" should "let the user pick a concrete backend implementation" in {
-    simulate(new BackendSelectionModule) { c =>
+class UnifiedThreadKernelSpec extends AnyFlatSpec {
+  "HardwareThread unified kernel" should "run user threads through the single thread-core path" in {
+    simulate(new UnifiedThreadKernelModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()
       c.reset.poke(false.B)

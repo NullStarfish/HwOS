@@ -44,7 +44,7 @@ object AutoControl {
           val scope = new Scope(thread)
           block.body(scope)
           if (!isLast && !nextIsAnchored && scope.canAutoHijack) {
-            thread.Next.hijack()
+            thread.hijack(thread.Next)
           }
         }
       }

@@ -1,4 +1,4 @@
-package HwOS.kernel.thread.backend
+package HwOS.kernel.thread
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -10,7 +10,7 @@ final class DebugStepRecord(
     val invokedCalls: ArrayBuffer[Seq[String]],
 )
 
-private[kernel] trait ThreadBackendDebugApi {
+private[kernel] trait ThreadDebugApi {
   def debugSteps: Seq[DebugStepRecord]
   def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit
 }

@@ -6,8 +6,7 @@ import scala.collection.mutable.{ArrayBuffer, HashMap}
 import java.io._
 import HwOS.kernel.context.HwContextEntity
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.thread.HardwareThread
-import HwOS.kernel.thread.backend.ThreadBackendDebugApi
+import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 
 class Kernel {
   val secure_mode :Boolean = true
@@ -104,7 +103,7 @@ class Kernel {
     
     for (t <- threads) {
       t match {
-        case debugT: ThreadBackendDebugApi =>
+        case debugT: ThreadDebugApi =>
           for (node <- debugT.debugSteps) {
             if (node.isStandalone && node.allocatedPC != -1) {
               val pc = node.allocatedPC

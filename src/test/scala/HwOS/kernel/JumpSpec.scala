@@ -14,7 +14,7 @@ class JumpProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
 
     worker.entry {
       worker.Step("Dispatch") {
-        worker.jump("Target")
+        worker.jump(worker.stepRef("Target"))
       }
       worker.Step("Skipped") {
         out <== 1.U
@@ -66,7 +66,7 @@ class JumpModule extends Module {
 }
 
 class JumpSpec extends AnyFlatSpec {
-  "jump(name)" should "branch to the named step and skip intermediate steps" in {
+  "jump(stepRef)" should "branch to the named step and skip intermediate steps" in {
     simulate(new JumpModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()

@@ -177,7 +177,6 @@ final class KernelAddressSpace {
     * The runtime context bundles:
     * - a cursor register (execution position)
     * - a state register (Idle/Running/Done)
-    * - an entity-tag register kept as a compatibility bridge
     *
     * A binding-table entry is created so the runtime state can be related back
     * to the code segment it interprets.
@@ -186,19 +185,13 @@ final class KernelAddressSpace {
       owner: HwContextEntity,
       bindingName: String,
       segment: GlobalCodeSegment,
-      entityTagWidth: Int = 8,
       initialState: Int = RuntimeLifecycle.Idle,
-      initialEntityTag: Int = 0,
   ): RuntimeContext = {
     val cursor = allocateVirtualCursor(owner, s"${bindingName}_cursor", segment)
     val stateReg = owner.own(RegInit(initialState.U(2.W)))
-    val entityTagReg = owner.own(RegInit(initialEntityTag.U(entityTagWidth.W)))
 
     val runtimeStateObject = getAddressObject(stateReg).getOrElse(
       throw new Exception(s"[Kernel] Runtime state register for '$bindingName' was not registered."),
-    )
-    val entityTagObject = getAddressObject(entityTagReg).getOrElse(
-      throw new Exception(s"[Kernel] Runtime entity-tag register for '$bindingName' was not registered."),
     )
 
     val binding = new BindingTableEntry(
@@ -206,11 +199,10 @@ final class KernelAddressSpace {
       ownerName = owner.name,
       cursorObject = cursor.addressObject,
       runtimeStateObject = runtimeStateObject,
-      entityTagObject = entityTagObject,
       codeSegment = segment,
     )
     bindingTable += binding
-    new RuntimeContext(binding, cursor, stateReg, entityTagReg)
+    new RuntimeContext(binding, cursor, stateReg)
   }
 
   /** Create the mutable IR container used to collect step-level control flow. */

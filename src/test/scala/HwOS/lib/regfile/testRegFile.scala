@@ -66,7 +66,7 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
     consumer.entry {
       consumer.Step("WaitIssue") {
         consumer.waitCondition(flagReserved)
-        when(flagReserved) { consumer.Next.hijack() }
+        when(flagReserved) { consumer.hijack(consumer.Next) }
       }
       consumer.Step("ReadOperand") {
         val rdata = SysCall.Call(regfile.Read(addr = 5.U))

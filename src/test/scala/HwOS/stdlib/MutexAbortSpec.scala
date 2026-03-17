@@ -74,7 +74,7 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
       
       main.Step("WaitObserver") {
         main.waitCondition(observer.done)
-        when(observer.done) { main.Next.hijack() }
+        when(observer.done) { main.hijack(main.Next) }
       }
       main.Step("Finish") {
       }

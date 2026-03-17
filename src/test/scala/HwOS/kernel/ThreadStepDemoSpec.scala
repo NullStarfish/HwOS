@@ -1,18 +1,17 @@
 package HwOS.kernel
 
-import HwOS.kernel.control.StepOnlyPrototype
+import HwOS.kernel.control.ThreadStepDemo
 import HwOS.kernel.system.RuntimeLifecycle
 import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 
-class StepOnlyPrototypeModule extends Module {
+class ThreadStepDemoModule extends Module {
   val io = IO(new Bundle {
     val mark = Output(UInt(8.W))
     val pc = Output(UInt(8.W))
     val active = Output(Bool())
     val done = Output(Bool())
-    val entityTag = Output(UInt(8.W))
     val step1Addr = Output(UInt(8.W))
     val step2Standalone = Output(Bool())
     val stateTableCount = Output(UInt(8.W))
@@ -26,7 +25,6 @@ class StepOnlyPrototypeModule extends Module {
   io.pc := DontCare
   io.active := DontCare
   io.done := DontCare
-  io.entityTag := DontCare
   io.step1Addr := DontCare
   io.step2Standalone := DontCare
   io.stateTableCount := DontCare
@@ -41,7 +39,7 @@ class StepOnlyPrototypeModule extends Module {
     private val markReg = this.own(RegInit(0.U(8.W)))
 
     override def entry(): Unit = {
-      val prog = new StepOnlyPrototype.Program("StepOnly")
+      val prog = new ThreadStepDemo.Program("ThreadStepDemo")
       val action = prog.hijack("step2")
 
       prog.Step("step1") {
@@ -64,7 +62,6 @@ class StepOnlyPrototypeModule extends Module {
       io.pc := runtime.cursor.reg
       io.active := runtime.stateReg === RuntimeLifecycle.Running.U(runtime.stateReg.getWidth.W)
       io.done := runtime.stateReg === RuntimeLifecycle.Done.U(runtime.stateReg.getWidth.W)
-      io.entityTag := runtime.entityTagReg
       io.step1Addr := step1.address.U
       io.step2Standalone := step2.standalone.B
       io.stateTableCount := kernel.addressSpace.stateTableEntries.length.U
@@ -78,7 +75,7 @@ class StepOnlyPrototypeModule extends Module {
   Init.build()
 }
 
-class StepOnlyWaitPrototypeModule extends Module {
+class ThreadStepDemoWaitModule extends Module {
   val io = IO(new Bundle {
     val allow = Input(Bool())
     val mark = Output(UInt(8.W))
@@ -100,7 +97,7 @@ class StepOnlyWaitPrototypeModule extends Module {
     private val markReg = this.own(RegInit(0.U(8.W)))
 
     override def entry(): Unit = {
-      val prog = new StepOnlyPrototype.Program("StepOnlyWait")
+      val prog = new ThreadStepDemo.Program("ThreadStepDemoWait")
       val action = prog.hijack("step2")
 
       prog.Step("step1") {
@@ -130,9 +127,9 @@ class StepOnlyWaitPrototypeModule extends Module {
   Init.build()
 }
 
-class StepOnlyPrototypeSpec extends AnyFlatSpec {
-  "StepOnlyPrototype" should "let hijack(label) return an action that inlines the target step body and removes its standalone slot" in {
-    simulate(new StepOnlyPrototypeModule) { c =>
+class ThreadStepDemoSpec extends AnyFlatSpec {
+  "ThreadStepDemo" should "let hijack(label) return an action that inlines the target step body and removes its standalone slot" in {
+    simulate(new ThreadStepDemoModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()
       c.reset.poke(false.B)
@@ -140,7 +137,6 @@ class StepOnlyPrototypeSpec extends AnyFlatSpec {
       c.io.step2Standalone.expect(false.B)
       c.io.active.expect(true.B)
       c.io.done.expect(false.B)
-      c.io.entityTag.expect(0.U)
       c.io.codeTableCount.expect(1.U)
       c.io.bindingCount.expect(1.U)
       c.io.runtimeStateBindingOk.expect(true.B)
@@ -153,7 +149,7 @@ class StepOnlyPrototypeSpec extends AnyFlatSpec {
   }
 
   it should "stall on the outer standalone step when waitCondition appears inside a hijacked action" in {
-    simulate(new StepOnlyWaitPrototypeModule) { c =>
+    simulate(new ThreadStepDemoWaitModule) { c =>
       c.io.allow.poke(false.B)
       c.reset.poke(true.B)
       c.clock.step()

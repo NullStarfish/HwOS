@@ -34,6 +34,5 @@ final class BindingTableEntry(
     val ownerName: String,
     val cursorObject: AddressObject,
     val runtimeStateObject: AddressObject,
-    val entityTagObject: AddressObject,
     val codeSegment: GlobalCodeSegment,
 )

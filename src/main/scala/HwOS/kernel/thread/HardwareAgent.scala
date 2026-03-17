@@ -4,7 +4,6 @@ import chisel3._
 import HwOS.kernel.context.{ContextScope, HwContext, HwContextEntity, LogicCtx}
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.Kernel
-import HwOS.kernel.thread.backend.{DefaultThreadBackend, InlineThreadBackend, VirtualCursorThreadBackend}
 
 trait HardwareAgent extends HwContextEntity {
   val owner: HwProcess
@@ -41,7 +40,6 @@ abstract class HardwareThread(
     val name: String,
     val owner: HwProcess,
     val debugEnable: Boolean = true,
-    val backend: ThreadBackendKind = ThreadBackendKind.Default,
 ) extends HardwareAgent
     with ThreadControlApi
     with ThreadRuntimeApi {
@@ -62,28 +60,12 @@ abstract class HardwareThread(
 
   private[kernel] def runtimeStart(): Unit
   private[kernel] def runtimeExit(): Unit
+  private[kernel] def runtimeKill(): Unit
 }
 
-private[kernel] final class DefaultHardwareThread(
+private[kernel] final class KernelStepHardwareThread(
     name: String,
     owner: HwProcess,
     debugEnable: Boolean = true,
-    backend: ThreadBackendKind = ThreadBackendKind.Default,
-) extends HardwareThread(name, owner, debugEnable, backend)
-    with DefaultThreadBackend
-
-private[kernel] final class InlineHardwareThread(
-    name: String,
-    owner: HwProcess,
-    debugEnable: Boolean = true,
-    backend: ThreadBackendKind = ThreadBackendKind.Inline,
-) extends HardwareThread(name, owner, debugEnable, backend)
-    with InlineThreadBackend
-
-private[kernel] final class VirtualCursorHardwareThread(
-    name: String,
-    owner: HwProcess,
-    debugEnable: Boolean = true,
-    backend: ThreadBackendKind = ThreadBackendKind.Virtual,
-) extends HardwareThread(name, owner, debugEnable, backend)
-    with VirtualCursorThreadBackend
+) extends HardwareThread(name, owner, debugEnable)
+    with ThreadCore
