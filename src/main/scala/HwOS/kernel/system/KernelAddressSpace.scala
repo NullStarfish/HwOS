@@ -2,6 +2,8 @@ package HwOS.kernel.system
 
 import chisel3._
 import chisel3.reflect.DataMirror
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import HwOS.kernel.context.HwContextEntity
 
@@ -16,7 +18,8 @@ final class KernelAddressSpace {
   private val addressObjectMap = new HashMap[String, AddressObject]()
   private val dataAddressMap = new HashMap[Int, AddressObject]()
   private val stateObjectCounters = new HashMap[String, Int]()
-  private var nextGlobalAddress = 0
+  private var nextStateAddress = 0
+  private var nextCodeAddress = 0
 
   /** Reserve a typed object in the global address space.
     *
@@ -40,16 +43,24 @@ final class KernelAddressSpace {
       throw new Exception(s"[Kernel] Duplicate address object detected: $qualified")
     }
 
+    val startAddress = kind match {
+      case AddressKind.State => nextStateAddress
+      case AddressKind.Code  => nextCodeAddress
+    }
+
     val obj = new AddressObject(
       kind = kind,
       ownerName = ownerName,
       objectName = objectName,
-      startAddress = nextGlobalAddress,
+      startAddress = startAddress,
       span = span,
     )
     addressObjects += obj
     addressObjectMap(qualified) = obj
-    nextGlobalAddress = obj.endAddressExclusive
+    kind match {
+      case AddressKind.State => nextStateAddress = obj.endAddressExclusive
+      case AddressKind.Code  => nextCodeAddress = obj.endAddressExclusive
+    }
     obj
   }
 
@@ -83,6 +94,119 @@ final class KernelAddressSpace {
   def codeTableEntries: Seq[CodeTableEntry] = codeTable.toSeq
   def bindingTableEntries: Seq[BindingTableEntry] = bindingTable.toSeq
   def grantTableEntries: Seq[GrantTableEntry] = grantTable.toSeq
+
+  /** Render the three kernel address tables as a stable human-readable text dump. */
+  def renderAddressTables(): String = {
+    val stateRows = stateTableEntries.map { entry =>
+      Seq(
+        entry.ownerName,
+        entry.addressObject.objectName,
+        entry.addressObject.spaceTag,
+        entry.addressObject.kind.tag,
+        entry.addressObject.startAddress.toString,
+        entry.addressObject.span.toString,
+        entry.addressObject.endAddressExclusive.toString,
+        entry.signal.map(_.toString).getOrElse("None"),
+      )
+    }
+
+    val codeRows = codeTableEntries.map { entry =>
+      Seq(
+        entry.segment.ownerName,
+        entry.segment.objectName,
+        entry.segment.addressObject.spaceTag,
+        entry.segment.startAddress.toString,
+        entry.segment.addressObject.span.toString,
+        entry.segment.entryAddress.toString,
+        entry.segment.labels.mkString("[", ", ", "]"),
+        entry.segment.labels.map(label => s"$label=${entry.segment.addressOf(label)}").mkString("{", ", ", "}"),
+      )
+    }
+
+    val bindingRows = bindingTableEntries.map { entry =>
+      Seq(
+        entry.bindingName,
+        entry.ownerName,
+        entry.cursorObject.objectName,
+        entry.cursorObject.spaceTag,
+        entry.cursorObject.startAddress.toString,
+        entry.runtimeStateObject.objectName,
+        entry.runtimeStateObject.spaceTag,
+        entry.runtimeStateObject.startAddress.toString,
+        entry.codeSegment.objectName,
+        entry.codeSegment.addressObject.spaceTag,
+        entry.codeSegment.startAddress.toString,
+        entry.codeSegment.ownerName,
+        entry.codeSegment.entryAddress.toString,
+      )
+    }
+
+    val grantRows = grantTableEntries.map { entry =>
+      Seq(
+        entry.ownerName,
+        entry.targetName,
+        entry.signalObject.objectName,
+        entry.signalObject.startAddress.toString,
+        entry.signalObject.span.toString,
+        entry.abi.name,
+      )
+    }
+
+    Seq(
+      renderSection(
+        title = "State Table",
+        headers = Seq("owner", "object", "space", "kind", "start", "span", "end_exclusive", "signal"),
+        rows = stateRows,
+      ),
+      renderSection(
+        title = "Code Table",
+        headers = Seq("owner", "segment", "space", "code_start", "span", "code_entry", "labels", "addresses"),
+        rows = codeRows,
+      ),
+      renderSection(
+        title = "Binding Table",
+        headers = Seq(
+          "binding",
+          "owner",
+          "cursor_object",
+          "cursor_space",
+          "cursor_start",
+          "runtime_state_object",
+          "runtime_state_space",
+          "runtime_state_start",
+          "code_segment",
+          "code_space",
+          "code_start",
+          "code_owner",
+          "code_entry",
+        ),
+        rows = bindingRows,
+      ),
+      renderSection(
+        title = "Grant Table",
+        headers = Seq("owner", "target", "signal_object", "signal_start", "signal_span", "abi"),
+        rows = grantRows,
+      ),
+    ).mkString("\n\n")
+  }
+
+  /** Export the three kernel address tables as structured JSON. */
+  def exportAddressTablesJson(path: String): Unit = {
+    writeFile(path, renderAddressTablesJson())
+  }
+
+  /** Export the three kernel address tables as a human-readable text dump. */
+  def exportAddressTablesText(path: String): Unit = {
+    writeFile(path, renderAddressTables())
+  }
+
+  /** Export both JSON and text snapshots of the three kernel address tables. */
+  def exportAddressTables(baseDir: String = "generated"): Unit = {
+    val dir = Paths.get(baseDir)
+    Files.createDirectories(dir)
+    exportAddressTablesJson(dir.resolve("address_tables.json").toString)
+    exportAddressTablesText(dir.resolve("address_tables.txt").toString)
+  }
 
   /** Register an ABI-facing grant.
     *
@@ -221,5 +345,64 @@ final class KernelAddressSpace {
   private def estimateSignalSpan(signal: Data): Int = {
     val width = signal.getWidth
     if (width <= 0) 1 else width
+  }
+
+  private def renderAddressTablesJson(): String = {
+    val stateJson = stateTableEntries.map { entry =>
+      s"""{"owner_name":${json(entry.ownerName)},"object_name":${json(entry.addressObject.objectName)},"space":${json(entry.addressObject.spaceTag)},"kind":${json(entry.addressObject.kind.tag)},"start_address":${entry.addressObject.startAddress},"span":${entry.addressObject.span},"end_address_exclusive":${entry.addressObject.endAddressExclusive},"signal_repr":${json(entry.signal.map(_.toString).getOrElse("None"))}}"""
+    }.mkString("[", ",", "]")
+
+    val codeJson = codeTableEntries.map { entry =>
+      val labels = entry.segment.labels.map(json).mkString("[", ",", "]")
+      val addresses = entry.segment.labels
+        .map(label => s"${json(label)}:${entry.segment.addressOf(label)}")
+        .mkString("{", ",", "}")
+      s"""{"owner_name":${json(entry.segment.ownerName)},"segment_name":${json(entry.segment.objectName)},"space":${json(entry.segment.addressObject.spaceTag)},"code_start":${entry.segment.startAddress},"span":${entry.segment.addressObject.span},"code_entry":${entry.segment.entryAddress},"labels":$labels,"addresses":$addresses}"""
+    }.mkString("[", ",", "]")
+
+    val bindingJson = bindingTableEntries.map { entry =>
+      s"""{"binding_name":${json(entry.bindingName)},"owner_name":${json(entry.ownerName)},"cursor_object_name":${json(entry.cursorObject.objectName)},"cursor_space":${json(entry.cursorObject.spaceTag)},"cursor_start_address":${entry.cursorObject.startAddress},"runtime_state_object_name":${json(entry.runtimeStateObject.objectName)},"runtime_state_space":${json(entry.runtimeStateObject.spaceTag)},"runtime_state_start_address":${entry.runtimeStateObject.startAddress},"code_segment_name":${json(entry.codeSegment.objectName)},"code_space":${json(entry.codeSegment.addressObject.spaceTag)},"code_start":${entry.codeSegment.startAddress},"code_segment_owner":${json(entry.codeSegment.ownerName)},"code_entry":${entry.codeSegment.entryAddress}}"""
+    }.mkString("[", ",", "]")
+
+    val grantJson = grantTableEntries.map { entry =>
+      s"""{"owner_name":${json(entry.ownerName)},"target_name":${json(entry.targetName)},"signal_object_name":${json(entry.signalObject.objectName)},"signal_space":${json(entry.signalObject.spaceTag)},"signal_start_address":${entry.signalObject.startAddress},"signal_span":${entry.signalObject.span},"abi":${json(entry.abi.name)}}"""
+    }.mkString("[", ",", "]")
+
+    s"""{"state_table":$stateJson,"code_table":$codeJson,"binding_table":$bindingJson,"grant_table":$grantJson}"""
+  }
+
+  private def renderSection(title: String, headers: Seq[String], rows: Seq[Seq[String]]): String = {
+    val widths = headers.indices.map { idx =>
+      val rowWidths = rows.map(row => if (idx < row.length) row(idx).length else 0)
+      (headers(idx).length +: rowWidths).max
+    }
+
+    val headerLine = headers.zip(widths).map { case (value, width) => pad(value, width) }.mkString(" | ")
+    val separator = widths.map(width => "-" * width).mkString("-+-")
+    val rowLines =
+      if (rows.isEmpty) Seq("0 entries")
+      else rows.map(row => row.zip(widths).map { case (value, width) => pad(value, width) }.mkString(" | "))
+
+    (Seq(title, headerLine, separator) ++ rowLines).mkString("\n")
+  }
+
+  private def pad(value: String, width: Int): String = value.padTo(width, ' ').mkString
+
+  private def json(value: String): String = {
+    val escaped = value.flatMap {
+      case '"'  => "\\\""
+      case '\\' => "\\\\"
+      case '\n' => "\\n"
+      case '\r' => "\\r"
+      case '\t' => "\\t"
+      case c    => c.toString
+    }
+    s""""$escaped""""
+  }
+
+  private def writeFile(path: String, content: String): Unit = {
+    val output = Paths.get(path)
+    Option(output.getParent).foreach(parent => Files.createDirectories(parent))
+    Files.write(output, content.getBytes(StandardCharsets.UTF_8))
   }
 }

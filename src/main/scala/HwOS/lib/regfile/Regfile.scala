@@ -5,7 +5,7 @@ import chisel3.util._
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{Kernel, SysCall}
+import HwOS.kernel.system.{GrantAbi, Kernel, SysCall}
 import HwOS.stdlib.sync._
 
 object RegfileLib {
@@ -111,7 +111,7 @@ object RegfileLib {
       val ready = SysCall.Call(scoreboard.Guard(addr))
 
       val rdata = this.own(WireInit(0.U(width.W)))
-      grant(rdata, t)
+      grant(rdata, t, GrantAbi.LevelDrivenWire)
 
       when(ready) {
         rdata <== SysCall.Call(semaReg.Read(addr))
@@ -242,7 +242,7 @@ object RegfileLib {
       t.waitCondition(canRead)
 
       val rdata = this.own(WireInit(0.U(width.W)))
-      grant(rdata, t)
+      grant(rdata, t, GrantAbi.LevelDrivenWire)
 
       when(if (zeroReg) addr === 0.U else false.B) {
         rdata <== 0.U

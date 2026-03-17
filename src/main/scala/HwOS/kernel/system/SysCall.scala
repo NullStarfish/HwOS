@@ -75,20 +75,32 @@ object SysCall {
       ContextScope.current match {
         case ThreadCtx(caller) =>
           val activation = func.ensureActivation(caller.owner)
+          val callLease = func.allocateCallLease(caller)
           activation.grantLifecycleAccess(caller.ctx)
+          activation.grant(callLease.binding.callActive, caller)
+          activation.grant(callLease.binding.activeBindingId, caller)
           val result = func.ensureResultHandle(caller.owner)
-          val callPending = caller.own(RegInit(false.B))
           val callStepName = CallStack.freshFunctionCallStepName(System.identityHashCode(caller), func.name, returnTo)
 
           caller.Step(callStepName) {
-            when(!callPending) {
-              when(!activation.active) {
+            val binding = callLease.binding
+            val bindingId = callLease.bindingId
+            val bindingIdValue = bindingId.U(binding.activeBindingId.getWidth.W)
+            val pending = callLease.callPending
+            val thisCallActive = callLease.isActive
+
+            when(!pending) {
+              when(!binding.callActive && !activation.active) {
+                binding.activeBindingId <== bindingIdValue
+                binding.callActive <== true.B
                 Call(start(activation))
-                callPending <== true.B
+                pending <== true.B
               }
               caller.waitCondition(false.B)
-            }.elsewhen(activation.done) {
-              callPending <== false.B
+            }.elsewhen(thisCallActive && activation.done) {
+              binding.callActive <== false.B
+              binding.activeBindingId <== 0.U(binding.activeBindingId.getWidth.W)
+              pending <== false.B
               caller.jump(returnTo)
             }.otherwise {
               caller.waitCondition(false.B)

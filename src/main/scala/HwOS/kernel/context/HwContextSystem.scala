@@ -142,6 +142,14 @@ private[kernel] object ResourceManager {
   private val dynamicVecParents = mutable.HashMap[SignalRef, SignalRef]()
 
   private def ref(signal: Data): SignalRef = SignalRef(signal)
+
+  def reset(): Unit = {
+    signalOwners.clear()
+    acl.clear()
+    driverRegistry.clear()
+    aclExemptVectors.clear()
+    dynamicVecParents.clear()
+  }
   
   def registerOwner(signal: Data, owner: HwContext): Unit = {
     val key = ref(signal)

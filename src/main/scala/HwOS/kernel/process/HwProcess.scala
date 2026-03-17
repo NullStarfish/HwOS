@@ -87,9 +87,13 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     this.children += c
     c.build()
     
-    // 自动向上兼容的权限二次分发
+    // 自动向上兼容的权限二次分发：
+    // - Reg 可安全沿用默认 RegisterWrite ABI
+    // - Wire/IO 不做 ABI 猜测，必须由调用方显式 grant(..., abi)
     c.ctx.getAllOwnedSignals().foreach { sig =>
-      c.grant(sig, this)
+      scala.util.Try(kernel.addressSpace.inferGrantAbi(sig)).toOption.foreach { abi =>
+        c.grant(sig, this, abi)
+      }
     }
 
     c

@@ -23,6 +23,10 @@ final class AddressObject(
     val startAddress: Int,
     val span: Int,
 ) {
+  def spaceTag: String = kind match {
+    case AddressKind.State => "state"
+    case AddressKind.Code  => "code"
+  }
   def endAddressExclusive: Int = startAddress + span
   def width: Int = chisel3.util.log2Ceil(endAddressExclusive max 2)
 }

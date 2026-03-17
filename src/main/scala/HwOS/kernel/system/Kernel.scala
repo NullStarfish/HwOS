@@ -4,11 +4,12 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import java.io._
-import HwOS.kernel.context.HwContextEntity
+import HwOS.kernel.context.{HwContextEntity, ResourceManager}
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 
 class Kernel {
+  ResourceManager.reset()
   val secure_mode :Boolean = true
   private var booted = false
   private var booting = false
@@ -72,6 +73,7 @@ class Kernel {
       }
 
       SystemKernel.build()
+      addressSpace.exportAddressTables("generated")
       booted = true
     } finally {
       booting = false

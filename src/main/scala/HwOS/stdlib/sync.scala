@@ -7,7 +7,7 @@ import HwOS.kernel.context.HwLease
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{Kernel, SysCall}
+import HwOS.kernel.system.{GrantAbi, Kernel, SysCall}
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 object sync {
@@ -116,7 +116,7 @@ object sync {
       override def isActive: Bool = isHeld
 
       def Acquire(): HwInline[Unit] = HwInline.atomic(s"Acquire_$id") { t =>
-        SemaphoreProcess.this.grant(acquires(id), t)
+        SemaphoreProcess.this.grant(acquires(id), t, GrantAbi.PulseWire)
         acquires(id) <== true.B
         val canAcquire = isHeld || ((count > 0.U) && (winnerAcqIdx === id.U))
         t.waitCondition(canAcquire)
@@ -129,7 +129,7 @@ object sync {
       }
 
       def Release(): HwInline[Unit] = HwInline.stateless(s"Release_$id") { agent =>
-        SemaphoreProcess.this.grant(releases(id), agent)
+        SemaphoreProcess.this.grant(releases(id), agent, GrantAbi.PulseWire)
         SemaphoreProcess.this.grant(isHeld, agent)
         when(isHeld) {
           releases(id) <== true.B
@@ -138,7 +138,7 @@ object sync {
       }
 
       override def forceReclaim(agent: HardwareAgent): Unit = {
-        SemaphoreProcess.this.grant(releases(id), agent)
+        SemaphoreProcess.this.grant(releases(id), agent, GrantAbi.PulseWire)
         SemaphoreProcess.this.grant(isHeld, agent)
         releases(id) <==! true.B
         isHeld <==! false.B
@@ -204,12 +204,12 @@ object sync {
 
     // --- 高阶 HwFunction 接口 ---
     def Add(id: Int, delta: UInt): HwInline[Unit] = HwInline.stateless(s"WG_Add_$id") { agent =>
-      this.grant(adds(id), agent)
+      this.grant(adds(id), agent, GrantAbi.PulseWire)
       adds(id) <== delta
     }
 
     def Done(id: Int): HwInline[Unit] = HwInline.stateless(s"WG_Done_$id") { agent =>
-      this.grant(dones(id), agent)
+      this.grant(dones(id), agent, GrantAbi.PulseWire)
       dones(id) <== true.B
     }
 
@@ -331,7 +331,7 @@ object sync {
       override def isActive: Bool = entries(id).active
 
       def Reserve(): HwInline[Unit] = HwInline.atomic(s"Reserve_$id") { t =>
-        OrderedWindowProcess.this.grant(reqs(id).reserve, t)
+        OrderedWindowProcess.this.grant(reqs(id).reserve, t, GrantAbi.PulseWire)
         reqs(id).reserve <== true.B
         val granted = entries(id).active
         t.waitCondition(granted)
@@ -339,7 +339,7 @@ object sync {
       }
 
       def Commit(): HwInline[Unit] = HwInline.stateless(s"Commit_$id") { agent =>
-        OrderedWindowProcess.this.grant(reqs(id).commit, agent)
+        OrderedWindowProcess.this.grant(reqs(id).commit, agent, GrantAbi.PulseWire)
         reqs(id).commit <== true.B
       }
 
@@ -349,12 +349,12 @@ object sync {
       }
 
       def ForceCommit(): HwInline[Unit] = HwInline.stateless(s"ForceCommit_$id") { agent =>
-        OrderedWindowProcess.this.grant(reqs(id).forceCommit, agent)
+        OrderedWindowProcess.this.grant(reqs(id).forceCommit, agent, GrantAbi.PulseWire)
         reqs(id).forceCommit <== true.B
       }
 
       override def forceReclaim(agent: HardwareAgent): Unit = {
-        OrderedWindowProcess.this.grant(reqs(id).reclaim, agent)
+        OrderedWindowProcess.this.grant(reqs(id).reclaim, agent, GrantAbi.PulseWire)
         reqs(id).reclaim <==! true.B
       }
     }

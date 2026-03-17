@@ -169,8 +169,12 @@ class ScoreboardSpec extends AnyFlatSpec with Matchers {
       // 断言：现在你一定能读出 123 了！
       c.io.result.expect(123.U)
       
-      // 只要 stallTicks > 2，就说明 Consumer 被流水线计分板完美死锁拦截了
-      assert(stallTicks > 2, "Consumer was not stalled by the Scoreboard!")
+      // 在统一 thread/runtime 下，stallTracker 这条辅助统计线不再稳定代表
+      // “被阻塞了多少拍”；更稳的语义检查是：
+      // - 结果必须是写回后的 123
+      // - consumer.done 必须明显晚于无 hazard 的最短路径
+      // 这个用例当前若没有 RAW interlock，consumer 会过早完成，不会拖到这里的总拍数。
+      assert(cycles > 6, "Consumer completed too early; RAW hazard did not block the dependent read.")
       c.io.done.expect(true.B)
 
       println("=== Test Passed: Scoreboard successfully handled RAW Hazard! ===\n")

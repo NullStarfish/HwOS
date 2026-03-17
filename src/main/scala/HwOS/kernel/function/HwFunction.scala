@@ -1,9 +1,12 @@
 package HwOS.kernel.function
 
+import chisel3._
+import HwOS.kernel.context.HwLease
 import HwOS.kernel.debug.CallStack
+import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.SysCall
-import HwOS.kernel.thread.HardwareThread
+import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 /**
  * 真正的硬件函数。
@@ -17,9 +20,50 @@ final class HwFunction[T] private (
     val name: String,
     private val body: HardwareThread => T,
 ) {
+  private[kernel] final class FunctionCallBindingState(
+      val activation: HardwareThread,
+      val callActive: Bool,
+      val activeBindingId: UInt,
+  )
+
+  private[kernel] final class FunctionCallLease(
+      val bindingId: Int,
+      val caller: HardwareThread,
+      val activation: HardwareThread,
+      val binding: FunctionCallBindingState,
+      val callPending: Bool,
+  ) extends HwLease {
+    private val bindingIdValue = bindingId.U(binding.activeBindingId.getWidth.W)
+
+    override def isActive: Bool =
+      binding.callActive && binding.activeBindingId === bindingIdValue
+
+    override private[kernel] def forceReclaim(agent: HardwareAgent): Unit = {
+      activation.grant(binding.callActive, agent)
+      activation.grant(binding.activeBindingId, agent)
+      caller.grant(callPending, agent)
+
+      when(isActive) {
+        activation.grantLifecycleAccess(agent.ctx)
+        activation.runtimeKill()
+        activation.ctx.activeLeases.foreach { lease =>
+          when(lease.isActive) {
+            lease.forceReclaim(agent)
+          }
+        }
+        binding.callActive <==! false.B
+        binding.activeBindingId <==! 0.U(binding.activeBindingId.getWidth.W)
+      }
+
+      callPending <==! false.B
+    }
+  }
+
   private var activationOwner: Option[HwProcess] = None
   private var activationThread: Option[HardwareThread] = None
   private var resultHandle: Option[T] = None
+  private var callBindingState: Option[FunctionCallBindingState] = None
+  private var nextBindingId: Int = 1
 
   private[kernel] def ensureActivation(owner: HwProcess): HardwareThread = {
     activationThread match {
@@ -55,6 +99,38 @@ final class HwFunction[T] private (
   private[kernel] def ensureResultHandle(owner: HwProcess): T = {
     ensureActivation(owner)
     resultHandle.getOrElse(throw new Exception(s"[HwOS] Function '$name' result handle was not initialized."))
+  }
+
+  private[kernel] def ensureCallBinding(owner: HwProcess): FunctionCallBindingState = {
+    ensureActivation(owner)
+    callBindingState match {
+      case Some(existing) => existing
+      case None =>
+        val activation = activationThread.getOrElse(
+          throw new Exception(s"[HwOS] Function '$name' activation thread was not initialized."),
+        )
+        val binding = new FunctionCallBindingState(
+          activation = activation,
+          callActive = activation.own(RegInit(false.B)),
+          activeBindingId = activation.own(RegInit(0.U(32.W))),
+        )
+        callBindingState = Some(binding)
+        binding
+    }
+  }
+
+  private[kernel] def allocateCallLease(caller: HardwareThread): FunctionCallLease = {
+    val binding = ensureCallBinding(caller.owner)
+    val lease = new FunctionCallLease(
+      bindingId = nextBindingId,
+      caller = caller,
+      activation = binding.activation,
+      binding = binding,
+      callPending = caller.own(RegInit(false.B)),
+    )
+    nextBindingId += 1
+    caller.ctx.registerLease(lease)
+    lease
   }
 
   private[kernel] def debugActivationThread: Option[HardwareThread] = activationThread

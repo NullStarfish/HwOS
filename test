@@ -5,5 +5,5 @@ Init/PpClient/ProducerInstr_thread 3 EX_Cycle3 0 None 0 None
 Init/PpClient/ProducerInstr_thread 4 WB_Writeback 0 None 16 WB_0;WB_0,ReqSemaRegPort_0;WB_0,ReqSBLease_0;WB_0,Write_0;WB_0,Write_0,ReqSemLease_0;WB_0,Write_0,Base_Write;WB_0,Release_0;WB_0,Release_0,ReqSemaSBPort_0;WB_0,Release_0,ClearBusy_0;WB_0,Release_0,ClearBusy_0,BaseSB_ClearBusy;WB_0,Release_0,ReleaseBusySlot_0;WB_0,Release_0,ReleaseBusySlot_0,ReqSemLease_0;WB_0,Release_0,ReleaseBusySlot_0,Release_0;WB_0,ReleaseWriteSlot_0;WB_0,ReleaseWriteSlot_0,ReqSemLease_0;WB_0,ReleaseWriteSlot_0,Release_0
 Init/PpClient/ProducerInstr_thread 5 Retire 0 None 0 None
 Init/PpClient/ProducerInstr_thread 6 SysCall_return_Return_to_ThreadExit 1 SysCall return 1 SysCall exit current
-Init/PpClient/ConsumerInstr_thread 0 WaitIssue 0 None 0 None
-Init/PpClient/ConsumerInstr_thread 1 SysCall_return_Return_to_ThreadExit 1 SysCall return 1 SysCall exit current
+Init/PpClient/ConsumerInstr_thread 7 WaitIssue 0 None 0 None
+Init/PpClient/ConsumerInstr_thread 10 SysCall_return_Return_to_ThreadExit 1 SysCall return 1 SysCall exit current

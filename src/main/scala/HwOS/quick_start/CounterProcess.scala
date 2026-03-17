@@ -4,7 +4,7 @@ import chisel3._
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{Kernel, SysCall}
+import HwOS.kernel.system.{GrantAbi, Kernel, SysCall}
 import chisel3.util.log2Ceil
 
     // 必须隐式传入 Kernel 以注册全局资源
@@ -20,7 +20,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
   override def entry(): Unit = {
     // 3. 授权 (Grant)：赋予 mainThread 修改 counter 和 isDone 的权限
     this.grant(counter, mainThread)
-    this.grant(isDone, mainThread)
+    this.grant(isDone, mainThread, GrantAbi.LevelDrivenWire)
 
     // 4. 定义线程的时序逻辑 (Step-by-Step)
     mainThread.entry {
