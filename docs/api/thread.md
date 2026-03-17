@@ -161,6 +161,23 @@
 - `pc` 对应当前 `cursor`
 - `start` / `kill` 不是 thread 自己对外的高层 API，而是通过 `SysCall`
 
+### `reset`
+
+作用：
+
+- 复位 thread runtime
+
+当前语义：
+
+- `cursor := entry`
+- `stateReg := Idle`
+- 默认不 reclaim 普通 leases
+
+边界：
+
+- 它不是 context kill
+- 它不是系统级 thread reclaim
+
 ## Usage examples
 
 ### 示例 1：最小 thread
@@ -243,11 +260,11 @@ thread.hijack(thread.Next)
 ### `active/done` 不是 lease 状态
 
 当前 thread runtime 首先由 `RuntimeContext(cursor + stateReg + binding)` 驱动。  
-lease 主要用于资源/调用期语义，不是 thread 生命周期本体。
+lease 主要用于资源/调用期语义，不是 thread 生命周期本体。  
+runtime 现在会被包上一层 runtime lease，但那是 OSReaper 的接入点，不是 `active/done` 的来源。
 
 ## 与其他模块的关系
 
 - thread 创建与 ownership，看 [process-context.md](/Users/nullstarfish/HwOS_personal/docs/api/process-context.md)
 - inline / function 调用，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
 - `start/kill/Return`，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)
-

@@ -3,7 +3,7 @@ package HwOS.kernel.thread
 import chisel3._
 import HwOS.kernel.context.{ContextScope, HwContext, HwContextEntity, LogicCtx}
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.Kernel
+import HwOS.kernel.system.{Kernel, RuntimeContext}
 
 trait HardwareAgent extends HwContextEntity {
   val owner: HwProcess
@@ -60,7 +60,8 @@ abstract class HardwareThread(
 
   private[kernel] def runtimeStart(): Unit
   private[kernel] def runtimeExit(): Unit
-  private[kernel] def runtimeKill(): Unit
+  private[kernel] def reset(): Unit
+  private[kernel] def runtimeHandle: RuntimeContext
 }
 
 private[kernel] final class KernelStepHardwareThread(

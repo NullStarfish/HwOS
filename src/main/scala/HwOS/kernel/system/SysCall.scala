@@ -2,7 +2,7 @@ package HwOS.kernel.system
 
 import chisel3._
 import scala.util.Try // 引入 Try
-import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
+import HwOS.kernel.context.{AtomicCtx, ContextScope, HwContextEntity, ThreadCtx}
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.lang.HwOSLanguage._
@@ -141,7 +141,16 @@ object SysCall {
    */
   def kill(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall kill"){ agent =>
     target.requireLifecycleAccess(agent.ctx, "kill")
-    target.runtimeKill()
+    target.grant(target.ctx.kernelKillSignal, agent, GrantAbi.LevelDrivenWire)
+    target.ctx.kernelKillSignal <== true.B
+  }
+
+  /**
+   * 普适 context kill：切断一个 ContextEntity 的 context，并交给系统级回收逻辑处理。
+   */
+  def kill(target: HwContextEntity): HwInline[Unit] = HwInline.stateless("SysCall context kill") { agent =>
+    target.grant(target.ctx.kernelKillSignal, agent, GrantAbi.LevelDrivenWire)
+    target.ctx.kernelKillSignal <== true.B
   }
 
   /**

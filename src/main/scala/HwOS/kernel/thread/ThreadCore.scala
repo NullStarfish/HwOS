@@ -2,14 +2,16 @@ package HwOS.kernel.thread
 
 import chisel3._
 import HwOS.kernel.context.{ContextScope, ThreadCtx}
-import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
+import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle, ThreadRuntimeLease, RuntimeReclaimTarget}
 import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 trait ThreadCore
     extends ThreadControlApi
     with ThreadRuntimeApi
-    with ThreadDebugApi { self: HardwareThread =>
+    with ThreadDebugApi
+    with RuntimeReclaimTarget { self: HardwareThread =>
   private var runtimeContext: Option[RuntimeContext] = None
+  private var runtimeLeaseOpt: Option[ThreadRuntimeLease] = None
   private[kernel] var generatedEntry: Boolean = false
   private[kernel] var hasExitPath: Boolean = false
   private[kernel] val freeze: Bool = WireInit(false.B)
@@ -22,6 +24,8 @@ trait ThreadCore
 
   private def runtime: RuntimeContext =
     runtimeContext.getOrElse(throw new Exception(s"[HwOS] Runtime context is not allocated for thread '$name'."))
+
+  override private[kernel] def runtimeHandle: RuntimeContext = runtime
 
   override def active: Bool =
     runtimeContext.map(ThreadRuntimeLogic.isRunning).getOrElse(false.B)
@@ -40,8 +44,22 @@ trait ThreadCore
     ThreadRuntimeLogic.exit(runtime)
   }
 
-  override private[kernel] def runtimeKill(): Unit = {
-    ctx.kernelKillSignal := true.B
+  override private[kernel] def reset(): Unit = {
+    ThreadRuntimeLogic.resetToIdle(runtime)
+  }
+
+  override def resetRuntime(): Unit = {
+    reset()
+  }
+
+  override def runtimeActive: Bool = active
+
+  override def runtimeName: String = name
+
+  private def registerRuntimeLease(): Unit = {
+    val lease = new ThreadRuntimeLease(runtime, this)
+    runtimeLeaseOpt = Some(lease)
+    ctx.registerLease(lease)
   }
 
   private def bindContext(): Unit = {
@@ -108,12 +126,12 @@ trait ThreadCore
       initialState = RuntimeLifecycle.Idle,
     )
     runtimeContext = Some(allocatedRuntime)
+    registerRuntimeLease()
     bindContext()
     ThreadRuntimeLogic.lowerProgram(
       irState = irState,
       layoutState = layoutState,
       runtime = allocatedRuntime,
-      killSignal = Some(ctx.kernelKillSignal),
     )
     ThreadLayout.validateJumpTargets(irState)
 

@@ -326,7 +326,11 @@ final class KernelAddressSpace {
       codeSegment = segment,
     )
     bindingTable += binding
-    new RuntimeContext(binding, cursor, stateReg)
+    new RuntimeContext(
+      binding = binding,
+      cursor = cursor,
+      stateReg = stateReg,
+    )
   }
 
   /** Create the mutable IR container used to collect step-level control flow. */

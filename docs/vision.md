@@ -157,6 +157,7 @@ HwOS 的核心命题可以写成一句话：
 - `kernelKillSignal`
 - `OSReaper`
 - `HwLease`
+- `ThreadRuntimeLease`
 - function call binding 的 kill propagation
 
 这一定义的关键意义在于：
@@ -244,6 +245,14 @@ HwOS 不是把资源访问留给约定，而是引入：
 ### 5.4 把 reclaim 提升为系统语义
 
 通过 `OSReaper`、`HwLease` 与 kill propagation，HwOS 把资源回收从局部模块责任提升为系统级机制。
+
+当前更进一步的一点是：
+
+- context kill
+- thread kill
+- thread reset
+
+已经被拆成不同语义层，而 runtime 本体通过 runtime lease 暴露给系统接管。
 
 ### 5.5 引入 state/code 双空间模型
 

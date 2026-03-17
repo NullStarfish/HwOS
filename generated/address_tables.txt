@@ -46,9 +46,9 @@ Grant Table
 owner                         | target                              | signal_object                         | signal_start | signal_span | abi              
 ------------------------------+-------------------------------------+---------------------------------------+--------------+-------------+------------------
 Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex/Gate/Main_logic | Init/TestProc/Mutex/Gate_state_0      | 5            | 32          | register-write   
-Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex                 | Init/TestProc/Mutex/Gate_state_6      | 42           | 1           | register-write   
 Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex                 | Init/TestProc/Mutex/Gate_state_5      | 41           | 1           | register-write   
 Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex                 | Init/TestProc/Mutex/Gate_state_0      | 5            | 32          | register-write   
+Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex                 | Init/TestProc/Mutex/Gate_state_6      | 42           | 1           | register-write   
 Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex                 | Init/TestProc/Mutex/Gate_state_7      | 44           | 1           | register-write   
 Init/TestProc/Mutex           | Init/TestProc                       | Init/TestProc/Mutex_state_0           | 45           | 1           | register-write   
 Init/TestProc                 | Init/TestProc/Observer_thread       | Init/TestProc_state_0                 | 46           | 1           | register-write   
@@ -60,15 +60,19 @@ Init/TestProc/Mutex/Gate      | Init/TestProc/Observer_thread       | Init/TestP
 Init/TestProc/Mutex/Gate      | Init/TestProc/Observer_thread       | Init/TestProc/Mutex/Gate_state_6      | 42           | 1           | register-write   
 Init/TestProc/Mutex/Gate      | Init/TestProc/Observer_thread       | Init/TestProc/Mutex/Gate_state_4      | 40           | 1           | pulse-wire       
 Init/TestProc/Mutex/Gate      | Init/TestProc/Observer_thread       | Init/TestProc/Mutex/Gate_state_6      | 42           | 1           | register-write   
-Init/TestProc                 | Init                                | Init/TestProc_state_1                 | 62           | 1           | register-write   
+Init/TestProc/Victim_thread   | Init/TestProc/Main_thread           | Init/TestProc/Victim_thread_state_0   | 3            | 1           | level-driven-wire
 Init/TestProc                 | Init                                | Init/TestProc_state_0                 | 46           | 1           | register-write   
+Init/TestProc                 | Init                                | Init/TestProc_state_1                 | 62           | 1           | register-write   
 Init                          | Init/Daemon_logic                   | Init_state_0                          | 0            | 1           | level-driven-wire
 Init                          | Init/Daemon_logic                   | Init_state_1                          | 1            | 1           | level-driven-wire
-Init/TestProc/Main_thread     | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Main_thread_state_0     | 2            | 1           | register-write   
-Init/TestProc/Victim_thread   | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Victim_thread_state_0   | 3            | 1           | register-write   
-Init/TestProc/Observer_thread | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Observer_thread_state_0 | 4            | 1           | register-write   
+Init/TestProc/Main_thread     | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Main_thread_state_0     | 2            | 1           | level-driven-wire
+Init/TestProc/Victim_thread   | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Victim_thread_state_0   | 3            | 1           | level-driven-wire
+Init/TestProc/Observer_thread | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Observer_thread_state_0 | 4            | 1           | level-driven-wire
+Init/TestProc/Main_thread     | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Main_thread_state_0     | 2            | 1           | level-driven-wire
+Init/TestProc/Victim_thread   | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Victim_thread_state_0   | 3            | 1           | level-driven-wire
 Init/TestProc/Mutex/Gate      | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_2      | 38           | 1           | pulse-wire       
 Init/TestProc/Mutex/Gate      | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_5      | 41           | 1           | register-write   
+Init/TestProc/Observer_thread | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Observer_thread_state_0 | 4            | 1           | level-driven-wire
 Init/TestProc/Mutex/Gate      | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_4      | 40           | 1           | pulse-wire       
 Init/TestProc/Mutex/Gate      | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_6      | 42           | 1           | register-write   
 Kernel/OSReaper               | Kernel                              | Kernel/OSReaper_state_0               | 65           | 1           | register-write   

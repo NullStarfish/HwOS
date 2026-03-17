@@ -25,6 +25,7 @@
 - `StepRef` 是编译期 step 引用
 - `RuntimeContext(cursor + stateReg + binding)` 是 thread runtime 的第一性模型
 - `KernelAddressSpace` 负责 state / code / binding / grant 四类元数据
+- thread runtime 通过 `ThreadRuntimeLease` 暴露给 OSReaper 作为系统侧兜底回收对象
 - `HwFunction` 当前是 v1：隐藏 activation thread + blocking call
 
 几个重要边界：
@@ -146,6 +147,7 @@ graph TD
 - 绑定 `active/done/pc`
 - 把 `entry { ... }` 收集并 lower
 - 在 debug 模式下打印 step 执行轨迹
+- 默认注册一份 thread runtime lease
 
 `ThreadCore` 不负责：
 
@@ -188,7 +190,6 @@ graph TD
 - 处理 `jump`
 - 处理 `hijack`
 - 处理 `waitCondition`
-- 处理 `kernelKillSignal`
 
 当前 thread runtime 的基本规则是：
 
@@ -196,7 +197,8 @@ graph TD
 - `done = stateReg === Done`
 - `start`: `cursor := entry` 且 `stateReg := Running`
 - `exit`: `stateReg := Done`
-- `kill/reclaim`: `cursor := entry` 且 `stateReg := Idle`
+- `reset`: `cursor := entry` 且 `stateReg := Idle`
+- `thread_kill`: 走系统级 reclaim 路径，最终让 runtime 回到 `Idle`
 
 ### `function`
 
@@ -258,6 +260,17 @@ graph TD
 - `cursor` 表示当前控制位置
 - `stateReg` 表示 `Idle / Running / Done`
 - `binding` 把这份 runtime state 和 code segment 联系起来
+
+### `ThreadRuntimeLease`
+
+每个 thread 默认都会注册一份 runtime lease。
+
+语义：
+
+- 它把 `RuntimeContext` 暴露给 OSReaper
+- 它不是 thread lifecycle 本体
+- 它是系统级 reclaim 的接入点之一
+- 是否接管它，由 OSReaper/Kernel 侧决定，不写进 `RuntimeContext`
 
 ### `AddressObject`
 
@@ -390,15 +403,27 @@ sequenceDiagram
 
 ### 4. kill / reclaim 流程
 
+当前 kill / reclaim 已经分成三层：
+
+1. `kill(contextEntity)`
+2. `thread_kill(thread)`
+3. `thread reset`
+
 普通 thread kill：
 
-1. `SysCall.kill(target)` 触发 `target.runtimeKill()`
-2. `runtimeKill()` 写 `ctx.kernelKillSignal := true`
-3. `ThreadRuntimeLogic.lowerProgram(...)` 顶层优先处理 kill signal
-4. `resetToIdle(runtime)`
-   - `cursor := entry`
-   - `stateReg := Idle`
-5. `OSReaper` 扫描 `activeLeases`，回收资源
+1. `SysCall.kill(targetThread)` 触发该 thread 的 context cut-off
+2. `ctx.kernelKillSignal` 被拉高
+3. `OSReaper` 观察到该 thread 的 context kill
+4. `OSReaper` 对 active leases 执行 `forceReclaim`
+5. runtime lease 执行 `resetRuntime()`
+6. thread 最终回到 `Idle`
+
+context kill：
+
+1. `kill(contextEntity)` 写 `ctx.kernelKillSignal`
+2. 对普通 context，这意味着 context 级切断
+3. 对 thread context，OSReaper 默认会顺带接管其 runtime lease
+4. runtime lease 执行 reset，使 thread 回到 `Idle`
 
 function call 期间 kill：
 
@@ -419,6 +444,8 @@ function call 期间 kill：
 - `waitCondition` stall 在入口 step，不是某个内部 splice 位置
 - `RuntimeContext(cursor + stateReg + binding)` 是 thread runtime 的第一性模型
 - thread lifecycle 不再依赖 lifecycle lease 主语义
+- context kill 与 thread kill 已分离
+- OSReaper 通过 runtime lease 在系统侧决定是否接管 thread runtime
 - ABI 是编译期 metadata / check，不是运行时总线协议
 - state 和 code 是两套独立地址空间
 - `exit` 是内核概念，不是用户 API

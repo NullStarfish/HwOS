@@ -5,7 +5,7 @@ import HwOS.kernel.context.HwLease
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.SysCall
+import HwOS.kernel.system.{OSReaper, SysCall}
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 /**
@@ -45,12 +45,9 @@ final class HwFunction[T] private (
 
       when(isActive) {
         activation.grantLifecycleAccess(agent.ctx)
-        activation.runtimeKill()
-        activation.ctx.activeLeases.foreach { lease =>
-          when(lease.isActive) {
-            lease.forceReclaim(agent)
-          }
-        }
+        activation.grant(activation.ctx.kernelKillSignal, agent, HwOS.kernel.system.GrantAbi.LevelDrivenWire)
+        activation.ctx.kernelKillSignal <==! true.B
+        OSReaper.reclaimThread(activation, agent)
         binding.callActive <==! false.B
         binding.activeBindingId <==! 0.U(binding.activeBindingId.getWidth.W)
       }

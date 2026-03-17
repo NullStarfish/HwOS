@@ -90,7 +90,8 @@ step/function 控制编码所在的空间。
 ### `OSReaper`
 
 系统级回收器。  
-它负责在 kill / abort 后回收 active leases，并处理 function activation 的连坐 reclaim。
+它负责在 kill / abort 后回收 active leases，并处理 function activation 的连坐 reclaim。  
+当前它还会在系统侧决定是否接管某个 thread runtime lease。
 
 ### `own`
 
@@ -111,6 +112,11 @@ step/function 控制编码所在的空间。
 
 thread runtime 的第一性结构。  
 当前包含 `cursor`、`stateReg` 与 `binding`。
+
+### `ThreadRuntimeLease`
+
+thread runtime 本体对应的 lease-backed reclaim 包装。  
+它让 OSReaper 可以在系统侧决定是否接管一份 thread runtime。
 
 ## S
 
@@ -166,6 +172,21 @@ thread runtime 中表示当前控制位置的状态寄存器。
 内核内部生命周期操作。  
 它不是当前主线下鼓励用户直接调用的 API。
 
+### `kill(contextEntity)`
+
+context 级系统切断接口。  
+它作用于 `HwContextEntity`，不再天然等价于 thread kill。
+
+### `thread_kill`
+
+thread 专用系统终止语义。  
+当前通常由 `SysCall.kill(thread)` 承担，并表现为 `context kill + runtime lease reclaim/reset`。
+
+### `reset`
+
+thread 自己的 runtime 复位语义。  
+默认只复位 `cursor/stateReg`，不主动 reclaim 普通 leases。
+
 ## 不再作为当前主线描述使用的旧说法
 
 下面这些说法不应再被用来描述当前主线：
@@ -186,7 +207,8 @@ thread runtime 中表示当前控制位置的状态寄存器。
 ### “thread lifecycle 主要靠 lifecycle lease”
 
 当前 thread lifecycle 首先来自 `RuntimeContext(cursor + stateReg + binding)`。  
-lease 主要用于资源/调用期语义。
+lease 主要用于资源/调用期语义。  
+现在 runtime context 会额外挂一层 runtime lease，但那是系统接管入口，不是 lifecycle 本体。
 
 ### “state/code 共用一个地址空间”
 

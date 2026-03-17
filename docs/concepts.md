@@ -74,6 +74,11 @@ graph TD
 
 thread 决定“谁在执行”，context 决定“这个执行体当前能合法触碰什么”。
 
+当前还要补一条边界：
+
+- `kernelKillSignal` 是 context 级 cut-off
+- 它不再天然等价于 thread kill
+
 ## Ownership
 
 ### 它是什么
@@ -154,6 +159,7 @@ ABI 现在负责：
 - 持有 `RuntimeContext`
 - 执行 `Step` 控制流
 - 响应 `start / kill / Return`
+- 持有 thread 自己的 runtime kill / reset 语义
 
 ### 它不是什么
 
@@ -243,7 +249,26 @@ function 当前 v1 则是借助隐藏 activation thread 来获得调用语义。
 ### 它的边界
 
 `cursor` 和 `stateReg` 负责 thread 本体生命周期；  
-lease 负责资源/调用期语义，不取代这套 runtime 本体。
+lease 负责资源/调用期语义，不取代这套 runtime 本体。  
+当前每个 thread 会把自己的 runtime 本体再注册成一份 `ThreadRuntimeLease`，供 OSReaper 在系统侧决定是否接管。
+
+## Thread Runtime Lease
+
+### 它是什么
+
+thread runtime lease 是对 `RuntimeContext` 的一层 lease-backed reclaim 包装。
+
+### 它不是什么
+
+- 它不是 thread 生命周期本体
+- 它不是普通资源 lease
+
+### 它的边界
+
+它的职责是：
+
+- 把 runtime context 暴露给 OSReaper
+- 让系统能在 OSReaper/Kernel 侧选择是否接管某个 thread runtime
 
 ## State Space
 
@@ -406,6 +431,7 @@ lease 是附着其上的资源/调用期层。
 
 - 扫描 active leases
 - 在 kill / abort 后强制 reclaim
+- 在系统侧决定是否接管 thread runtime
 - 配合 function call binding 做 activation 连坐回收
 
 ### 它不是什么
@@ -454,3 +480,5 @@ graph TD
   - 一个是 thread 本体，一个是函数调用期执行体
 - `lease` vs lifecycle
   - lease 负责资源/调用期，不再是 thread 生命周期本体
+- `context kill` vs `thread kill`
+  - 一个切断 context，一个终止 thread runtime

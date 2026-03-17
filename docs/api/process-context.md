@@ -138,6 +138,17 @@
 - lifecycle ACL 不是普通 resource ACL
 - 它服务于 thread 的系统级控制，不等价于 `grant(signal, target)`
 
+### `ctx.kernelKillSignal`
+
+作用：
+
+- context 级系统切断信号
+
+关键边界：
+
+- 它不是 thread 专用 kill 信号
+- 对 thread 而言，OSReaper 默认会通过已注册的 runtime lease 顺带接管其 runtime
+
 ## Usage examples
 
 ### 示例 1：最小 `HwProcess` + `own` + `grant`
@@ -210,9 +221,13 @@ class Parent(name: String)(implicit kernel: Kernel) extends HwProcess(name) {
 能写某个 signal，不等于能 `kill` 或 `start` 某个 thread。  
 lifecycle 控制权走的是 thread 自己的系统级权限路径。
 
+### `kernelKillSignal` 不等于 thread kill
+
+它是 context 级 cut-off。  
+thread kill 现在走 thread 自己的 runtime kill 路径。
+
 ## 与其他模块的关系
 
 - thread 如何使用这些资源，看 [thread.md](/Users/nullstarfish/HwOS_personal/docs/api/thread.md)
 - `grant` 挂的 ABI 在系统侧如何导出，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)
 - 设计哲学和概念边界，看 [concepts.md](/Users/nullstarfish/HwOS_personal/docs/concepts.md)
-

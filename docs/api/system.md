@@ -25,6 +25,7 @@
 - `SysCall.Return()`
 - `SysCall.start(thread)`
 - `SysCall.kill(thread)`
+- `SysCall.kill(contextEntity)`
 - `SysCall.fork(name) { ... }`
 - `kernel.addressSpace.renderAddressTables()`
 - `kernel.addressSpace.exportAddressTables(...)`
@@ -83,8 +84,21 @@
 
 关键边界：
 
+- 当前语义是系统侧的 `thread_kill = context kill + runtime lease reclaim/reset`
 - kill 后 thread runtime 会回到 `Idle`
 - 如果 caller 正在等待某个 `HwFunction`，当前主线会触发 activation 连坐回收
+
+### `SysCall.kill(contextEntity)`
+
+作用：
+
+- 触发 context 级系统切断
+
+关键边界：
+
+- 它的作用对象是 `HwContextEntity`
+- 它不再天然等价于 thread kill
+- 对 thread context 而言，OSReaper 默认会接管其 runtime lease
 
 ### `SysCall.fork(name) { ... }`
 
@@ -116,7 +130,20 @@ controller.entry {
 }
 ```
 
-### 示例 2：`Return` 到 continuation
+### 示例 2：context kill
+
+```scala
+controller.entry {
+  controller.Step("KillProcessContext") {
+    SysCall.Call(SysCall.kill(proc: HwContextEntity))
+  }
+}
+```
+
+这会切断 `proc` 的 context。  
+它不会天然等于任意 thread 的专用 kill；但如果目标本身就是 thread context，OSReaper 默认会顺带 reset 其 runtime。
+
+### 示例 3：`Return` 到 continuation
 
 ```scala
 caller.entry {
@@ -131,7 +158,7 @@ caller.entry {
 
 如果当前有 continuation，`Return()` 会回到它，而不是直接结束整个 thread。
 
-### 示例 3：导出地址表
+### 示例 4：导出地址表
 
 ```scala
 val text = kernel.addressSpace.renderAddressTables()
@@ -154,6 +181,11 @@ kernel.addressSpace.exportAddressTables("generated")
 当前用户态正式结束接口是 `SysCall.Return()`。  
 `exit()` 是内核内部生命周期操作。
 
+### `kill(contextEntity)` 不等于 `kill(thread)`
+
+一个是 context 级 cut-off，一个是 thread 专用系统终止。  
+当前系统明确区分这两类 kill。
+
 ### `KernelAddressSpace` 不只是导出器
 
 它首先是地址和元数据分配器；导出只是它的一个外显能力。
@@ -170,4 +202,3 @@ kernel.addressSpace.exportAddressTables("generated")
 - `HwInline` / `HwFunction` 调用形态，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
 - `RuntimeContext` 驱动下的 thread 观察接口，看 [thread.md](/Users/nullstarfish/HwOS_personal/docs/api/thread.md)
 - 哲学与概念边界，看 [concepts.md](/Users/nullstarfish/HwOS_personal/docs/concepts.md)
-

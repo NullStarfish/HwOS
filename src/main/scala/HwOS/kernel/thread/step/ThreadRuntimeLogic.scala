@@ -120,7 +120,6 @@ private[kernel] object ThreadRuntimeLogic {
       irState: ThreadIR.IRState,
       layoutState: ThreadLayout.LayoutState,
       runtime: RuntimeContext,
-      killSignal: Option[Bool] = None,
   ): Unit = {
     val steps = irState.program.steps
     val standalone = ThreadLayout.standaloneIndices(irState, layoutState)
@@ -142,16 +141,6 @@ private[kernel] object ThreadRuntimeLogic {
         }
       }
     }
-
-    killSignal match {
-      case Some(signal) =>
-        when(signal) {
-          resetToIdle(runtime)
-        }.otherwise {
-          lowerMainBody()
-        }
-      case None =>
-        lowerMainBody()
-    }
+    lowerMainBody()
   }
 }
