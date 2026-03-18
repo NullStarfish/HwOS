@@ -7,7 +7,7 @@ import HwOS.kernel.HwOSLanguage._
 import HwOS.kernel.examples.ExportDeclareDemoModule
 import HwOS.kernel.memory.ExportCapability
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{GrantAbi, Kernel}
+import HwOS.kernel.system.{Kernel}
 
 class ExportDeclareCombinationalModule extends Module {
   val io = IO(new Bundle {
@@ -18,13 +18,12 @@ class ExportDeclareCombinationalModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    own(io.observed)
+    (io.observed)
     private val exportedValue = RegInit(9.U(8.W))
     private val consumer = createLogic("Consumer")
 
     override def entry(): Unit = {
       export("sample.counter", exportedValue, ExportCapability.ReadWrite)
-      grant(io.observed, consumer, GrantAbi.LevelDrivenWire)
       consumer.run {
         val handle = consumer.declare[UInt]("sample.counter", ExportCapability.Read)
         io.observed  :=  handle.read

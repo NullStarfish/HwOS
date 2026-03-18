@@ -76,9 +76,6 @@ object SysCall {
         case ThreadCtx(caller) =>
           val activation = func.ensureActivation(caller.owner)
           val callLease = func.allocateCallLease(caller)
-          activation.grantLifecycleAccess(caller.ctx)
-          activation.grant(callLease.binding.callActive, caller)
-          activation.grant(callLease.binding.activeBindingId, caller)
           val result = func.ensureResultHandle(caller.owner)
           val callStepName = CallStack.freshFunctionCallStepName(System.identityHashCode(caller), func.name, returnTo)
 
@@ -140,7 +137,6 @@ object SysCall {
    * 远程杀手：强制中止目标线程 (他杀)
    */
   def kill(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall kill"){ agent =>
-    target.requireLifecycleAccess(agent.ctx, "kill")
     if (OSReaper.usesManagedThreadKill(target)) {
       OSReaper.requestThreadKill(target)
     } else {
@@ -164,7 +160,6 @@ object SysCall {
    * 远程启动：唤醒目标线程
    */
   def start(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall start"){ agent =>
-    target.requireLifecycleAccess(agent.ctx, "start")
     target.runtimeStart()
   }
 
@@ -190,8 +185,6 @@ object SysCall {
     
     // 2. 核心魔法：所有权注册 (Ownership Registration)
     // 父线程显式获得子线程的生命周期控制权，取代隐式的“父子血缘”逻辑
-    child.grantLifecycle(child, parent)
-
     // 3. 注入逻辑
     child.entry {
       childBody(child)

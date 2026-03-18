@@ -7,13 +7,11 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class HwFunctionProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
-  val out = this.own(RegInit(0.U(8.W)))
-  val callCount = this.own(RegInit(0.U(8.W)))
+  val out = (RegInit(0.U(8.W)))
+  val callCount = (RegInit(0.U(8.W)))
 
   private val addOne = HwFunction.thread("AddOne") { t =>
-    this.grant(out, t)
-    this.grant(callCount, t)
-    val localTmp = t.own(RegInit(0.U(8.W)))
+    val localTmp = (RegInit(0.U(8.W)))
 
     t.Step("LoadTmp") {
       localTmp  :=  out + 1.U
@@ -29,9 +27,6 @@ class HwFunctionProcess(localName: String)(implicit kernel: Kernel) extends HwPr
   def functionActivationThread: Option[HardwareThread] = addOne.debugActivationThread
 
   override def entry(): Unit = {
-    this.grant(out, worker)
-    this.grant(callCount, worker)
-
     worker.entry {
       worker.Step("Init") {
         out  :=  0.U
@@ -72,23 +67,10 @@ class HwFunctionModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.out)
-    this.own(io.callCount)
-    this.own(io.done)
-    this.own(io.functionCodeRegistered)
-    this.own(io.activationOwnedStateCount)
-
     val proc = spawn(new HwFunctionProcess("FnProc"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.out, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.callCount, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.functionCodeRegistered, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.activationOwnedStateCount, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(proc.worker, daemon)
-
       daemon.run {
         val activation = proc.functionActivationThread.getOrElse(
           throw new Exception("[HwOS Test] Function activation thread was not initialized."),
@@ -109,7 +91,7 @@ class HwFunctionModule extends Module {
 }
 
 class HwFunctionSpec extends AnyFlatSpec {
-  "HwFunction v1" should "run as a real blocking activation with its own code segment and local slot state" in {
+  "HwFunction v1" should "run as a real blocking activation with its own code segment and tracked runtime state" in {
     simulate(new HwFunctionModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()
@@ -125,7 +107,10 @@ class HwFunctionSpec extends AnyFlatSpec {
       c.io.out.expect(32.U)
       c.io.callCount.expect(2.U)
       c.io.functionCodeRegistered.expect(true.B)
-      assert(c.io.activationOwnedStateCount.peek().litValue >= 4, "function activation should own local slot state")
+      assert(
+        c.io.activationOwnedStateCount.peek().litValue >= 2,
+        "function activation should at least contribute runtime cursor/state entries",
+      )
     }
   }
 }

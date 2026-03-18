@@ -2,49 +2,11 @@ package HwOS.kernel.context
 
 import chisel3._
 import scala.reflect.ClassTag
-import scala.collection.mutable
-import HwOS.kernel.system.{GrantAbi, Kernel}
+import HwOS.kernel.system.Kernel
 import HwOS.kernel.memory.{ExportCapability, ExportedSymbol, VirtualHandle}
-import HwOS.kernel.thread.HardwareThread
 
 class HwContext(val self: HwContextEntity) {
-  private[kernel] val owns = scala.collection.mutable.Set[Data]()
-  private[kernel] val granteds = scala.collection.mutable.Set[Data]()
-
   def name: String = self.name
-
-  def own[T <: Data](signal: T): T = {
-    owns += signal
-    scala.util.Try(self.kernel.addressSpace.registerOwnedSignal(self.name, signal))
-    ResourceManager.registerOwner(signal, this)
-    signal
-  }
-
-  def exemptVectorAcl[T <: Data](vec: Vec[T]): Vec[T] = {
-    ResourceManager.registerAclExemptVector(vec)
-    vec
-  }
-
-  def grant(signal: Data, target: HwContext): Unit = {
-    grant(signal, target, self.kernel.addressSpace.inferGrantAbi(signal))
-  }
-
-  def grant(signal: Data, target: HwContext, abi: GrantAbi): Unit = {
-    ResourceManager.getOwner(signal) match {
-      case None =>
-        ResourceManager.registerOwner(signal, this)
-      case Some(owner) if owner == this =>
-        // Re-assert the owner's ACL membership in case the signal was created
-        // during an early-init path that registered ownership before grant-time.
-        ResourceManager.registerOwner(signal, this)
-      case _ =>
-    }
-    ResourceManager.delegatePermission(signal, this, target)
-    self.kernel.addressSpace.registerGrant(self.name, target.name, signal, abi)
-    target.granteds += signal
-  }
-
-  private[kernel] def getAllOwnedSignals(): Iterable[Data] = owns
 }
 
 
@@ -64,125 +26,11 @@ trait HwContextEntity {
   // entity 只是承载这个 context 的对象壳。
   val ctx = new HwContext(this)
 
-  def own[T <: Data](signal: T): T = {
-    ctx.own(signal)
-  }
-
-  def exemptVectorAcl[T <: Data](vec: Vec[T]): Vec[T] = {
-    ctx.exemptVectorAcl(vec)
-  }
-
-  def grant(signal: Data, target: HwContextEntity): Unit = {
-    ctx.grant(signal, target.ctx)
-  }
-
-  def grant(signal: Data, target: HwContextEntity, abi: GrantAbi): Unit = {
-    ctx.grant(signal, target.ctx, abi)
-  }
-
   def export[T <: Data](symbolName: String, signal: T, caps: ExportCapability): ExportedSymbol[T] = {
     kernel.addressSpace.registerExport(name, symbolName, signal, caps)
   }
 
   def declare[T <: Data: ClassTag](symbolName: String, caps: ExportCapability): VirtualHandle[T] = {
     kernel.addressSpace.resolveExport[T](symbolName, name, caps)
-  }
-
-
-  def grantLifecycle(thread: HardwareThread, target: HwContextEntity): Unit = {
-    // lifecycle 控制权不是 HwContext 的普通 ACL，而是 thread 自己的系统级权限表。
-    thread.grantLifecycleAccess(target.ctx)
-  }
-}
-
-
-// ---------------------------------------------------------
-// 统一安全网关
-// ---------------------------------------------------------
-private[kernel] object ResourceManager {
-  private final case class SignalRef(signal: Data) {
-    override def equals(other: Any): Boolean = other match {
-      case SignalRef(otherSignal) => signal eq otherSignal
-      case _ => false
-    }
-
-    override def hashCode(): Int = System.identityHashCode(signal)
-  }
-
-  private val signalOwners = mutable.HashMap[SignalRef, HwContext]()
-  private val acl = mutable.HashMap[SignalRef, mutable.Set[HwContext]]()
-  private val driverRegistry = mutable.HashMap[SignalRef, mutable.Set[HwContext]]()
-  private val aclExemptVectors = mutable.HashSet[SignalRef]()
-  private val dynamicVecParents = mutable.HashMap[SignalRef, SignalRef]()
-
-  private def ref(signal: Data): SignalRef = SignalRef(signal)
-
-  def reset(): Unit = {
-    signalOwners.clear()
-    acl.clear()
-    driverRegistry.clear()
-    aclExemptVectors.clear()
-    dynamicVecParents.clear()
-  }
-  
-  def registerOwner(signal: Data, owner: HwContext): Unit = {
-    val key = ref(signal)
-    signalOwners.get(key) match {
-      case Some(existingOwner) if existingOwner != owner =>
-        throw new Exception(s"[HwOS Ownership Error] Signal ${signal} is already owned by '${existingOwner.name}'. " +
-          s"Cannot be owned by '${owner.name}' simultaneously.")
-      case _ =>
-        signalOwners(key) = owner
-        acl.getOrElseUpdate(key, mutable.Set[HwContext]()) += owner
-    }
-  }
-  
-  def getOwner(signal: Data): Option[HwContext] = signalOwners.get(ref(signal))
-
-  def registerAclExemptVector(vec: Data): Unit = {
-    aclExemptVectors += ref(vec)
-  }
-
-  def markDynamicVecAccess(child: Data, parentVec: Data): Unit = {
-    dynamicVecParents(ref(child)) = ref(parentVec)
-  }
-
-  def isAclExemptDynamicVecAccess(signal: Data): Boolean = {
-    dynamicVecParents.get(ref(signal)).exists(aclExemptVectors.contains)
-  }
-
-  def delegatePermission(signal: Data, delegator: HwContext, target: HwContext): Unit = {
-    val allowedActors = acl.getOrElseUpdate(ref(signal), mutable.Set[HwContext]())
-    if (!allowedActors.contains(delegator)) {
-      throw new Exception(s"[HwOS Security Error] Agent '${delegator.name}' attempted to grant permission of '${signal}' to '${target.name}', but it lacks permission itself!")
-    }
-    allowedActors += target
-  }
-
-  def getAllowedActors(signal: Data): Iterable[HwContext] = {
-    acl.getOrElse(ref(signal), mutable.Set[HwContext]())
-  }
-
-  def recordDrive(signal: Data, actor: HwContext): Unit = {
-    val drivers = driverRegistry.getOrElseUpdate(ref(signal), mutable.Set[HwContext]())
-    if (drivers.nonEmpty && !drivers.contains(actor)) {
-      println(s"\u001b[33m[HwOS Warning] lastconnect warning detected on signal '${signal}'!\u001b[0m")
-      println(s"  Current Actor: ${actor.name}")
-      println(s"  Previous Actor(s): ${drivers.map(_.name).mkString(", ")}")
-      println(s"  Note: The value from '${actor.name}' will override others due to lastConnect priority.")
-    }
-    
-    drivers += actor
-  }
-
-  def checkSignalWrite(signal: Data, currentActor: HwContext): Unit = {
-    if (isAclExemptDynamicVecAccess(signal)) {
-      return
-    }
-    val allowedActors = acl.getOrElse(ref(signal), mutable.Set[HwContext]())
-    if (!allowedActors.contains(currentActor)) {
-      val ownerName = signalOwners.get(ref(signal)).map(_.name).getOrElse("Unknown")
-      throw new Exception(s"[HwOS SegFault] Access Denied! Agent '${currentActor.name}' cannot write to resource owned by '${ownerName}'. Requires explicit grant().")
-    }
   }
 }

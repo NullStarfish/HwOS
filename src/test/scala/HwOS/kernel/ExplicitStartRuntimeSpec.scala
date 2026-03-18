@@ -6,11 +6,10 @@ import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel.HwOSLanguage._
 
 class ExplicitStartWorkerProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-  val counter = this.own(RegInit(0.U(8.W)))
+  val counter = (RegInit(0.U(8.W)))
   val worker = createThread("InlineWorker")
 
   override def entry(): Unit = {
-    this.grant(counter, worker)
     worker.entry {
       worker.Step("Count0") {
         counter  :=  counter + 1.U
@@ -39,15 +38,12 @@ class ExplicitStartRuntimeModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.counter)
-    this.own(io.done)
+    (io.counter)
+    (io.done)
     val proc = spawn(new ExplicitStartWorkerProcess("InlineProc"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.counter, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(proc.worker, daemon)
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))

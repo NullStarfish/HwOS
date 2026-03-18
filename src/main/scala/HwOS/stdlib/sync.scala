@@ -6,7 +6,7 @@ import HwOS.kernel.context.{AtomicCtx, ContextScope, LogicCtx}
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{GrantAbi, Kernel, OSReaper, SysCall}
+import HwOS.kernel.system.{Kernel, OSReaper, SysCall}
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 object sync {
@@ -80,14 +80,14 @@ object sync {
   class SemaphoreProcess(val maxClients: Int, val initialCount: Int,  localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     private val reaper = createReaperManagedLogic("Reaper")
     
-    private val count = this.own(RegInit(initialCount.U(32.W)))
+    private val count = (RegInit(initialCount.U(32.W)))
     
     private val acquires = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
     private val releases = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
 
     for (i <- 0 until maxClients) {
-      this.own(acquires(i))
-      this.own(releases(i))
+      (acquires(i))
+      (releases(i))
     }
 
     private val anyAcquire = acquires.reduce(_ || _)
@@ -99,7 +99,6 @@ object sync {
     // 结算下一拍的 Count
     override def entry(): Unit = {
       val main = createLogic("Main")
-      this.grant(count, main)
       main.run{
         when (anyAcquire && (count > 0.U)) {
           count  :=  count + totalRelease - 1.U
@@ -112,17 +111,15 @@ object sync {
     // --- 高阶 HwFunction 接口 ---
     class SemaphoreLease(val id: Int) {
       val isHeld = RegInit(false.B)
-      SemaphoreProcess.this.own(isHeld)
+      (isHeld)
       def isActive: Bool = isHeld
 
       def Acquire(): HwInline[Unit] = HwInline.atomic(s"Acquire_$id") { t =>
-        SemaphoreProcess.this.grant(acquires(id), t, GrantAbi.PulseWire)
         acquires(id)  :=  true.B
         val canAcquire = isHeld || ((count > 0.U) && (winnerAcqIdx === id.U))
         t.waitCondition(canAcquire)
 
         when(!isHeld && canAcquire) {
-          SemaphoreProcess.this.grant(isHeld, t)
           isHeld  :=  true.B
         }
         reaper.registerReclaimEntry(t, isActive) { agent =>
@@ -131,8 +128,6 @@ object sync {
       }
 
       def Release(): HwInline[Unit] = HwInline.stateless(s"Release_$id") { agent =>
-        SemaphoreProcess.this.grant(releases(id), agent, GrantAbi.PulseWire)
-        SemaphoreProcess.this.grant(isHeld, agent)
         when(isHeld) {
           releases(id)  :=  true.B
           isHeld  :=  false.B
@@ -140,8 +135,6 @@ object sync {
       }
 
       def forceReclaim(agent: HardwareAgent): Unit = {
-        SemaphoreProcess.this.grant(releases(id), agent, GrantAbi.PulseWire)
-        SemaphoreProcess.this.grant(isHeld, agent)
         OSReaper.forceAssign(releases(id), true.B)
         OSReaper.forceAssign(isHeld, false.B)
       }
@@ -178,14 +171,14 @@ object sync {
   // ==========================================
   class WaitGroupProcess(val maxClients: Int, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     
-    private val count = this.own(RegInit(0.U(32.W)))
+    private val count = (RegInit(0.U(32.W)))
     
     private val adds  = WireInit(VecInit(Seq.fill(maxClients)(0.U(32.W))))
     private val dones = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
 
     for (i <- 0 until maxClients) {
-      this.own(adds(i))
-      this.own(dones(i))
+      (adds(i))
+      (dones(i))
     }
 
     // 组合逻辑加法树与 PopCount
@@ -197,7 +190,6 @@ object sync {
 
     override def entry(): Unit = {
       val main = createLogic("Main") 
-      this.grant(count, main)
       main.run {
         count  :=  nextCount
       }
@@ -206,12 +198,10 @@ object sync {
 
     // --- 高阶 HwFunction 接口 ---
     def Add(id: Int, delta: UInt): HwInline[Unit] = HwInline.stateless(s"WG_Add_$id") { agent =>
-      this.grant(adds(id), agent, GrantAbi.PulseWire)
       adds(id)  :=  delta
     }
 
     def Done(id: Int): HwInline[Unit] = HwInline.stateless(s"WG_Done_$id") { agent =>
-      this.grant(dones(id), agent, GrantAbi.PulseWire)
       dones(id)  :=  true.B
     }
 
@@ -253,23 +243,23 @@ object sync {
     private case class WindowReq(reserve: Bool, commit: Bool, forceCommit: Bool, reclaim: Bool)
     private case class WindowEntry(active: Bool, commitPending: Bool, token: UInt)
 
-    private val nextIssue = this.own(RegInit(0.U(tokenWidth.W)))
-    private val nextCommit = this.own(RegInit(0.U(tokenWidth.W)))
-    private val inFlight = this.own(RegInit(0.U(tokenWidth.W)))
+    private val nextIssue = (RegInit(0.U(tokenWidth.W)))
+    private val nextCommit = (RegInit(0.U(tokenWidth.W)))
+    private val inFlight = (RegInit(0.U(tokenWidth.W)))
     private val reqs = Array.tabulate(maxClients) { _ =>
       WindowReq(
-        this.own(WireInit(false.B)),
-        this.own(WireInit(false.B)),
-        this.own(WireInit(false.B)),
-        this.own(WireInit(false.B)),
+        (WireInit(false.B)),
+        (WireInit(false.B)),
+        (WireInit(false.B)),
+        (WireInit(false.B)),
       )
     }
 
     private val entries = Array.tabulate(maxClients) { _ =>
       WindowEntry(
-        this.own(RegInit(false.B)),
-        this.own(RegInit(false.B)),
-        this.own(RegInit(0.U(tokenWidth.W))),
+        (RegInit(false.B)),
+        (RegInit(false.B)),
+        (RegInit(0.U(tokenWidth.W))),
       )
     }
     private def reserveRequests: UInt =
@@ -279,14 +269,8 @@ object sync {
 
     override def entry(): Unit = {
       val daemon = createLogic("OrderDaemon")
-      this.grant(nextIssue, daemon)
-      this.grant(nextCommit, daemon)
-      this.grant(inFlight, daemon)
       entries.foreach { entry =>
-        this.grant(entry.active, daemon)
-        this.grant(entry.commitPending, daemon)
-        this.grant(entry.token, daemon)
-      }
+        }
 
       daemon.run {
         val reserveGrantOH = Mux(inFlight < maxInFlight.U, reserveRequests, 0.U(maxClients.W))
@@ -334,7 +318,6 @@ object sync {
       def isActive: Bool = entries(id).active
 
       def Reserve(): HwInline[Unit] = HwInline.atomic(s"Reserve_$id") { t =>
-        OrderedWindowProcess.this.grant(reqs(id).reserve, t, GrantAbi.PulseWire)
         reqs(id).reserve  :=  true.B
         val granted = entries(id).active
         t.waitCondition(granted)
@@ -344,7 +327,6 @@ object sync {
       }
 
       def Commit(): HwInline[Unit] = HwInline.stateless(s"Commit_$id") { agent =>
-        OrderedWindowProcess.this.grant(reqs(id).commit, agent, GrantAbi.PulseWire)
         reqs(id).commit  :=  true.B
       }
 
@@ -354,12 +336,10 @@ object sync {
       }
 
       def ForceCommit(): HwInline[Unit] = HwInline.stateless(s"ForceCommit_$id") { agent =>
-        OrderedWindowProcess.this.grant(reqs(id).forceCommit, agent, GrantAbi.PulseWire)
         reqs(id).forceCommit  :=  true.B
       }
 
       def forceReclaim(agent: HardwareAgent): Unit = {
-        OrderedWindowProcess.this.grant(reqs(id).reclaim, agent, GrantAbi.PulseWire)
         OSReaper.forceAssign(reqs(id).reclaim, true.B)
       }
     }
@@ -375,7 +355,7 @@ object sync {
 
 
   class BaseScoreboardProcess(val resourceCount: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-    private val busyTable = this.exemptVectorAcl(this.own(RegInit(VecInit(Seq.fill(resourceCount)(false.B)))))
+    private val busyTable = ((RegInit(VecInit(Seq.fill(resourceCount)(false.B)))))
     
     override def entry(): Unit = {}
 
@@ -465,8 +445,8 @@ object sync {
       val isReserved = RegInit(false.B)
       val reservedAddr = RegInit(0.U(log2Ceil(resourceCount).W))
 
-      ScoreboardProcess.this.own(isReserved)
-      ScoreboardProcess.this.own(reservedAddr)
+      (isReserved)
+      (reservedAddr)
       def isActive: Bool = isReserved
 
       def Reserve(addr: UInt): HwInline[Unit] = HwInline.atomic(s"Reserve_$portIdx") { t =>
@@ -477,8 +457,6 @@ object sync {
         t.waitCondition(canReserve)
 
         when(!alreadyReserved && !isBusy) {
-          ScoreboardProcess.this.grant(isReserved, t)
-          ScoreboardProcess.this.grant(reservedAddr, t)
           SysCall.Call(busyPort.Acquire())
           SysCall.Call(busyPort.SetBusy(addr))
           isReserved  :=  true.B
@@ -491,7 +469,6 @@ object sync {
 
       def Release(): HwInline[Unit] = HwInline.stateless(s"Release_$portIdx") { agent =>
         val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
-        ScoreboardProcess.this.grant(isReserved, agent)
         when(isReserved) {
           SysCall.Call(busyPort.ClearBusy(reservedAddr))
           SysCall.Call(busyPort.Release())
@@ -501,7 +478,6 @@ object sync {
 
       def forceReclaim(agent: HardwareAgent): Unit = {
         val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
-        ScoreboardProcess.this.grant(isReserved, agent)
         when(isReserved) {
           SysCall.Call(busyPort.ClearBusy(reservedAddr))
           SysCall.Call(busyPort.Release())

@@ -1,25 +1,12 @@
 State Table
-owner                         | object                                | space | kind  | start | span | end_exclusive | signal                                     
-------------------------------+---------------------------------------+-------+-------+-------+------+---------------+--------------------------------------------
-Init                          | Init_state_0                          | state | state | 0     | 1    | 1             | MutexAbortModule.io.success: IO[Bool]      
-Init                          | Init_state_1                          | state | state | 1     | 1    | 2             | MutexAbortModule.io.done: IO[Bool]         
-Init/TestProc                 | Init/TestProc_state_0                 | state | state | 2     | 1    | 3             | MutexAbortModule.?: Reg[Bool]              
-Init/TestProc                 | Init/TestProc_state_1                 | state | state | 3     | 1    | 4             | MutexAbortModule.?: Reg[Bool]              
-Init/TestProc                 | Init/TestProc_state_2                 | state | state | 4     | 1    | 5             | MutexAbortModule.?: Reg[Bool]              
-Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex/Gate_state_0      | state | state | 5     | 32   | 37            | MutexAbortModule.count: Reg[UInt<32>]      
-Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex/Gate_state_1      | state | state | 37    | 1    | 38            | MutexAbortModule.acquires[0]: Wire[Bool]   
-Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex/Gate_state_2      | state | state | 38    | 1    | 39            | MutexAbortModule.releases[0]: Wire[Bool]   
-Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex/Gate_state_3      | state | state | 39    | 1    | 40            | MutexAbortModule.acquires[1]: Wire[Bool]   
-Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex/Gate_state_4      | state | state | 40    | 1    | 41            | MutexAbortModule.releases[1]: Wire[Bool]   
-Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex/Gate_state_5      | state | state | 41    | 1    | 42            | MutexAbortModule.isHeld: Reg[Bool]         
-Init/TestProc/Mutex/Gate      | Init/TestProc/Mutex/Gate_state_6      | state | state | 42    | 1    | 43            | MutexAbortModule.isHeld: Reg[Bool]         
-Init/TestProc                 | Init/TestProc_state_3                 | state | state | 43    | 1    | 44            | MutexAbortModule.observerSuccess: Reg[Bool]
-Init/TestProc/Victim_thread   | Init/TestProc/Victim_thread_state_0   | state | state | 44    | 2    | 46            | MutexAbortModule.cursorReg: Reg[UInt<2>]   
-Init/TestProc/Victim_thread   | Init/TestProc/Victim_thread_state_1   | state | state | 46    | 2    | 48            | MutexAbortModule.stateReg: Reg[UInt<2>]    
-Init/TestProc/Observer_thread | Init/TestProc/Observer_thread_state_0 | state | state | 48    | 3    | 51            | MutexAbortModule.cursorReg: Reg[UInt<3>]   
-Init/TestProc/Observer_thread | Init/TestProc/Observer_thread_state_1 | state | state | 51    | 2    | 53            | MutexAbortModule.stateReg: Reg[UInt<2>]    
-Init/TestProc/Main_thread     | Init/TestProc/Main_thread_state_0     | state | state | 53    | 4    | 57            | MutexAbortModule.cursorReg: Reg[UInt<4>]   
-Init/TestProc/Main_thread     | Init/TestProc/Main_thread_state_1     | state | state | 57    | 2    | 59            | MutexAbortModule.stateReg: Reg[UInt<2>]    
+owner                         | object                                              | space | kind  | start | span | end_exclusive | signal                                  
+------------------------------+-----------------------------------------------------+-------+-------+-------+------+---------------+-----------------------------------------
+Init/TestProc/Victim_thread   | Init/TestProc/Victim_thread_runtime_cursor          | state | state | 0     | 2    | 2             | MutexAbortModule.cursorReg: Reg[UInt<2>]
+Init/TestProc/Victim_thread   | Init/TestProc/Victim_thread_runtime_runtime_state   | state | state | 2     | 2    | 4             | MutexAbortModule.stateReg: Reg[UInt<2>] 
+Init/TestProc/Observer_thread | Init/TestProc/Observer_thread_runtime_cursor        | state | state | 4     | 3    | 7             | MutexAbortModule.cursorReg: Reg[UInt<3>]
+Init/TestProc/Observer_thread | Init/TestProc/Observer_thread_runtime_runtime_state | state | state | 7     | 2    | 9             | MutexAbortModule.stateReg: Reg[UInt<2>] 
+Init/TestProc/Main_thread     | Init/TestProc/Main_thread_runtime_cursor            | state | state | 9     | 4    | 13            | MutexAbortModule.cursorReg: Reg[UInt<4>]
+Init/TestProc/Main_thread     | Init/TestProc/Main_thread_runtime_runtime_state     | state | state | 13    | 2    | 15            | MutexAbortModule.stateReg: Reg[UInt<2>] 
 
 Code Table
 owner                         | segment                               | space | code_start | span | code_entry | labels                                                                                                            | addresses                                                                                                                          
@@ -29,42 +16,11 @@ Init/TestProc/Observer_thread | Init/TestProc/Observer_thread_segment | code  | 
 Init/TestProc/Main_thread     | Init/TestProc/Main_thread_segment     | code  | 7          | 7    | 7          | [StartVictim, WaitAWhile1, WaitAWhile2, KillAndRescue, WaitObserver, Finish, SysCall_return_Return_to_ThreadExit] | {StartVictim=7, WaitAWhile1=8, WaitAWhile2=9, KillAndRescue=10, WaitObserver=11, Finish=12, SysCall_return_Return_to_ThreadExit=13}
 
 Binding Table
-binding                               | owner                         | cursor_object                         | cursor_space | cursor_start | runtime_state_object                  | runtime_state_space | runtime_state_start | code_segment                          | code_space | code_start | code_owner                    | code_entry
---------------------------------------+-------------------------------+---------------------------------------+--------------+--------------+---------------------------------------+---------------------+---------------------+---------------------------------------+------------+------------+-------------------------------+-----------
-Init/TestProc/Victim_thread_runtime   | Init/TestProc/Victim_thread   | Init/TestProc/Victim_thread_state_0   | state        | 44           | Init/TestProc/Victim_thread_state_1   | state               | 46                  | Init/TestProc/Victim_thread_segment   | code       | 0          | Init/TestProc/Victim_thread   | 0         
-Init/TestProc/Observer_thread_runtime | Init/TestProc/Observer_thread | Init/TestProc/Observer_thread_state_0 | state        | 48           | Init/TestProc/Observer_thread_state_1 | state               | 51                  | Init/TestProc/Observer_thread_segment | code       | 4          | Init/TestProc/Observer_thread | 4         
-Init/TestProc/Main_thread_runtime     | Init/TestProc/Main_thread     | Init/TestProc/Main_thread_state_0     | state        | 53           | Init/TestProc/Main_thread_state_1     | state               | 57                  | Init/TestProc/Main_thread_segment     | code       | 7          | Init/TestProc/Main_thread     | 7         
-
-Grant Table
-owner                    | target                              | signal_object                    | signal_start | signal_span | abi              
--------------------------+-------------------------------------+----------------------------------+--------------+-------------+------------------
-Init/TestProc/Mutex/Gate | Init/TestProc/Mutex/Gate/Main_logic | Init/TestProc/Mutex/Gate_state_0 | 5            | 32          | register-write   
-Init/TestProc/Mutex/Gate | Init/TestProc/Mutex                 | Init/TestProc/Mutex/Gate_state_6 | 42           | 1           | register-write   
-Init/TestProc/Mutex/Gate | Init/TestProc/Mutex                 | Init/TestProc/Mutex/Gate_state_0 | 5            | 32          | register-write   
-Init/TestProc/Mutex/Gate | Init/TestProc/Mutex                 | Init/TestProc/Mutex/Gate_state_5 | 41           | 1           | register-write   
-Init/TestProc            | Init/TestProc/Observer_thread       | Init/TestProc_state_3            | 43           | 1           | register-write   
-Init/TestProc/Mutex/Gate | Init/TestProc/Victim_thread         | Init/TestProc/Mutex/Gate_state_1 | 37           | 1           | pulse-wire       
-Init/TestProc/Mutex/Gate | Init/TestProc/Victim_thread         | Init/TestProc/Mutex/Gate_state_5 | 41           | 1           | register-write   
-Init/TestProc/Mutex/Gate | Init/TestProc/Victim_thread         | Init/TestProc/Mutex/Gate_state_2 | 38           | 1           | pulse-wire       
-Init/TestProc/Mutex/Gate | Init/TestProc/Victim_thread         | Init/TestProc/Mutex/Gate_state_5 | 41           | 1           | register-write   
-Init/TestProc/Mutex/Gate | Init/TestProc/Observer_thread       | Init/TestProc/Mutex/Gate_state_3 | 39           | 1           | pulse-wire       
-Init/TestProc/Mutex/Gate | Init/TestProc/Observer_thread       | Init/TestProc/Mutex/Gate_state_6 | 42           | 1           | register-write   
-Init/TestProc/Mutex/Gate | Init/TestProc/Observer_thread       | Init/TestProc/Mutex/Gate_state_4 | 40           | 1           | pulse-wire       
-Init/TestProc/Mutex/Gate | Init/TestProc/Observer_thread       | Init/TestProc/Mutex/Gate_state_6 | 42           | 1           | register-write   
-Init/TestProc            | Init                                | Init/TestProc_state_2            | 4            | 1           | register-write   
-Init/TestProc            | Init                                | Init/TestProc_state_0            | 2            | 1           | register-write   
-Init/TestProc            | Init                                | Init/TestProc_state_3            | 43           | 1           | register-write   
-Init/TestProc            | Init                                | Init/TestProc_state_1            | 3            | 1           | register-write   
-Init                     | Init/Daemon_logic                   | Init_state_0                     | 0            | 1           | level-driven-wire
-Init                     | Init/Daemon_logic                   | Init_state_1                     | 1            | 1           | level-driven-wire
-Init/TestProc/Mutex/Gate | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_2 | 38           | 1           | pulse-wire       
-Init/TestProc/Mutex/Gate | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_5 | 41           | 1           | register-write   
-Init/TestProc/Mutex/Gate | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_4 | 40           | 1           | pulse-wire       
-Init/TestProc/Mutex/Gate | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_6 | 42           | 1           | register-write   
-Init/TestProc/Mutex/Gate | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_2 | 38           | 1           | pulse-wire       
-Init/TestProc/Mutex/Gate | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_5 | 41           | 1           | register-write   
-Init/TestProc/Mutex/Gate | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_4 | 40           | 1           | pulse-wire       
-Init/TestProc/Mutex/Gate | Kernel/OSReaper/Daemon_logic        | Init/TestProc/Mutex/Gate_state_6 | 42           | 1           | register-write   
+binding                               | owner                         | cursor_object                                | cursor_space | cursor_start | runtime_state_object                                | runtime_state_space | runtime_state_start | code_segment                          | code_space | code_start | code_owner                    | code_entry
+--------------------------------------+-------------------------------+----------------------------------------------+--------------+--------------+-----------------------------------------------------+---------------------+---------------------+---------------------------------------+------------+------------+-------------------------------+-----------
+Init/TestProc/Victim_thread_runtime   | Init/TestProc/Victim_thread   | Init/TestProc/Victim_thread_runtime_cursor   | state        | 0            | Init/TestProc/Victim_thread_runtime_runtime_state   | state               | 2                   | Init/TestProc/Victim_thread_segment   | code       | 0          | Init/TestProc/Victim_thread   | 0         
+Init/TestProc/Observer_thread_runtime | Init/TestProc/Observer_thread | Init/TestProc/Observer_thread_runtime_cursor | state        | 4            | Init/TestProc/Observer_thread_runtime_runtime_state | state               | 7                   | Init/TestProc/Observer_thread_segment | code       | 4          | Init/TestProc/Observer_thread | 4         
+Init/TestProc/Main_thread_runtime     | Init/TestProc/Main_thread     | Init/TestProc/Main_thread_runtime_cursor     | state        | 9            | Init/TestProc/Main_thread_runtime_runtime_state     | state               | 13                  | Init/TestProc/Main_thread_segment     | code       | 7          | Init/TestProc/Main_thread     | 7         
 
 Exported Memory Table
 symbol | owner | backing_object | start | span | type | capability

@@ -15,7 +15,6 @@ final class KernelAddressSpace {
   private val stateTable = ArrayBuffer[StateTableEntry]()
   private val codeTable = ArrayBuffer[CodeTableEntry]()
   private val bindingTable = ArrayBuffer[BindingTableEntry]()
-  private val grantTable = ArrayBuffer[GrantTableEntry]()
   private val exportedMemoryTable = ArrayBuffer[ExportedMemoryEntry]()
   private val dependencyTable = ArrayBuffer[MemoryDependencyEntry]()
   private val codeLabelMap = new HashMap[String, Int]()
@@ -69,17 +68,18 @@ final class KernelAddressSpace {
     obj
   }
 
-  /** Register an owned hardware state object into the state table.
+  /** Register a tracked state object into the state table.
     *
-    * `own(...)` ultimately calls this method. It gives every stateful resource
-    * a stable address-space entry without forcing a bus/MMIO design yet.
+    * In symbolic v0, user-local Chisel state is not automatically tracked.
+    * This API is reserved for kernel/runtime metadata and exported resources
+    * that need a stable state-space identity.
     */
-  def registerOwnedSignal(ownerName: String, signal: Data): AddressObject = {
+  def registerStateSignal(ownerName: String, signal: Data, objectName: Option[String] = None): AddressObject = {
     dataAddressMap.getOrElseUpdate(dataKey(signal), {
       val obj = reserveAddressObject(
         kind = AddressKind.State,
         ownerName = ownerName,
-        objectName = freshStateObjectName(ownerName),
+        objectName = objectName.getOrElse(freshStateObjectName(ownerName)),
         span = estimateSignalSpan(signal),
       )
       stateTable += new StateTableEntry(obj, ownerName, Some(signal))
@@ -98,7 +98,6 @@ final class KernelAddressSpace {
   def stateTableEntries: Seq[StateTableEntry] = stateTable.toSeq
   def codeTableEntries: Seq[CodeTableEntry] = codeTable.toSeq
   def bindingTableEntries: Seq[BindingTableEntry] = bindingTable.toSeq
-  def grantTableEntries: Seq[GrantTableEntry] = grantTable.toSeq
   def exportedMemoryEntries: Seq[ExportedMemoryEntry] = exportedMemoryTable.toSeq
   def dependencyEntries: Seq[MemoryDependencyEntry] = dependencyTable.toSeq
 
@@ -145,17 +144,6 @@ final class KernelAddressSpace {
         entry.codeSegment.startAddress.toString,
         entry.codeSegment.ownerName,
         entry.codeSegment.entryAddress.toString,
-      )
-    }
-
-    val grantRows = grantTableEntries.map { entry =>
-      Seq(
-        entry.ownerName,
-        entry.targetName,
-        entry.signalObject.objectName,
-        entry.signalObject.startAddress.toString,
-        entry.signalObject.span.toString,
-        entry.abi.name,
       )
     }
 
@@ -212,11 +200,6 @@ final class KernelAddressSpace {
         rows = bindingRows,
       ),
       renderSection(
-        title = "Grant Table",
-        headers = Seq("owner", "target", "signal_object", "signal_start", "signal_span", "abi"),
-        rows = grantRows,
-      ),
-      renderSection(
         title = "Exported Memory Table",
         headers = Seq("symbol", "owner", "backing_object", "start", "span", "type", "capability"),
         rows = exportedRows,
@@ -247,25 +230,6 @@ final class KernelAddressSpace {
     exportAddressTablesText(dir.resolve("address_tables.txt").toString)
   }
 
-  /** Register an ABI-facing grant.
-    *
-    * Grants do not allocate new state objects; they attach an interaction ABI
-    * to a previously owned signal so later interface generation/runtime logic
-    * can tell whether the exported interaction is register-write, level-driven,
-    * or pulse-like.
-    */
-  def registerGrant(
-      ownerName: String,
-      targetName: String,
-      signal: Data,
-      abi: GrantAbi,
-  ): GrantTableEntry = {
-    val signalObject = getAddressObject(signal).getOrElse(registerOwnedSignal(ownerName, signal))
-    val entry = new GrantTableEntry(ownerName, targetName, signalObject, abi)
-    grantTable += entry
-    entry
-  }
-
   def registerExport[T <: Data](
       ownerName: String,
       symbolName: String,
@@ -275,7 +239,7 @@ final class KernelAddressSpace {
     if (exportedSymbolMap.contains(symbolName)) {
       throw new Exception(s"[Kernel] Duplicate exported symbol detected: $symbolName")
     }
-    val addressObject = getAddressObject(signal).getOrElse(registerOwnedSignal(ownerName, signal))
+    val addressObject = getAddressObject(signal).getOrElse(registerStateSignal(ownerName, signal))
     val entry = new ExportedMemoryEntry(
       symbolName = symbolName,
       ownerName = ownerName,
@@ -320,22 +284,6 @@ final class KernelAddressSpace {
     )
     dependencyTable += dependency
     new VirtualHandle[T](symbolName, requesterName, requestedCaps, entry.backingSignal.asInstanceOf[T])
-  }
-
-  /** Default ABI inference for legacy `grant(signal, target)` call sites.
-    *
-    * Registers may default to `RegisterWrite`. Non-register signals must use
-    * the explicit ABI overload so wire-like protocols are never guessed.
-    */
-  def inferGrantAbi(signal: Data): GrantAbi = {
-    if (DataMirror.isReg(signal)) {
-      GrantAbi.RegisterWrite
-    } else {
-      throw new Exception(
-        s"[Kernel] grant(signal, target) requires an explicit ABI for non-register signal '$signal'. " +
-          s"Use grant(signal, target, GrantAbi.LevelDrivenWire) or GrantAbi.PulseWire.",
-      )
-    }
   }
 
   /** Allocate a global code-table slice for a program after control-flow normalization.
@@ -384,10 +332,8 @@ final class KernelAddressSpace {
     * through the supplied code segment.
     */
   def allocateVirtualCursor(owner: HwContextEntity, cursorName: String, segment: GlobalCodeSegment): VirtualCursor = {
-    val cursorReg = owner.own(RegInit(segment.entryAddress.U(segment.width.W)))
-    val cursorAddressObject = getAddressObject(cursorReg).getOrElse(
-      throw new Exception(s"[Kernel] Virtual cursor '$cursorName' for '${owner.name}' was not registered as an owned signal."),
-    )
+    val cursorReg = RegInit(segment.entryAddress.U(segment.width.W))
+    val cursorAddressObject = registerStateSignal(owner.name, cursorReg, Some(cursorName))
     new VirtualCursor(cursorReg, segment, cursorAddressObject)
   }
 
@@ -407,11 +353,8 @@ final class KernelAddressSpace {
       initialState: Int = RuntimeLifecycle.Idle,
   ): RuntimeContext = {
     val cursor = allocateVirtualCursor(owner, s"${bindingName}_cursor", segment)
-    val stateReg = owner.own(RegInit(initialState.U(2.W)))
-
-    val runtimeStateObject = getAddressObject(stateReg).getOrElse(
-      throw new Exception(s"[Kernel] Runtime state register for '$bindingName' was not registered."),
-    )
+    val stateReg = RegInit(initialState.U(2.W))
+    val runtimeStateObject = registerStateSignal(owner.name, stateReg, Some(s"${bindingName}_runtime_state"))
 
     val binding = new BindingTableEntry(
       bindingName = bindingName,
@@ -463,10 +406,6 @@ final class KernelAddressSpace {
       s"""{"binding_name":${json(entry.bindingName)},"owner_name":${json(entry.ownerName)},"cursor_object_name":${json(entry.cursorObject.objectName)},"cursor_space":${json(entry.cursorObject.spaceTag)},"cursor_start_address":${entry.cursorObject.startAddress},"runtime_state_object_name":${json(entry.runtimeStateObject.objectName)},"runtime_state_space":${json(entry.runtimeStateObject.spaceTag)},"runtime_state_start_address":${entry.runtimeStateObject.startAddress},"code_segment_name":${json(entry.codeSegment.objectName)},"code_space":${json(entry.codeSegment.addressObject.spaceTag)},"code_start":${entry.codeSegment.startAddress},"code_segment_owner":${json(entry.codeSegment.ownerName)},"code_entry":${entry.codeSegment.entryAddress}}"""
     }.mkString("[", ",", "]")
 
-    val grantJson = grantTableEntries.map { entry =>
-      s"""{"owner_name":${json(entry.ownerName)},"target_name":${json(entry.targetName)},"signal_object_name":${json(entry.signalObject.objectName)},"signal_space":${json(entry.signalObject.spaceTag)},"signal_start_address":${entry.signalObject.startAddress},"signal_span":${entry.signalObject.span},"abi":${json(entry.abi.name)}}"""
-    }.mkString("[", ",", "]")
-
     val exportedJson = exportedMemoryEntries.map { entry =>
       s"""{"symbol_name":${json(entry.symbolName)},"owner_name":${json(entry.ownerName)},"backing_object_name":${json(entry.addressObject.objectName)},"backing_start_address":${entry.addressObject.startAddress},"backing_span":${entry.addressObject.span},"type_summary":${json(entry.typeSummary)},"capability":${json(entry.capability.render)}}"""
     }.mkString("[", ",", "]")
@@ -475,7 +414,7 @@ final class KernelAddressSpace {
       s"""{"requester_name":${json(entry.requesterName)},"symbol_name":${json(entry.symbolName)},"resolved_owner_name":${json(entry.resolvedOwnerName)},"requested_capability":${json(entry.requestedCapability.render)},"resolved_capability":${json(entry.resolvedCapability.render)}}"""
     }.mkString("[", ",", "]")
 
-    s"""{"state_table":$stateJson,"code_table":$codeJson,"binding_table":$bindingJson,"grant_table":$grantJson,"exported_memory_table":$exportedJson,"dependency_table":$dependencyJson}"""
+    s"""{"state_table":$stateJson,"code_table":$codeJson,"binding_table":$bindingJson,"exported_memory_table":$exportedJson,"dependency_table":$dependencyJson}"""
   }
 
   private def renderSection(title: String, headers: Seq[String], rows: Seq[Seq[String]]): String = {

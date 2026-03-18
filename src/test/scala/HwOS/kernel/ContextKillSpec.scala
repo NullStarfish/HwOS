@@ -9,12 +9,9 @@ class ContextKillProcess(localName: String)(implicit kernel: Kernel) extends HwP
   val worker = createThread("Worker")
   val controller = createThread("Controller")
   val contextGate = createReaperManagedLogic("ContextGate")
-  val hits = this.own(RegInit(0.U(8.W)))
+  val hits = (RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
-    this.grant(hits, worker)
-    this.grantLifecycle(worker, controller)
-
     worker.entry {
       worker.Step("Tick") {
         hits  :=  hits + 1.U
@@ -56,19 +53,14 @@ class ContextKillModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.hits)
-    this.own(io.workerActive)
-    this.own(io.workerDone)
+    (io.hits)
+    (io.workerActive)
+    (io.workerDone)
 
     val proc = spawn(new ContextKillProcess("CtxKill"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.hits, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.workerActive, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.workerDone, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(proc.controller, daemon)
-
       daemon.run {
         when(!proc.controller.active && !proc.controller.done) {
           SysCall.Call(SysCall.start(proc.controller))

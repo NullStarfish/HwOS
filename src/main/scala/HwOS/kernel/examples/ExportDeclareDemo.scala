@@ -4,7 +4,7 @@ import chisel3._
 import HwOS.kernel.HwOSLanguage._
 import HwOS.kernel.memory.ExportCapability
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{GrantAbi, Kernel, SysCall}
+import HwOS.kernel.system.{Kernel, SysCall}
 
 class ExportDeclareDemoProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
@@ -36,16 +36,12 @@ class ExportDeclareDemoModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    own(io.done)
-    own(io.counter)
+    (io.done)
+    (io.counter)
     val proc = spawn(new ExportDeclareDemoProcess("Demo"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      grant(io.counter, daemon, GrantAbi.LevelDrivenWire)
-      grantLifecycle(proc.worker, daemon)
-
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))

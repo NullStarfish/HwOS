@@ -7,13 +7,11 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class ThreadResetProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
-  val hits = this.own(RegInit(0.U(8.W)))
-  val resetIssued = this.own(RegInit(false.B))
-  val restarted = this.own(RegInit(false.B))
+  val hits = (RegInit(0.U(8.W)))
+  val resetIssued = (RegInit(false.B))
+  val restarted = (RegInit(false.B))
 
   override def entry(): Unit = {
-    this.grant(hits, worker)
-
     worker.entry {
       worker.Step("Tick") {
         hits := hits + 1.U
@@ -44,25 +42,16 @@ class ThreadResetModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.hits)
-    this.own(io.workerActive)
-    this.own(io.workerDone)
-    this.own(io.resetIssued)
-    this.own(io.restarted)
+    (io.hits)
+    (io.workerActive)
+    (io.workerDone)
+    (io.resetIssued)
+    (io.restarted)
 
     val proc = spawn(new ThreadResetProcess("ResetProc"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.hits, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.workerActive, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.workerDone, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.resetIssued, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.restarted, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(proc.resetIssued, daemon)
-      this.grant(proc.restarted, daemon)
-      this.grantLifecycle(proc.worker, daemon)
-
       daemon.run {
         when(!proc.worker.active && !proc.worker.done && !proc.resetIssued && !proc.restarted) {
           SysCall.Call(SysCall.start(proc.worker))

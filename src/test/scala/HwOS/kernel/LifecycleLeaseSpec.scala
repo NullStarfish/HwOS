@@ -8,12 +8,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 class LifecycleLeaseProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
   val controller = createThread("Controller")
-  val hits = this.own(RegInit(0.U(8.W)))
+  val hits = (RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
-    this.grant(hits, worker)
-    worker.grantLifecycle(worker, controller)
-
     worker.entry {
       worker.Step("Hit") {
         hits  :=  hits + 1.U
@@ -65,19 +62,14 @@ class LifecycleLeaseModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.hits)
-    this.own(io.done)
-    this.own(io.workerActive)
+    (io.hits)
+    (io.done)
+    (io.workerActive)
 
     val proc = spawn(new LifecycleLeaseProcess("Lifecycle"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.hits, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.workerActive, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(proc.controller, daemon)
-
       daemon.run {
         when(io.start) {
           SysCall.Call(SysCall.start(proc.controller))

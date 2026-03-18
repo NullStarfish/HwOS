@@ -7,11 +7,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class UnifiedCodeTableProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
-  val out = this.own(RegInit(0.U(8.W)))
+  val out = (RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
-    this.grant(out, worker)
-
     worker.entry {
       worker.Step("Init") {
         out  :=  1.U
@@ -45,17 +43,13 @@ class UnifiedCodeTableModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.out)
-    this.own(io.done)
+    (io.out)
+    (io.done)
 
     val proc = spawn(new UnifiedCodeTableProcess("VirtualProc"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.out, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(proc.worker, daemon)
-
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))

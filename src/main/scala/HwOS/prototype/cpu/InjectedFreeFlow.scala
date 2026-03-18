@@ -64,7 +64,7 @@ object InjectedFreeFlow {
   class LoadProcess(val maxClients: Int, val ports: Int, val initData: Seq[Int], localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
     val service = spawn(new sync.SemaphoreProcess(maxClients, ports, "Ports"))
     private val memDepth = 16
-    private val mem = this.own(RegInit(VecInit((0 until memDepth).map(i => initData.lift(i).getOrElse(0).U(32.W)))))
+    private val mem = (RegInit(VecInit((0 until memDepth).map(i => initData.lift(i).getOrElse(0).U(32.W)))))
 
     override def entry(): Unit = {}
 
@@ -111,10 +111,10 @@ object InjectedFreeFlow {
     override def entry(): Unit = {}
 
     def install(slotId: Int, instBits: UInt): HwInline[Unit] = HwInline.thread(s"${name}_Install_$slotId") { t =>
-      val decodedSrc = t.own(RegInit(0.U(32.W)))
-      val loadedValue = t.own(RegInit(0.U(32.W)))
-      val result = t.own(RegInit(0.U(32.W)))
-      val loadDelay = t.own(RegInit(0.U(2.W)))
+      val decodedSrc = (RegInit(0.U(32.W)))
+      val loadedValue = (RegInit(0.U(32.W)))
+      val result = (RegInit(0.U(32.W)))
+      val loadDelay = (RegInit(0.U(2.W)))
       val opcode = ISA.opcode(instBits)
       val rd = ISA.rd(instBits)
       val rs1 = ISA.rs1(instBits)
@@ -230,12 +230,12 @@ object InjectedFreeFlow {
     val decode = spawn(new DecodeProcess(program.length max 1, initData, "Decode"))
     private val launcher = createLogic("Launcher")
 
-    private val fetchPtr = this.own(RegInit(0.U(log2Ceil(program.length + 1).W)))
+    private val fetchPtr = (RegInit(0.U(log2Ceil(program.length + 1).W)))
     private val programRom = VecInit(program.map(ISA.encode))
 
     val slots = program.indices.map { i =>
       val thread = createThread(s"Slot${i}_inst")
-      val instArg = thread.own(RegInit(0.U(ISA.instWidth.W)))
+      val instArg = (RegInit(0.U(ISA.instWidth.W)))
       new Slot(i, thread, instArg)
     }
 
@@ -243,15 +243,10 @@ object InjectedFreeFlow {
       require(issueWidth == 2, "Current MVP keeps only 1-bit intra-bundle order")
 
       for (slot <- slots) {
-        slot.thread.grant(slot.instArg, this)
         slot.thread.entry {
           SysCall.Call(decode.install(slot.slotId, slot.instArg))
         }
-        this.grantLifecycle(slot.thread, this)
       }
-      this.grant(fetchPtr, launcher)
-      slots.foreach(slot => this.grantLifecycle(slot.thread, launcher))
-      slots.foreach(slot => this.grant(slot.instArg, launcher))
       launcher.run {
         val freeVec = VecInit(slots.map(slot => !slot.thread.active))
         val launchPlan = Seq(
@@ -297,15 +292,11 @@ object InjectedFreeFlow {
     implicit val kernel: Kernel = new Kernel()
 
     object Init extends HwProcess("Init") {
-      this.own(io.x1); this.own(io.x2); this.own(io.x3); this.own(io.activeThreads)
+      (io.x1); (io.x2); (io.x3); (io.activeThreads)
       val fetch = spawn(new FetchProcess(program, initData, "Fetch"))
       val daemon = createLogic("Daemon")
 
       override def entry(): Unit = {
-        this.grant(io.x1, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.x2, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.x3, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.activeThreads, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
         daemon.run {
           io.x1  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
           io.x2  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))

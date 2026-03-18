@@ -36,7 +36,7 @@ class ThreadStepDemoModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    private val markReg = this.own(RegInit(0.U(8.W)))
+    private val markReg = (RegInit(0.U(8.W)))
 
     override def entry(): Unit = {
       val prog = new ThreadStepDemo.Program("ThreadStepDemo")
@@ -94,7 +94,7 @@ class ThreadStepDemoWaitModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    private val markReg = this.own(RegInit(0.U(8.W)))
+    private val markReg = (RegInit(0.U(8.W)))
 
     override def entry(): Unit = {
       val prog = new ThreadStepDemo.Program("ThreadStepDemoWait")

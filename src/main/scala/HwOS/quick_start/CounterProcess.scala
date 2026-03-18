@@ -4,24 +4,21 @@ import chisel3._
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符  := 
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{GrantAbi, Kernel, SysCall}
+import HwOS.kernel.system.{Kernel, SysCall}
 import chisel3.util.log2Ceil
 
     // 必须隐式传入 Kernel 以注册全局资源
 class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
 
   // 1. 声明物理资源，并宣誓主权 (Ownership)
-  val counter  = this.own(RegInit(0.U(32.W)))
-  val isDone   = this.own(WireInit(false.B))
+  val counter  = (RegInit(0.U(32.W)))
+  val isDone   = (WireInit(false.B))
 
   // 2. 创建一个硬件线程 (HardwareThread)
   val mainThread = createThread("MainThread")
 
   override def entry(): Unit = {
     // 3. 授权 (Grant)：赋予 mainThread 修改 counter 和 isDone 的权限
-    this.grant(counter, mainThread)
-    this.grant(isDone, mainThread, GrantAbi.LevelDrivenWire)
-
     // 4. 定义线程的时序逻辑 (Step-by-Step)
     mainThread.entry {
       
@@ -49,8 +46,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
   }
 
   def DoNTimes(n: Int): HwInline[Unit] = HwInline.thread("do n times") {t =>
-    this.grantLifecycle(mainThread, t)
-    val cnt = this.own(RegInit(0.U(log2Ceil(n + 1).W)))
+    val cnt = (RegInit(0.U(log2Ceil(n + 1).W)))
     t.Step("Start") {
       SysCall.Call(SysCall.start(mainThread))
       when (mainThread.done) {

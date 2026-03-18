@@ -11,19 +11,13 @@ import org.scalatest.flatspec.AnyFlatSpec
 
 class StructuredControlProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
-  val branchOut = this.own(RegInit(0.U(8.W)))
-  val elifOut = this.own(RegInit(0.U(8.W)))
-  val acc = this.own(RegInit(0.U(8.W)))
-  val loopOut = this.own(RegInit(0.U(8.W)))
-  val returnOut = this.own(RegInit(0.U(8.W)))
+  val branchOut = (RegInit(0.U(8.W)))
+  val elifOut = (RegInit(0.U(8.W)))
+  val acc = (RegInit(0.U(8.W)))
+  val loopOut = (RegInit(0.U(8.W)))
+  val returnOut = (RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
-    this.grant(branchOut, worker)
-    this.grant(elifOut, worker)
-    this.grant(acc, worker)
-    this.grant(loopOut, worker)
-    this.grant(returnOut, worker)
-
     worker.entry {
       StructuredControl
         .If(worker, "Branch", 3.U > 1.U)(
@@ -148,26 +142,18 @@ class StructuredControlModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.branchOut)
-    this.own(io.elifOut)
-    this.own(io.acc)
-    this.own(io.loopOut)
-    this.own(io.returnOut)
-    this.own(io.done)
+    (io.branchOut)
+    (io.elifOut)
+    (io.acc)
+    (io.loopOut)
+    (io.returnOut)
+    (io.done)
 
     val proc = spawn(new StructuredControlProcess("Structured"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-        this.grant(io.branchOut, daemon, GrantAbi.LevelDrivenWire)
-        this.grant(io.elifOut, daemon, GrantAbi.LevelDrivenWire)
-        this.grant(io.acc, daemon, GrantAbi.LevelDrivenWire)
-        this.grant(io.loopOut, daemon, GrantAbi.LevelDrivenWire)
-        this.grant(io.returnOut, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(proc.worker, daemon)
-
-      daemon.run {
+        daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }

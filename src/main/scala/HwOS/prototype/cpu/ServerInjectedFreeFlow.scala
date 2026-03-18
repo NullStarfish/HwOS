@@ -27,20 +27,20 @@ object ServerInjectedFreeFlow {
 
     private val clientReqs = Array.tabulate(maxClients max 1) { _ =>
       ClientReq(
-        this.own(RegInit(false.B)),
-        this.own(RegInit(false.B)),
-        this.own(RegInit(0.U(ISA.instWidth.W))),
+        (RegInit(false.B)),
+        (RegInit(false.B)),
+        (RegInit(0.U(ISA.instWidth.W))),
       )
     }
 
     private val servers = Array.tabulate(maxServers max 1) { i =>
       val thread = createThread(s"Server$i")
-      val instArg = thread.own(RegInit(0.U(ISA.instWidth.W)))
+      val instArg = (RegInit(0.U(ISA.instWidth.W)))
       ServerSlot(
         thread,
         instArg,
-        this.own(RegInit(false.B)),
-        this.own(RegInit(0.U(log2Ceil((maxClients max 1) max 2).W))),
+        (RegInit(false.B)),
+        (RegInit(0.U(log2Ceil((maxClients max 1) max 2).W))),
       )
     }
 
@@ -50,21 +50,13 @@ object ServerInjectedFreeFlow {
       val dispatcher = createLogic("Dispatcher")
 
       for ((slot, serverId) <- servers.zipWithIndex) {
-        slot.thread.grant(slot.instArg, this)
         slot.thread.entry {
           SysCall.Call(core.install(serverId, slot.instArg))
         }
-        this.grant(slot.instArg, dispatcher)
-        this.grantLifecycle(slot.thread, dispatcher)
-        this.grant(slot.ownerValid, dispatcher)
-        this.grant(slot.ownerClient, dispatcher)
-      }
+        }
 
       clientReqs.foreach { req =>
-        this.grant(req.pending, dispatcher)
-        this.grant(req.completed, dispatcher)
-        this.grant(req.instBits, dispatcher)
-      }
+        }
 
       dispatcher.run {
         val pendingOH = PriorityEncoderOH(VecInit(clientReqs.toIndexedSeq.map(_.pending)).asUInt)
@@ -106,9 +98,6 @@ object ServerInjectedFreeFlow {
     def RequestDecode(clientId: Int, instBits: UInt): HwInline[Unit] = HwInline.atomic(s"${name}_RequestDecode_$clientId") { t =>
       val req = clientReqs(clientId)
       val slotLease = SysCall.Call(serverSlots.RequestLease(clientId))
-      this.grant(req.pending, t)
-      this.grant(req.completed, t)
-      this.grant(req.instBits, t)
       t.waitCondition(!req.pending)
       when(!req.pending) {
         SysCall.Call(slotLease.Acquire())
@@ -136,12 +125,12 @@ object ServerInjectedFreeFlow {
     val decode = spawn(new ServerDecodeProcess(program.length max 1, decodeServers, initData, "Decode"))
     private val launcher = createLogic("Launcher")
 
-    private val fetchPtr = this.own(RegInit(0.U(log2Ceil(program.length + 1).W)))
+    private val fetchPtr = (RegInit(0.U(log2Ceil(program.length + 1).W)))
     private val programRom = VecInit(program.map(ISA.encode))
 
     val slots = program.indices.map { i =>
       val thread = createThread(s"Client${i}_req")
-      val instArg = thread.own(RegInit(0.U(ISA.instWidth.W)))
+      val instArg = (RegInit(0.U(ISA.instWidth.W)))
       new Slot(i, thread, instArg)
     }
 
@@ -149,7 +138,6 @@ object ServerInjectedFreeFlow {
       require(issueWidth == 2, "Current MVP keeps only 1-bit intra-bundle order")
 
       for (slot <- slots) {
-        slot.thread.grant(slot.instArg, this)
         slot.thread.entry {
           slot.thread.Step(s"SubmitDecode_${slot.slotId}") {
             SysCall.Call(decode.RequestDecode(slot.slotId, slot.instArg))
@@ -158,12 +146,7 @@ object ServerInjectedFreeFlow {
           }
           SysCall.Call(SysCall.Return())
         }
-        this.grantLifecycle(slot.thread, this)
       }
-
-      this.grant(fetchPtr, launcher)
-      slots.foreach(slot => this.grantLifecycle(slot.thread, launcher))
-      slots.foreach(slot => this.grant(slot.instArg, launcher))
 
       launcher.run {
         val freeVec = VecInit(slots.map(slot => !slot.thread.active))
@@ -214,15 +197,11 @@ object ServerInjectedFreeFlow {
     implicit val kernel: Kernel = new Kernel()
 
     object Init extends HwProcess("Init") {
-      this.own(io.x1); this.own(io.x2); this.own(io.x3); this.own(io.activeThreads)
+      (io.x1); (io.x2); (io.x3); (io.activeThreads)
       val fetch = spawn(new ServerFetchProcess(program, initData, decodeServers, "Fetch"))
       val daemon = createLogic("Daemon")
 
       override def entry(): Unit = {
-        this.grant(io.x1, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.x2, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.x3, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.activeThreads, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
         daemon.run {
           io.x1  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
           io.x2  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))
@@ -261,32 +240,24 @@ object ServerInjectedFreeFlow {
     implicit val kernel: Kernel = new Kernel()
 
     object Init extends HwProcess("Init") {
-      this.own(io.reqBusy)
-      this.own(io.reqDone)
-      this.own(io.x1)
-      this.own(io.x2)
-      this.own(io.x3)
-      this.own(io.activeThreads)
+      (io.reqBusy)
+      (io.reqDone)
+      (io.x1)
+      (io.x2)
+      (io.x3)
+      (io.activeThreads)
 
       val decode = spawn(new ServerDecodeProcess(maxClients, decodeServers, initData, "Decode"))
       val daemon = createLogic("Daemon")
 
       private val clientSlots = (0 until maxClients).map { clientId =>
         val thread = createThread(s"Client${clientId}_driver")
-        val instArg = thread.own(RegInit(0.U(ISA.instWidth.W)))
+        val instArg = (RegInit(0.U(ISA.instWidth.W)))
         (thread, instArg)
       }
 
       override def entry(): Unit = {
-        this.grant(io.reqBusy, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.reqDone, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.x1, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.x2, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.x3, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-        this.grant(io.activeThreads, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
-
         for (((thread, instArg), clientId) <- clientSlots.zipWithIndex) {
-          thread.grant(instArg, this)
           thread.entry {
             thread.Step(s"SubmitDecode_$clientId") {
               SysCall.Call(decode.RequestDecode(clientId, instArg))
@@ -295,9 +266,7 @@ object ServerInjectedFreeFlow {
             }
             SysCall.Call(SysCall.Return())
           }
-          this.grantLifecycle(thread, daemon)
-          this.grant(instArg, daemon)
-        }
+          }
 
         daemon.run {
           for ((((thread, instArg), reqValid), clientId) <- clientSlots.zip(io.reqValid).zipWithIndex) {

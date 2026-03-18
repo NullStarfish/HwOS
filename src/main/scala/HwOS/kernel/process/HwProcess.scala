@@ -58,11 +58,14 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
   ): HardwareThread = {
     val threadName = s"${this.name}/${name}_thread"
     val t = new KernelStepHardwareThread(threadName, this, debugEnable)
-    OSReaper.attachThreadKillLatch(t, this.own(RegInit(false.B)))
+    OSReaper.attachThreadKillLatch(t, RegInit(false.B))
     kernel.registerThread(threadName, t)
     threads += t
     t
   }
+
+  def install(threadDef: ThreadDef, name: String = "Main"): HardwareThread =
+    threadDef.install(this, name)
   
   protected def createLogic(name: String = "Daemon"): HardwareLogic = {
     val l = new HardwareLogic(s"${this.name}/${name}_logic", this, debugEnable)
@@ -89,15 +92,6 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     this.children += c
     c.build()
     
-    // 自动向上兼容的权限二次分发：
-    // - Reg 可安全沿用默认 RegisterWrite ABI
-    // - Wire/IO 不做 ABI 猜测，必须由调用方显式 grant(..., abi)
-    c.ctx.getAllOwnedSignals().foreach { sig =>
-      scala.util.Try(kernel.addressSpace.inferGrantAbi(sig)).toOption.foreach { abi =>
-        c.grant(sig, this, abi)
-      }
-    }
-
     c
   }
   

@@ -14,12 +14,7 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
 
   // --- 声明物理资源与授权 ---
   val sharedCounter = RegInit(0.U(32.W))
-  this.own(sharedCounter)
-  this.grant(sharedCounter, worker1)
-  this.grant(sharedCounter, worker2)
-
-
-
+  (sharedCounter)
   // ===================================================================
   // 核心亮点：孵化 Stdlib 并发原语 (作为子进程)
   // 注意：spawn 内部已经自动将 mutex 和 wg 的访问权 grant 给 SyncProcess 了！
@@ -50,9 +45,6 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
     // 分配 ID 并注入逻辑
     worker1.entry { workerLogic(worker1, lockId = 0, wgId = 1) }
     worker2.entry { workerLogic(worker2, lockId = 1, wgId = 2) }
-    worker1.grantLifecycle(worker1, main)
-    worker2.grantLifecycle(worker2, main)
-
     main.entry {
       main.Step("Init") {
         // Main 使用 WG 的 ID 0
@@ -87,14 +79,12 @@ class SyncIntegrationModule extends Module {
 
 
   object Init extends HwProcess("Init") {
-    this.own(io.finalCount); this.own(io.allDone)
+    (io.finalCount); (io.allDone)
 
 
     val sync = spawn(new SyncProcess("Sync"))
 
     val daemon = createLogic("daemon")
-    grant(io.finalCount, daemon, GrantAbi.LevelDrivenWire); grant(io.allDone, daemon, GrantAbi.LevelDrivenWire)
-    grantLifecycle(sync.main, daemon)
     override def entry(): Unit = {
       daemon.run {
         when(io.start) {SysCall.Call(SysCall.start(sync.main))}

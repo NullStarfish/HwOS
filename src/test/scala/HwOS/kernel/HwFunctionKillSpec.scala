@@ -9,26 +9,20 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
   val worker = createThread("Worker")
   val controller = createThread("Controller")
   private val reaper = createReaperManagedLogic("Reaper")
-  val out = this.own(RegInit(0.U(8.W)))
-  val reclaimCount = this.own(RegInit(0.U(8.W)))
-  val releaseFlag = this.own(RegInit(false.B))
+  val out = (RegInit(0.U(8.W)))
+  val reclaimCount = (RegInit(0.U(8.W)))
+  val releaseFlag = (RegInit(false.B))
 
   private var activationHeldOpt: Option[Bool] = None
 
   private val blocker = HwFunction.thread("Blocker") { t =>
-    this.grant(out, t)
-    this.grant(reclaimCount, t)
-    this.grant(releaseFlag, t)
-
-    val held = t.own(RegInit(false.B))
-    val localTmp = t.own(RegInit(0.U(8.W)))
+    val held = (RegInit(false.B))
+    val localTmp = (RegInit(0.U(8.W)))
     activationHeldOpt = Some(held)
 
     def holdLeaseActive: Bool = held
 
     def forceHoldReclaim(agent: HwOS.kernel.thread.HardwareAgent): Unit = {
-        t.grant(held, agent)
-        HwFunctionKillProcess.this.grant(reclaimCount, agent)
         HwOS.kernel.system.OSReaper.forceAssign(held, false.B)
         HwOS.kernel.system.OSReaper.forceAssign(reclaimCount, reclaimCount + 1.U)
     }
@@ -65,8 +59,6 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
     activationHeldOpt.getOrElse(throw new Exception("[HwOS Test] Activation-held signal was not initialized."))
 
   override def entry(): Unit = {
-    this.grant(out, worker)
-
     worker.entry {
       worker.Step("Init") {
         out  :=  0.U
@@ -80,9 +72,6 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
 
       SysCall.Call(SysCall.Return())
     }
-
-    this.grant(releaseFlag, controller)
-    this.grantLifecycle(worker, controller)
 
     controller.entry {
       controller.Step("Start1") {
@@ -132,26 +121,18 @@ class HwFunctionKillModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.done)
-    this.own(io.out)
-    this.own(io.reclaimCount)
-    this.own(io.workerActive)
-    this.own(io.activationActive)
-    this.own(io.activationHeld)
+    (io.done)
+    (io.out)
+    (io.reclaimCount)
+    (io.workerActive)
+    (io.activationActive)
+    (io.activationHeld)
 
     val proc = spawn(new HwFunctionKillProcess("FnKillProc"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
       val activation = proc.functionActivationThread
-
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.out, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.reclaimCount, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.workerActive, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.activationActive, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.activationHeld, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(proc.controller, daemon)
 
       daemon.run {
         when(!proc.controller.active && !proc.controller.done) {

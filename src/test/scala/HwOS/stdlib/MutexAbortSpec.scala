@@ -17,9 +17,7 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
   val mutex = spawn(new MutexProcess(maxClients = 2, "Mutex"))
 
   // 观测寄存器，证明 Observer 最终拿到了锁
-  val observerSuccess = this.own(RegInit(false.B))
-  this.grant(observerSuccess, observer)
-
+  val observerSuccess = (RegInit(false.B))
   override def entry(): Unit = {
     // ---------------------------------------------------------
     // 1. Victim 线程：抢到锁之后，进入死循环 (永远不调 Unlock)
@@ -51,9 +49,6 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
       SysCall.Call(SysCall.Return())
     }
 
-
-    victim.grantLifecycle(victim, main)
-    observer.grantLifecycle(observer, main)
 
     // ---------------------------------------------------------
     // 3. Main 线程：上帝视角，负责启动和强杀
@@ -96,14 +91,11 @@ class MutexAbortModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.success); this.own(io.done)
+    (io.success); (io.done)
     val testProc = spawn(new MutexAbortTestProcess("TestProc"))
     val daemon = createLogic("Daemon")
     
     override def entry(): Unit = {
-      this.grant(io.success, daemon, GrantAbi.LevelDrivenWire); this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(testProc.main, daemon)
-      
       daemon.run {
         when(io.start) { SysCall.Call(SysCall.start(testProc.main)) }
         io.success  :=  testProc.observerSuccess

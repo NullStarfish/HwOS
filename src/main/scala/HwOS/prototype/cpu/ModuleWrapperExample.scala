@@ -1,7 +1,6 @@
 package HwOS.prototype.cpu
 
 import HwOS.kernel.function.HwInline
-import HwOS.kernel.GrantAbi
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -14,7 +13,7 @@ object ModuleWrapperExample {
     override def entry(): Unit = {}
 
     def Invoke(lhs: UInt, rhs: UInt, dst: UInt): HwInline[Unit] = HwInline.thread(s"${name}_Invoke") { t =>
-      val sumReg = t.own(RegInit(0.U(32.W)))
+      val sumReg = (RegInit(0.U(32.W)))
       t.Step("Add") {
         sumReg  :=  lhs + rhs
       }
@@ -42,33 +41,25 @@ object ModuleWrapperExample {
     implicit val kernel: Kernel = new Kernel()
 
     object Init extends HwProcess("Init") {
-      this.own(io.busy)
-      this.own(io.done)
-      this.own(io.result)
+      (io.busy)
+      (io.done)
+      (io.result)
 
       val adder = spawn(new WrappedAdderProcess("Adder"))
       val worker = createThread("Worker")
       val daemon = createLogic("Daemon")
 
-      private val lhsReg = this.own(RegInit(0.U(32.W)))
-      private val rhsReg = this.own(RegInit(0.U(32.W)))
-      private val resultReg = this.own(RegInit(0.U(32.W)))
+      private val lhsReg = (RegInit(0.U(32.W)))
+      private val rhsReg = (RegInit(0.U(32.W)))
+      private val resultReg = (RegInit(0.U(32.W)))
 
       override def entry(): Unit = {
-        this.grant(resultReg, worker)
         worker.entry {
           SysCall.Call(adder.Invoke(lhsReg, rhsReg, resultReg))
           worker.Step("Finish") {
           }
           SysCall.Call(SysCall.Return())
         }
-
-        this.grantLifecycle(worker, daemon)
-        this.grant(lhsReg, daemon)
-        this.grant(rhsReg, daemon)
-        this.grant(io.busy, daemon, GrantAbi.LevelDrivenWire)
-        this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-        this.grant(io.result, daemon, GrantAbi.LevelDrivenWire)
 
         daemon.run {
           when(io.start && !worker.active) {

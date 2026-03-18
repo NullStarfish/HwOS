@@ -139,7 +139,7 @@ object StructuredControl {
     require(endExclusive >= start, s"ForRange endExclusive ($endExclusive) must be >= start ($start)")
 
     val base = freshBase(thread, prefix)
-    val idx = thread.own(RegInit(start.U(width.W)))
+    val idx = (RegInit(start.U(width.W)))
     val loop = new LoopControl(thread, breakTarget = s"${base}_End", continueTarget = s"${base}_Inc")
 
     thread.Step(s"${base}_Init") {

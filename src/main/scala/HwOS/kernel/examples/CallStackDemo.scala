@@ -1,6 +1,5 @@
 package HwOS.kernel.examples
 import chisel3._
-import HwOS.kernel.GrantAbi
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
@@ -9,7 +8,7 @@ import _root_.circt.stage.ChiselStage
 
 class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val main = createThread("Main")
-  val dataReg = this.own(RegInit(0.U(32.W)))
+  val dataReg = (RegInit(0.U(32.W)))
 
   // ==========================================
   // [A] 微观组合逻辑层 (Atomic / Stateless)
@@ -21,7 +20,6 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
   }
 
   def StoreData(v: UInt): HwInline[Unit] = HwInline.atomic("StoreData") { t =>
-    this.grant(dataReg, t)
     dataReg  :=  v
   }
 
@@ -85,13 +83,11 @@ class CallStackIntegrationModule extends Module {
   implicit val kernel: Kernel = osKernel
 
   object Init extends HwProcess("Init") {
-    this.own(io.done)
+    (io.done)
     val demo = spawn(new CallStackDemoProcess("Demo"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(demo.main, daemon)
       daemon.run {
         when(io.start) { SysCall.Call(SysCall.start(demo.main)) }
         io.done  :=  demo.main.done

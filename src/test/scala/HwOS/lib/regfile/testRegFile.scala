@@ -25,16 +25,10 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
   val stallCounter = RegInit(0.U(32.W)) // 记录 Consumer 被阻塞的拍数
   val flagReserved = RegInit(false.B)   // 用于同步：确保 Producer 先占位
 
-  this.own(resultReg); this.grant(resultReg, consumer)
-  this.own(stallCounter)
-  this.own(flagReserved); this.grant(flagReserved, producer)
-
-
-
-  override def entry(): Unit = {
+  (resultReg); (stallCounter)
+  (flagReserved); override def entry(): Unit = {
     // 守护进程：当 Consumer 处于活跃且正在等待时，累加 Stall 计数
     val stallTracker = createLogic("StallTracker")
-    this.grant(stallCounter, stallTracker)
     stallTracker.run {
       // .active 表示线程未 exit，flagReserved 表示已经过了握手阶段开始尝试读
       when(consumer.active && flagReserved) {
@@ -97,9 +91,9 @@ class RegfileIntegrationModule extends Module {
   
   
   object Init extends HwProcess("Init") {
-    this.own(io.result)
-    this.own(io.stalls)
-    this.own(io.done)
+    (io.result)
+    (io.stalls)
+    (io.done)
     val daemon = createLogic("Init")
 
     val client = spawn(
@@ -108,11 +102,6 @@ class RegfileIntegrationModule extends Module {
 
     override def entry(): Unit = {
 
-      this.grant(io.result, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.stalls, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      this.grantLifecycle(client.producer, daemon)
-      this.grantLifecycle(client.consumer, daemon)
       daemon.run {
         when(io.start) {
           SysCall.Call(SysCall.start(client.producer))

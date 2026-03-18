@@ -43,19 +43,6 @@ abstract class HardwareThread(
     with ThreadControlApi
     with ThreadRuntimeApi {
   val tls = scala.collection.mutable.Map[String, HwContext]() //used for visibility
-  private[kernel] val lifecycleAcl = scala.collection.mutable.Set[HwContext]()
-
-  private[kernel] def grantLifecycleAccess(target: HwContext): Unit = {
-    lifecycleAcl += target
-  }
-
-  private[kernel] def requireLifecycleAccess(actor: HwContext, op: String): Unit = {
-    if (!lifecycleAcl.contains(actor)) {
-      throw new Exception(
-        s"[HwOS Lifecycle Error] '${actor.name}' is not allowed to $op thread '${name}'. Use grantLifecycle() first.",
-      )
-    }
-  }
 
   private[kernel] def runtimeStart(): Unit
   private[kernel] def runtimeExit(): Unit

@@ -37,12 +37,7 @@ final class HwFunction[T] private (
       binding.callActive && binding.activeBindingId === bindingIdValue
 
     private[kernel] def forceReclaim(agent: HardwareAgent): Unit = {
-      activation.grant(binding.callActive, agent)
-      activation.grant(binding.activeBindingId, agent)
-      caller.grant(callPending, agent)
-
       when(isActive) {
-        activation.grantLifecycleAccess(agent.ctx)
         OSReaper.reclaimThread(activation, agent.kernel.managedReaperEntities, agent)
         OSReaper.forceAssign(binding.callActive, false.B)
         OSReaper.forceAssign(binding.activeBindingId, 0.U(binding.activeBindingId.getWidth.W))
@@ -105,8 +100,8 @@ final class HwFunction[T] private (
         )
         val binding = new FunctionCallBindingState(
           activation = activation,
-          callActive = activation.own(RegInit(false.B)),
-          activeBindingId = activation.own(RegInit(0.U(32.W))),
+          callActive = RegInit(false.B),
+          activeBindingId = RegInit(0.U(32.W)),
         )
         callBindingState = Some(binding)
         binding
@@ -130,7 +125,7 @@ final class HwFunction[T] private (
       caller = caller,
       activation = binding.activation,
       binding = binding,
-      callPending = caller.own(RegInit(false.B)),
+      callPending = RegInit(false.B),
     )
     nextBindingId += 1
     holder.registerReclaimEntry(caller, lease.isActive) { agent =>

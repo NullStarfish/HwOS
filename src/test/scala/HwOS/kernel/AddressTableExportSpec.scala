@@ -1,6 +1,7 @@
 package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.examples.symbolic.CounterWorkerThreadUnit
 import HwOS.kernel.memory.ExportCapability
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{AddressKind, Kernel, SysCall}
@@ -23,7 +24,6 @@ class AddressTableExportSpec extends AnyFlatSpec {
     assert(rendered.contains("State Table"))
     assert(rendered.contains("Code Table"))
     assert(rendered.contains("Binding Table"))
-    assert(rendered.contains("Grant Table"))
     assert(rendered.contains("Exported Memory Table"))
     assert(rendered.contains("Dependency Table"))
     assert(rendered.contains("0 entries"))
@@ -41,13 +41,11 @@ class AddressTableExportSpec extends AnyFlatSpec {
     assert(json.contains("\"state_table\""))
     assert(json.contains("\"code_table\""))
     assert(json.contains("\"binding_table\""))
-    assert(json.contains("\"grant_table\""))
     assert(json.contains("\"exported_memory_table\""))
     assert(json.contains("\"dependency_table\""))
     assert(text.contains("State Table"))
     assert(text.contains("Code Table"))
     assert(text.contains("Binding Table"))
-    assert(text.contains("Grant Table"))
     assert(text.contains("Exported Memory Table"))
     assert(text.contains("Dependency Table"))
     assert(text.contains("code_start"))
@@ -66,11 +64,10 @@ class AddressTableExportSpec extends AnyFlatSpec {
 
       object Init extends HwProcess("Init") {
         val worker = createThread("Worker")
-        val shared = this.own(RegInit(0.U(8.W)))
+        val shared = (RegInit(0.U(8.W)))
         private val observer = createLogic("Observer")
 
         override def entry(): Unit = {
-          this.grant(shared, worker)
           export("exported.shared", shared, ExportCapability.Read)
           worker.entry {
             worker.Step("Init") {}
@@ -95,12 +92,10 @@ class AddressTableExportSpec extends AnyFlatSpec {
       assert(json.contains("\"state_table\""))
       assert(json.contains("\"code_table\""))
       assert(json.contains("\"binding_table\""))
-      assert(json.contains("\"grant_table\""))
       assert(json.contains("\"exported_memory_table\""))
       assert(json.contains("\"dependency_table\""))
       assert(json.contains("Init/Worker_thread"))
       assert(json.contains("Init/Worker_thread_segment"))
-      assert(json.contains("register-write"))
       assert(json.contains("exported.shared"))
       assert(json.contains("\"code_start\":0"))
       assert(json.contains("\"code_entry\":0"))
@@ -115,12 +110,10 @@ class AddressTableExportSpec extends AnyFlatSpec {
       assert(text.contains("State Table"))
       assert(text.contains("Code Table"))
       assert(text.contains("Binding Table"))
-      assert(text.contains("Grant Table"))
       assert(text.contains("Exported Memory Table"))
       assert(text.contains("Dependency Table"))
       assert(text.contains("Init/Worker_thread"))
       assert(text.contains("Init/Worker_thread_segment"))
-      assert(text.contains("register-write"))
       assert(text.contains("exported.shared"))
       assert(text.contains("code_start"))
       assert(text.contains("code_entry"))
@@ -161,5 +154,34 @@ class AddressTableExportSpec extends AnyFlatSpec {
     assert(code1.startAddress == 3)
     assert(state1.endAddressExclusive == 10)
     assert(code1.endAddressExclusive == 7)
+  }
+
+  it should "record symbolic thread-unit exports and dependencies by global symbol name" in {
+    class SymbolicAddressExportModule extends Module {
+      implicit val kernel: Kernel = new Kernel()
+
+      object Init extends HwProcess("Init") {
+        private val provider = spawn(new HwOS.kernel.examples.symbolic.CounterProviderProcess("CounterProvider"))
+
+        override def entry(): Unit = {}
+      }
+
+      Init.build()
+    }
+
+    simulate(new SymbolicAddressExportModule) { c =>
+      val exports = c.kernel.addressSpace.exportedMemoryEntries
+      val dependencies = c.kernel.addressSpace.dependencyEntries
+      val rendered = c.kernel.addressSpace.renderAddressTables()
+
+      assert(exports.exists(_.symbolName == CounterWorkerThreadUnit.CounterSymbol))
+      assert(exports.exists(_.symbolName == CounterWorkerThreadUnit.LimitSymbol))
+      assert(dependencies.exists(_.symbolName == CounterWorkerThreadUnit.CounterSymbol))
+      assert(dependencies.exists(_.symbolName == CounterWorkerThreadUnit.LimitSymbol))
+      assert(dependencies.exists(_.requesterName == "Init/CounterProvider/Worker_thread"))
+      assert(rendered.contains(CounterWorkerThreadUnit.CounterSymbol))
+      assert(rendered.contains(CounterWorkerThreadUnit.LimitSymbol))
+      assert(rendered.contains("Init/CounterProvider/Worker_thread"))
+    }
   }
 }

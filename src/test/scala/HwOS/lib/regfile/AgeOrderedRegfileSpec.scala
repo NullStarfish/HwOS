@@ -22,16 +22,16 @@ class AgeOrderedRegfileModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    this.own(io.committedX1)
-    this.own(io.committedX2)
-    this.own(io.forwardedX2)
+    (io.committedX1)
+    (io.committedX2)
+    (io.forwardedX2)
 
     val regFile = spawn(new AgeOrderedScoreboardRegfileProcess(8, 32, 4, 8, zeroReg = true, "RegFile"))
     val ingress = spawn(new sync.MutexProcess(4, "Ingress"))
     val starter = createLogic("Starter")
     val monitor = createLogic("Monitor")
-    val forwardedValue = this.own(RegInit(0.U(32.W)))
-    val launchDelay = this.own(RegInit(0.U(3.W)))
+    val forwardedValue = (RegInit(0.U(32.W)))
+    val launchDelay = (RegInit(0.U(3.W)))
 
     val oldWriter = createThread("OldWriter")
     val youngWriter = createThread("YoungWriter")
@@ -40,7 +40,7 @@ class AgeOrderedRegfileModule extends Module {
     override def entry(): Unit = {
       oldWriter.entry {
         val writePort = SysCall.Call(regFile.RequestWritePort(0))
-        val delay = oldWriter.own(RegInit(0.U(3.W)))
+        val delay = (RegInit(0.U(3.W)))
 
         oldWriter.Step("ReserveOld") {
           SysCall.Call(ingress.Lock(0))
@@ -81,10 +81,8 @@ class AgeOrderedRegfileModule extends Module {
       }
 
       reader.entry {
-        val seen = reader.own(RegInit(0.U(32.W)))
-        val delay = reader.own(RegInit(0.U(2.W)))
-        this.grant(forwardedValue, reader)
-
+        val seen = (RegInit(0.U(32.W)))
+        val delay = (RegInit(0.U(2.W)))
         reader.Step("DelayReader") {
           delay  :=  delay + 1.U
           reader.waitCondition(delay >= 1.U)
@@ -103,10 +101,6 @@ class AgeOrderedRegfileModule extends Module {
         SysCall.Call(SysCall.Return())
       }
 
-      this.grantLifecycle(oldWriter, starter)
-      this.grantLifecycle(youngWriter, starter)
-      this.grantLifecycle(reader, starter)
-      this.grant(launchDelay, starter)
       starter.run {
         launchDelay  :=  launchDelay + 1.U
         when(!oldWriter.active && !oldWriter.done) {
@@ -120,10 +114,6 @@ class AgeOrderedRegfileModule extends Module {
         }
       }
 
-      this.grant(io.committedX1, monitor, GrantAbi.LevelDrivenWire)
-      this.grant(io.committedX2, monitor, GrantAbi.LevelDrivenWire)
-      this.grant(io.forwardedX2, monitor, GrantAbi.LevelDrivenWire)
-      this.grant(forwardedValue, monitor)
       monitor.run {
         io.committedX1  :=  SysCall.Call(regFile.ReadCommitted(1.U))
         io.committedX2  :=  SysCall.Call(regFile.ReadCommitted(2.U))

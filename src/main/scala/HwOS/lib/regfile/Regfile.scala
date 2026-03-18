@@ -5,7 +5,7 @@ import chisel3.util._
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{GrantAbi, Kernel, SysCall}
+import HwOS.kernel.system.{Kernel, SysCall}
 import HwOS.stdlib.sync._
 
 object RegfileLib {
@@ -17,7 +17,7 @@ object RegfileLib {
   class BaseRegfileProcess(val depth: Int, val width: Int, val zeroReg: Boolean, localName: String)(implicit kernel: Kernel)
       extends HwProcess(localName) {
 
-    private val regs = this.exemptVectorAcl(this.own(RegInit(VecInit(Seq.fill(depth)(0.U(width.W))))))
+    private val regs = ((RegInit(VecInit(Seq.fill(depth)(0.U(width.W))))))
     
     override def entry(): Unit = {}
 
@@ -110,9 +110,7 @@ object RegfileLib {
     def GuardedRead(addr: UInt): HwInline[UInt] = HwInline.atomic("GuardedRead") { t =>
       val ready = SysCall.Call(scoreboard.Guard(addr))
 
-      val rdata = this.own(WireInit(0.U(width.W)))
-      grant(rdata, t, GrantAbi.LevelDrivenWire)
-
+      val rdata = (WireInit(0.U(width.W)))
       when(ready) {
         rdata  :=  SysCall.Call(semaReg.Read(addr))
       }
@@ -169,23 +167,19 @@ object RegfileLib {
 
     private val pendingPorts = Array.tabulate(maxWriters) { _ =>
       PendingPort(
-        this.own(RegInit(false.B)),
-        this.own(RegInit(0.U(addrWidth.W))),
-        this.own(RegInit(0.U(width.W))),
-        this.own(RegInit(false.B)),
+        (RegInit(false.B)),
+        (RegInit(0.U(addrWidth.W))),
+        (RegInit(0.U(width.W))),
+        (RegInit(false.B)),
       )
     }
-    private val publishDone = Array.tabulate(maxWriters)(_ => this.own(RegInit(false.B)))
+    private val publishDone = Array.tabulate(maxWriters)(_ => (RegInit(false.B)))
 
     private def matchingPorts(addr: UInt, requireReady: Bool): Vec[Bool] =
       VecInit(pendingPorts.toIndexedSeq.map(p => p.busy && p.addr === addr && (!requireReady || p.ready)))
 
     private def BeginPendingWrite(portIdx: Int, addr: UInt): HwInline[Unit] = HwInline.atomic(s"BeginPendingWrite_$portIdx") { t =>
       val pending = pendingPorts(portIdx)
-      this.grant(pending.busy, t)
-      this.grant(pending.addr, t)
-      this.grant(pending.ready, t)
-      this.grant(publishDone(portIdx), t)
       pending.busy  :=  true.B
       pending.addr  :=  addr
       pending.ready  :=  false.B
@@ -195,8 +189,6 @@ object RegfileLib {
 
     private def FinishPendingWrite(portIdx: Int, data: UInt): HwInline[Unit] = HwInline.atomic(s"FinishPendingWrite_$portIdx") { t =>
       val pending = pendingPorts(portIdx)
-      this.grant(pending.data, t)
-      this.grant(pending.ready, t)
       pending.data  :=  data
       pending.ready  :=  true.B
       ()
@@ -205,14 +197,9 @@ object RegfileLib {
     override def entry(): Unit = {
       val daemon = createLogic("OrderedWriteDaemon")
       for (pending <- pendingPorts) {
-        this.grant(pending.busy, daemon)
-        this.grant(pending.addr, daemon)
-        this.grant(pending.data, daemon)
-        this.grant(pending.ready, daemon)
-      }
+        }
       for (done <- publishDone) {
-        this.grant(done, daemon)
-      }
+        }
 
       daemon.run {
         for ((pending, i) <- pendingPorts.zipWithIndex) {
@@ -241,9 +228,7 @@ object RegfileLib {
       val canRead = (if (zeroReg) addr === 0.U else false.B) || !matchingBusy.asUInt.orR || matchingReady.asUInt.orR
       t.waitCondition(canRead)
 
-      val rdata = this.own(WireInit(0.U(width.W)))
-      grant(rdata, t, GrantAbi.LevelDrivenWire)
-
+      val rdata = (WireInit(0.U(width.W)))
       when(if (zeroReg) addr === 0.U else false.B) {
         rdata  :=  0.U
       }.elsewhen(matchingReady.asUInt.orR) {

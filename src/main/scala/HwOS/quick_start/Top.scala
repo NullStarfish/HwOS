@@ -1,7 +1,6 @@
 package HwOS.quick_start
 
 import chisel3._
-import HwOS.kernel.GrantAbi
 import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符  := 
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
@@ -20,19 +19,14 @@ class TopModule extends Module {
 
   // 顶层容器进程
   object Init extends HwProcess("Init") {
-    this.own(io.result); this.own(io.done)
+    (io.result); (io.done)
     
     // 孵化 (Spawn) 我们的计数器子进程
     val counterProc = spawn(new CounterProcess("CounterApp"))
     val daemon = createLogic("DaemonLogic")
 
     override def entry(): Unit = {
-      this.grant(io.result, daemon, GrantAbi.LevelDrivenWire)
-      this.grant(io.done, daemon, GrantAbi.LevelDrivenWire)
-      
       // 允许 daemon 逻辑控制子线程的生命周期
-      this.grantLifecycle(counterProc.mainThread, daemon)
-
       // 守护逻辑：处理外部 IO 并启动线程
       daemon.run {
         when(io.start) {
