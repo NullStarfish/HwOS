@@ -13,9 +13,3 @@ final class RuntimeContext(
     val cursor: VirtualCursor,
     val stateReg: UInt,
 )
-
-trait RuntimeReclaimTarget {
-  def resetRuntime(): Unit
-  def runtimeActive: Bool
-  def runtimeName: String
-}

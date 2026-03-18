@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
 import HwOS.kernel.context.HwContextEntity
-import HwOS.kernel.system.Kernel
+import HwOS.kernel.system.{Kernel, OSReaper, OSReaperManaged, OSReaperManagedLogic}
 import HwOS.kernel.thread._
 
 //命名永远让上一级来命名
@@ -41,7 +41,6 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
 
   
   kernel.registerProcess(name, this)
-  kernel.registerEntity(this)
 
 
   
@@ -59,16 +58,20 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
   ): HardwareThread = {
     val threadName = s"${this.name}/${name}_thread"
     val t = new KernelStepHardwareThread(threadName, this, debugEnable)
+    OSReaper.attachThreadKillLatch(t, this.own(RegInit(false.B)))
     kernel.registerThread(threadName, t)
-    kernel.registerContext(t)
-    kernel.registerEntity(t)
     threads += t
     t
   }
   
   protected def createLogic(name: String = "Daemon"): HardwareLogic = {
     val l = new HardwareLogic(s"${this.name}/${name}_logic", this, debugEnable)
-    kernel.registerEntity(l)
+    logics += l
+    l
+  }
+
+  private[HwOS] def createReaperManagedLogic(name: String = "Reaper"): OSReaperManagedLogic = {
+    val l = new OSReaperManagedLogic(s"${this.name}/${name}_logic", this, debugEnable)
     logics += l
     l
   }

@@ -8,6 +8,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class ContextKillProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
   val controller = createThread("Controller")
+  val contextGate = createReaperManagedLogic("ContextGate")
   val hits = this.own(RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
@@ -24,12 +25,16 @@ class ContextKillProcess(localName: String)(implicit kernel: Kernel) extends HwP
       SysCall.Call(SysCall.Return())
     }
 
+    contextGate.registerReclaimEntry(worker, worker.active) { agent =>
+      HwOS.kernel.system.OSReaper.reclaimThread(worker, Seq.empty, agent)
+    }
+
     controller.entry {
       controller.Step("Start") {
         SysCall.Call(SysCall.start(worker))
       }
       controller.Step("ContextKill") {
-        SysCall.Call(SysCall.kill(worker: HwContextEntity))
+        SysCall.Call(SysCall.kill(contextGate: HwContextEntity))
       }
       controller.Step("Finish") {}
       SysCall.Call(SysCall.Return())

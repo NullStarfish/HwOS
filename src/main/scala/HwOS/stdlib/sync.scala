@@ -78,6 +78,7 @@ object sync {
   // 支持多 Client 并发 Release，但单拍只允许 1 个 Client Acquire 成功
   // ==========================================
   class SemaphoreProcess(val maxClients: Int, val initialCount: Int,  localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+    private val reaper = createReaperManagedLogic("Reaper")
     
     private val count = this.own(RegInit(initialCount.U(32.W)))
     
@@ -124,7 +125,7 @@ object sync {
           SemaphoreProcess.this.grant(isHeld, t)
           isHeld  :=  true.B
         }
-        t.registerReaperEntry(isActive) { agent =>
+        reaper.registerReclaimEntry(t, isActive) { agent =>
           forceReclaim(agent)
         }
       }
@@ -247,6 +248,7 @@ object sync {
   }
 
   class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+    private val reaper = createReaperManagedLogic("Reaper")
     private val tokenWidth = log2Ceil((maxInFlight + 1) max 2)
     private case class WindowReq(reserve: Bool, commit: Bool, forceCommit: Bool, reclaim: Bool)
     private case class WindowEntry(active: Bool, commitPending: Bool, token: UInt)
@@ -336,7 +338,7 @@ object sync {
         reqs(id).reserve  :=  true.B
         val granted = entries(id).active
         t.waitCondition(granted)
-        t.registerReaperEntry(isActive) { agent =>
+        reaper.registerReclaimEntry(t, isActive) { agent =>
           forceReclaim(agent)
         }
       }
@@ -446,6 +448,7 @@ object sync {
   // 在 BaseScoreboard + SemaphoreScoreboard 之上实现 Guard / Reserve / Release 协议
   // ==========================================
   class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
+    private val reaper = createReaperManagedLogic("Reaper")
     private val semaScoreboard =
       spawn(new SemaphoreScoreboardProcess(resourceCount, maxConcurrentPorts, maxConcurrentPorts, zeroAlwaysFree, "Sema"))
 
@@ -481,7 +484,7 @@ object sync {
           isReserved  :=  true.B
           reservedAddr  :=  addr
         }
-        t.registerReaperEntry(isActive) { agent =>
+        reaper.registerReclaimEntry(t, isActive) { agent =>
           forceReclaim(agent)
         }
       }

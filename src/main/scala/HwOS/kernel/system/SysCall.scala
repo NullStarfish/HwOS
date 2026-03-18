@@ -6,6 +6,7 @@ import HwOS.kernel.context.{AtomicCtx, ContextScope, HwContextEntity, ThreadCtx}
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
+
 object SysCall {
   // ==========================================
   // 1. Function Linker Layer (逻辑注入)
@@ -140,14 +141,23 @@ object SysCall {
    */
   def kill(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall kill"){ agent =>
     target.requireLifecycleAccess(agent.ctx, "kill")
-    agent.kernel.threadKillLatch(target) := true.B
+    if (OSReaper.usesManagedThreadKill(target)) {
+      OSReaper.requestThreadKill(target)
+    } else {
+      target.reset()
+    }
   }
 
   /**
    * 普适 context kill：切断一个 ContextEntity 的 context，并交给系统级回收逻辑处理。
    */
   def kill(target: HwContextEntity): HwInline[Unit] = HwInline.stateless("SysCall context kill") { agent =>
-    agent.kernel.contextKillLatch(target) := true.B
+    target match {
+      case managed: OSReaperManaged =>
+        managed.reaperKillLatch := true.B
+      case _ =>
+        throw new Exception(s"[HwOS] Context kill requires OSReaper gate service: '${target.name}' does not opt in.")
+    }
   }
 
   /**

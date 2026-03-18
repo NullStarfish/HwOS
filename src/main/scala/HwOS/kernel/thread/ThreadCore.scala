@@ -2,14 +2,13 @@ package HwOS.kernel.thread
 
 import chisel3._
 import HwOS.kernel.context.{ContextScope, ThreadCtx}
-import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle, RuntimeReclaimTarget}
+import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
 import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 trait ThreadCore
     extends ThreadControlApi
     with ThreadRuntimeApi
-    with ThreadDebugApi
-    with RuntimeReclaimTarget { self: HardwareThread =>
+    with ThreadDebugApi { self: HardwareThread =>
   private var runtimeContext: Option[RuntimeContext] = None
   private[kernel] var generatedEntry: Boolean = false
   private[kernel] var hasExitPath: Boolean = false
@@ -43,17 +42,9 @@ trait ThreadCore
     ThreadRuntimeLogic.exit(runtime)
   }
 
-  override private[kernel] def reset(): Unit = {
+  override def reset(): Unit = {
     ThreadRuntimeLogic.resetToIdle(runtime)
   }
-
-  override def resetRuntime(): Unit = {
-    reset()
-  }
-
-  override def runtimeActive: Bool = active
-
-  override def runtimeName: String = name
 
   private def verifyExitPath(): Unit = {}
   private def maybePrintCapabilitySummary(): Unit = ()
@@ -115,9 +106,6 @@ trait ThreadCore
       initialState = RuntimeLifecycle.Idle,
     )
     runtimeContext = Some(allocatedRuntime)
-    registerReaperEntry(active) { _ =>
-      resetRuntime()
-    }
     ThreadRuntimeLogic.lowerProgram(
       irState = irState,
       layoutState = layoutState,

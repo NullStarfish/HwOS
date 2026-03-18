@@ -8,6 +8,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val worker = createThread("Worker")
   val controller = createThread("Controller")
+  private val reaper = createReaperManagedLogic("Reaper")
   val out = this.own(RegInit(0.U(8.W)))
   val reclaimCount = this.own(RegInit(0.U(8.W)))
   val releaseFlag = this.own(RegInit(false.B))
@@ -36,7 +37,7 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
       when(!held) {
         held  :=  true.B
       }
-      t.registerReaperEntry(holdLeaseActive) { agent =>
+      reaper.registerReclaimEntry(t, holdLeaseActive) { agent =>
         forceHoldReclaim(agent)
       }
     }
@@ -190,7 +191,17 @@ class HwFunctionKillSpec extends AnyFlatSpec {
         guard += 1
       }
 
-      assert(finished, "kill propagation did not settle to a fully reclaimed and restarted function call")
+      val finalDone = c.io.done.peek().litValue
+      val finalOut = c.io.out.peek().litValue
+      val finalReclaim = c.io.reclaimCount.peek().litValue
+      val finalWorkerActive = c.io.workerActive.peek().litValue
+      val finalActivationActive = c.io.activationActive.peek().litValue
+      val finalActivationHeld = c.io.activationHeld.peek().litValue
+
+      assert(
+        finished,
+        s"kill propagation did not settle: done=$finalDone out=$finalOut reclaim=$finalReclaim workerActive=$finalWorkerActive activationActive=$finalActivationActive activationHeld=$finalActivationHeld",
+      )
       c.io.workerActive.expect(false.B)
       c.io.activationActive.expect(false.B)
       c.io.activationHeld.expect(false.B)

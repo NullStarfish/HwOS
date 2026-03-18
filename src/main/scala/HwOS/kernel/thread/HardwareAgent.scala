@@ -3,7 +3,8 @@ package HwOS.kernel.thread
 import chisel3._
 import HwOS.kernel.context.{ContextScope, HwContext, HwContextEntity, LogicCtx}
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{Kernel, RuntimeContext}
+import HwOS.kernel.system.RuntimeContext
+import HwOS.kernel.system.Kernel
 
 trait HardwareAgent extends HwContextEntity {
   val owner: HwProcess
@@ -58,12 +59,8 @@ abstract class HardwareThread(
 
   private[kernel] def runtimeStart(): Unit
   private[kernel] def runtimeExit(): Unit
-  private[kernel] def reset(): Unit
+  def reset(): Unit
   private[kernel] def runtimeHandle: RuntimeContext
-
-  private[HwOS] def registerReaperEntry(isActive: Bool)(forceReclaim: HardwareAgent => Unit): Unit = {
-    kernel.registerReaperEntry(this, isActive)(forceReclaim)
-  }
 }
 
 private[kernel] final class KernelStepHardwareThread(

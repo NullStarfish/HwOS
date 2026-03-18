@@ -4,16 +4,12 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import java.io._
-import HwOS.kernel.context.{HwContextEntity, ResourceManager}
+import HwOS.kernel.context.ResourceManager
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.thread.{HardwareAgent, HardwareThread, ThreadDebugApi}
+import HwOS.kernel.system.OSReaperManaged
+import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 
 class Kernel {
-  private[kernel] final class ReaperEntry(
-      val isActive: Bool,
-      val forceReclaim: HardwareAgent => Unit,
-  )
-
   ResourceManager.reset()
   val secure_mode :Boolean = true
   private var booted = false
@@ -32,48 +28,11 @@ class Kernel {
     val tid = threads.length
     threads += t
     threadNameMap(name) = tid
-    threadKillRegistry.getOrElseUpdate(t, RegInit(false.B))
     
     println(s"[Kernel] Registered Thread: $name @ TID=$tid") 
     tid
   }
   def getTID(name: String): Option[Int] = threadNameMap.get(name)
-
-  private val contexts = ArrayBuffer[HardwareThread]()
-  def registerContext(thread: HardwareThread): Unit = {
-    contexts += thread
-  }
-
-  private val entities = ArrayBuffer[HwContextEntity]()
-  def registerEntity(entity: HwContextEntity): Unit = {
-    entities += entity
-    contextKillRegistry.getOrElseUpdate(entity, RegInit(false.B))
-  }
-
-  private val contextKillRegistry = new HashMap[HwContextEntity, Bool]()
-  private val threadKillRegistry = new HashMap[HardwareThread, Bool]()
-  private val reaperEntries = new HashMap[HwContextEntity, ArrayBuffer[ReaperEntry]]()
-
-  private[kernel] def contextKillLatch(entity: HwContextEntity): Bool = {
-    contextKillRegistry(entity)
-  }
-
-  private[kernel] def threadKillLatch(thread: HardwareThread): Bool = {
-    threadKillRegistry(thread)
-  }
-
-  private[kernel] def registerReaperEntry(entity: HwContextEntity, isActive: Bool)(forceReclaim: HardwareAgent => Unit): Unit = {
-    val entries = reaperEntries.getOrElseUpdate(entity, ArrayBuffer[ReaperEntry]())
-    entries += new ReaperEntry(isActive, forceReclaim)
-  }
-
-  private[kernel] def reaperEntriesOf(entity: HwContextEntity): Seq[ReaperEntry] =
-    reaperEntries.getOrElse(entity, ArrayBuffer.empty[ReaperEntry]).toSeq
-
-  private[kernel] def allEntities: Seq[HwContextEntity] = entities.toSeq.distinct
-
-
-
 
   private val processes = ArrayBuffer[HwProcess]()
   private val processNameMap = new HashMap[String, Int]()
@@ -102,7 +61,8 @@ class Kernel {
       implicit val selfKernel: Kernel = this
 
       object SystemKernel extends HwProcess("Kernel", overrideDebug = Some(false)) {
-        val reaper = spawn(new OSReaperProcess(contexts.toSeq, "OSReaper")(Kernel.this))
+        val reaper =
+          spawn(new OSReaperProcess(Kernel.this.threads.toSeq, collectManagedEntities(), "OSReaper")(Kernel.this))
         override def entry(): Unit = {}
       }
 
@@ -113,6 +73,23 @@ class Kernel {
       booting = false
     }
   }
+
+  private def collectManagedEntities(): Seq[OSReaperManaged] = {
+    def collectFromProcess(proc: HwProcess): Seq[OSReaperManaged] = {
+      val self = proc match {
+        case managed: OSReaperManaged => Seq(managed)
+        case _ => Seq.empty
+      }
+      val threadManaged = proc.threads.collect { case managed: OSReaperManaged => managed }
+      val logicManaged = proc.logics.collect { case managed: OSReaperManaged => managed }
+      val childManaged = proc.children.flatMap(collectFromProcess)
+      self ++ threadManaged ++ logicManaged ++ childManaged
+    }
+
+    processes.filter(_.parent.isEmpty).flatMap(collectFromProcess).distinct.toSeq
+  }
+
+  private[kernel] def managedReaperEntities: Seq[OSReaperManaged] = collectManagedEntities()
 
 
 

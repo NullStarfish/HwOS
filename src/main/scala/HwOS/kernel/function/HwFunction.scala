@@ -3,7 +3,7 @@ package HwOS.kernel.function
 import chisel3._
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{OSReaper, SysCall}
+import HwOS.kernel.system.{OSReaper, OSReaperManagedLogic, SysCall}
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 /**
@@ -43,8 +43,7 @@ final class HwFunction[T] private (
 
       when(isActive) {
         activation.grantLifecycleAccess(agent.ctx)
-        agent.kernel.threadKillLatch(activation) := true.B
-        OSReaper.reclaimThread(activation, agent)
+        OSReaper.reclaimThread(activation, agent.kernel.managedReaperEntities, agent)
         OSReaper.forceAssign(binding.callActive, false.B)
         OSReaper.forceAssign(binding.activeBindingId, 0.U(binding.activeBindingId.getWidth.W))
       }
@@ -57,6 +56,7 @@ final class HwFunction[T] private (
   private var activationThread: Option[HardwareThread] = None
   private var resultHandle: Option[T] = None
   private var callBindingState: Option[FunctionCallBindingState] = None
+  private var reaperHolder: Option[OSReaperManagedLogic] = None
   private var nextBindingId: Int = 1
 
   private[kernel] def ensureActivation(owner: HwProcess): HardwareThread = {
@@ -113,8 +113,18 @@ final class HwFunction[T] private (
     }
   }
 
+  private def ensureReaperHolder(owner: HwProcess): OSReaperManagedLogic =
+    reaperHolder match {
+      case Some(existing) => existing
+      case None =>
+        val holder = owner.createReaperManagedLogic(s"${name}_reaper")
+        reaperHolder = Some(holder)
+        holder
+    }
+
   private[kernel] def allocateCallLease(caller: HardwareThread): FunctionCallLease = {
     val binding = ensureCallBinding(caller.owner)
+    val holder = ensureReaperHolder(caller.owner)
     val lease = new FunctionCallLease(
       bindingId = nextBindingId,
       caller = caller,
@@ -123,7 +133,7 @@ final class HwFunction[T] private (
       callPending = caller.own(RegInit(false.B)),
     )
     nextBindingId += 1
-    caller.registerReaperEntry(lease.isActive) { agent =>
+    holder.registerReclaimEntry(caller, lease.isActive) { agent =>
       lease.forceReclaim(agent)
     }
     lease
