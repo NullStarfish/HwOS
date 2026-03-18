@@ -1,7 +1,6 @@
 package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
-import HwOS.kernel.context.HwLease
 import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -24,34 +23,34 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
     val localTmp = t.own(RegInit(0.U(8.W)))
     activationHeldOpt = Some(held)
 
-    val holdLease = new HwLease {
-      override def isActive: Bool = held
+    def holdLeaseActive: Bool = held
 
-      override private[kernel] def forceReclaim(agent: HwOS.kernel.thread.HardwareAgent): Unit = {
+    def forceHoldReclaim(agent: HwOS.kernel.thread.HardwareAgent): Unit = {
         t.grant(held, agent)
         HwFunctionKillProcess.this.grant(reclaimCount, agent)
-        held <==! false.B
-        reclaimCount <==! reclaimCount + 1.U
-      }
+        HwOS.kernel.system.OSReaper.forceAssign(held, false.B)
+        HwOS.kernel.system.OSReaper.forceAssign(reclaimCount, reclaimCount + 1.U)
     }
 
     t.Step("Acquire") {
       when(!held) {
-        held <== true.B
+        held  :=  true.B
       }
-      t.ctx.registerLease(holdLease)
+      t.registerReaperEntry(holdLeaseActive) { agent =>
+        forceHoldReclaim(agent)
+      }
     }
 
     t.Step("WaitRelease") {
       t.waitCondition(releaseFlag)
       when(releaseFlag) {
-        localTmp <== out + 1.U
-        held <== false.B
+        localTmp  :=  out + 1.U
+        held  :=  false.B
       }
     }
 
     t.Step("Commit") {
-      out <== localTmp
+      out  :=  localTmp
     }
 
     SysCall.Call(SysCall.Return())
@@ -69,13 +68,13 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
 
     worker.entry {
       worker.Step("Init") {
-        out <== 0.U
+        out  :=  0.U
       }
 
       SysCall.Call(blocker.Invoke("AfterCall"))
 
       worker.Step("AfterCall") {
-        out <== out + 10.U
+        out  :=  out + 10.U
       }
 
       SysCall.Call(SysCall.Return())
@@ -86,7 +85,7 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
 
     controller.entry {
       controller.Step("Start1") {
-        releaseFlag <== false.B
+        releaseFlag  :=  false.B
         SysCall.Call(SysCall.start(worker))
       }
       controller.Step("Gap1") {}
@@ -97,7 +96,7 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
       controller.Step("ObserveKill1") {}
       controller.Step("ObserveKill2") {}
       controller.Step("ReleaseAndRestart") {
-        releaseFlag <== true.B
+        releaseFlag  :=  true.B
         SysCall.Call(SysCall.start(worker))
       }
       controller.Step("WaitDone") {
@@ -157,12 +156,12 @@ class HwFunctionKillModule extends Module {
         when(!proc.controller.active && !proc.controller.done) {
           SysCall.Call(SysCall.start(proc.controller))
         }
-        io.done <== proc.controller.done
-        io.out <== proc.out
-        io.reclaimCount <== proc.reclaimCount
-        io.workerActive <== proc.worker.active
-        io.activationActive <== activation.active
-        io.activationHeld <== proc.activationHeld
+        io.done  :=  proc.controller.done
+        io.out  :=  proc.out
+        io.reclaimCount  :=  proc.reclaimCount
+        io.workerActive  :=  proc.worker.active
+        io.activationActive  :=  activation.active
+        io.activationHeld  :=  proc.activationHeld
       }
     }
   }

@@ -3,11 +3,10 @@ package HwOS.stdlib
 import chisel3._
 import chisel3.util._
 import HwOS.kernel.context.{AtomicCtx, ContextScope, LogicCtx}
-import HwOS.kernel.context.HwLease
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{GrantAbi, Kernel, SysCall}
+import HwOS.kernel.system.{GrantAbi, Kernel, OSReaper, SysCall}
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
 
 object sync {
@@ -24,9 +23,9 @@ object sync {
     // ==========================================
     // 发行内核级租约 (Mutex Lease)
     // ==========================================
-    class MutexLease(val id: Int) extends HwLease {
+    class MutexLease(val id: Int) {
       private val gateLease = gate.directLease(id)
-      override def isActive: Bool = gateLease.isActive
+      def isActive: Bool = gateLease.isActive
 
       def Lock(): HwInline[Unit] = HwInline.atomic(s"Lock_$id") { t =>
         val gateLease = SysCall.Call(gate.RequestLease(id))
@@ -40,7 +39,7 @@ object sync {
         }
       }
 
-      override def forceReclaim(agent: HardwareAgent): Unit = {
+      def forceReclaim(agent: HardwareAgent): Unit = {
         gateLease.forceReclaim(agent)
       }
     }
@@ -102,46 +101,48 @@ object sync {
       this.grant(count, main)
       main.run{
         when (anyAcquire && (count > 0.U)) {
-          count <== count + totalRelease - 1.U
+          count  :=  count + totalRelease - 1.U
         } .otherwise {
-          count <== count + totalRelease
+          count  :=  count + totalRelease
         }
       }
     }
 
     // --- 高阶 HwFunction 接口 ---
-    class SemaphoreLease(val id: Int) extends HwLease {
+    class SemaphoreLease(val id: Int) {
       val isHeld = RegInit(false.B)
       SemaphoreProcess.this.own(isHeld)
-      override def isActive: Bool = isHeld
+      def isActive: Bool = isHeld
 
       def Acquire(): HwInline[Unit] = HwInline.atomic(s"Acquire_$id") { t =>
         SemaphoreProcess.this.grant(acquires(id), t, GrantAbi.PulseWire)
-        acquires(id) <== true.B
+        acquires(id)  :=  true.B
         val canAcquire = isHeld || ((count > 0.U) && (winnerAcqIdx === id.U))
         t.waitCondition(canAcquire)
 
         when(!isHeld && canAcquire) {
           SemaphoreProcess.this.grant(isHeld, t)
-          isHeld <== true.B
+          isHeld  :=  true.B
         }
-        t.ctx.registerLease(this)
+        t.registerReaperEntry(isActive) { agent =>
+          forceReclaim(agent)
+        }
       }
 
       def Release(): HwInline[Unit] = HwInline.stateless(s"Release_$id") { agent =>
         SemaphoreProcess.this.grant(releases(id), agent, GrantAbi.PulseWire)
         SemaphoreProcess.this.grant(isHeld, agent)
         when(isHeld) {
-          releases(id) <== true.B
-          isHeld <== false.B
+          releases(id)  :=  true.B
+          isHeld  :=  false.B
         }
       }
 
-      override def forceReclaim(agent: HardwareAgent): Unit = {
+      def forceReclaim(agent: HardwareAgent): Unit = {
         SemaphoreProcess.this.grant(releases(id), agent, GrantAbi.PulseWire)
         SemaphoreProcess.this.grant(isHeld, agent)
-        releases(id) <==! true.B
-        isHeld <==! false.B
+        OSReaper.forceAssign(releases(id), true.B)
+        OSReaper.forceAssign(isHeld, false.B)
       }
     }
 
@@ -197,7 +198,7 @@ object sync {
       val main = createLogic("Main") 
       this.grant(count, main)
       main.run {
-        count <== nextCount
+        count  :=  nextCount
       }
     }
 
@@ -205,16 +206,16 @@ object sync {
     // --- 高阶 HwFunction 接口 ---
     def Add(id: Int, delta: UInt): HwInline[Unit] = HwInline.stateless(s"WG_Add_$id") { agent =>
       this.grant(adds(id), agent, GrantAbi.PulseWire)
-      adds(id) <== delta
+      adds(id)  :=  delta
     }
 
     def Done(id: Int): HwInline[Unit] = HwInline.stateless(s"WG_Done_$id") { agent =>
       this.grant(dones(id), agent, GrantAbi.PulseWire)
-      dones(id) <== true.B
+      dones(id)  :=  true.B
     }
 
     def Wait(): HwInline[Unit] = HwInline.atomic("WG_Wait") { t =>
-      // Wait 操作仅仅是纯组合逻辑读取 nextCount，不修改数据通路，因此不需要 grant 和 <==
+      // Wait 操作仅仅是纯组合逻辑读取 nextCount，不修改数据通路，因此不需要 grant 和  := 
       t.waitCondition(nextCount === 0.U)
       when(nextCount === 0.U) {
         t.hijack(t.Next)
@@ -295,52 +296,54 @@ object sync {
 
         for ((entry, i) <- entries.zipWithIndex) {
           when(reserveGrantOH(i)) {
-            entry.active <== true.B
-            entry.commitPending <== false.B
-            entry.token <== nextIssue
+            entry.active  :=  true.B
+            entry.commitPending  :=  false.B
+            entry.token  :=  nextIssue
           }
           when(reqs(i).commit && entry.active) {
-            entry.commitPending <== true.B
+            entry.commitPending  :=  true.B
           }
           when(forceCommitOH(i) || reclaimOH(i)) {
-            entry.active <== false.B
-            entry.commitPending <== false.B
+            entry.active  :=  false.B
+            entry.commitPending  :=  false.B
           }
         }
 
         when(reserveFire) {
-          nextIssue <== nextIssue + 1.U
+          nextIssue  :=  nextIssue + 1.U
         }
         when(commitFire || reclaimOH.asUInt.orR) {
           when(commitFire) {
-            nextCommit <== nextCommit + 1.U
+            nextCommit  :=  nextCommit + 1.U
           }.otherwise {
             val reclaimHead = VecInit((0 until maxClients).map(i => reclaimOH(i) && entries(i).token === nextCommit)).asUInt.orR
             when(reclaimHead) {
-              nextCommit <== nextCommit + 1.U
+              nextCommit  :=  nextCommit + 1.U
             }
           }
-          inFlight <== inFlight + Mux(reserveFire, 1.U, 0.U) - Mux(commitFire, 1.U, 0.U) - reclaimCount
+          inFlight  :=  inFlight + Mux(reserveFire, 1.U, 0.U) - Mux(commitFire, 1.U, 0.U) - reclaimCount
         }.elsewhen(reserveFire) {
-          inFlight <== inFlight + 1.U
+          inFlight  :=  inFlight + 1.U
         }
       }
     }
 
-    class WindowLease(val id: Int) extends HwLease {
-      override def isActive: Bool = entries(id).active
+    class WindowLease(val id: Int) {
+      def isActive: Bool = entries(id).active
 
       def Reserve(): HwInline[Unit] = HwInline.atomic(s"Reserve_$id") { t =>
         OrderedWindowProcess.this.grant(reqs(id).reserve, t, GrantAbi.PulseWire)
-        reqs(id).reserve <== true.B
+        reqs(id).reserve  :=  true.B
         val granted = entries(id).active
         t.waitCondition(granted)
-        t.ctx.registerLease(this)
+        t.registerReaperEntry(isActive) { agent =>
+          forceReclaim(agent)
+        }
       }
 
       def Commit(): HwInline[Unit] = HwInline.stateless(s"Commit_$id") { agent =>
         OrderedWindowProcess.this.grant(reqs(id).commit, agent, GrantAbi.PulseWire)
-        reqs(id).commit <== true.B
+        reqs(id).commit  :=  true.B
       }
 
       def Committed(): HwInline[Bool] = HwInline.stateless(s"Committed_$id") { _ =>
@@ -350,12 +353,12 @@ object sync {
 
       def ForceCommit(): HwInline[Unit] = HwInline.stateless(s"ForceCommit_$id") { agent =>
         OrderedWindowProcess.this.grant(reqs(id).forceCommit, agent, GrantAbi.PulseWire)
-        reqs(id).forceCommit <== true.B
+        reqs(id).forceCommit  :=  true.B
       }
 
-      override def forceReclaim(agent: HardwareAgent): Unit = {
+      def forceReclaim(agent: HardwareAgent): Unit = {
         OrderedWindowProcess.this.grant(reqs(id).reclaim, agent, GrantAbi.PulseWire)
-        reqs(id).reclaim <==! true.B
+        OSReaper.forceAssign(reqs(id).reclaim, true.B)
       }
     }
 
@@ -381,16 +384,16 @@ object sync {
     def SetBusy(addr: UInt): HwInline[Unit] = HwInline.stateless("BaseSB_SetBusy") { agent =>
       if (zeroAlwaysFree) {
         when(addr =/= 0.U) {
-          busyTable.at(addr) <== true.B
+          busyTable.at(addr)  :=  true.B
         }
       } else {
-        busyTable.at(addr) <== true.B
+        busyTable.at(addr)  :=  true.B
       }
       ()
     }
 
     def ClearBusy(addr: UInt): HwInline[Unit] = HwInline.stateless("BaseSB_ClearBusy") { agent =>
-      busyTable.at(addr) <== false.B
+      busyTable.at(addr)  :=  false.B
       ()
     }
   }
@@ -455,13 +458,13 @@ object sync {
       !isBusy
     }
 
-    class ScoreboardLease(val portIdx: Int) extends HwLease {
+    class ScoreboardLease(val portIdx: Int) {
       val isReserved = RegInit(false.B)
       val reservedAddr = RegInit(0.U(log2Ceil(resourceCount).W))
 
       ScoreboardProcess.this.own(isReserved)
       ScoreboardProcess.this.own(reservedAddr)
-      override def isActive: Bool = isReserved
+      def isActive: Bool = isReserved
 
       def Reserve(addr: UInt): HwInline[Unit] = HwInline.atomic(s"Reserve_$portIdx") { t =>
         val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
@@ -475,10 +478,12 @@ object sync {
           ScoreboardProcess.this.grant(reservedAddr, t)
           SysCall.Call(busyPort.Acquire())
           SysCall.Call(busyPort.SetBusy(addr))
-          isReserved <== true.B
-          reservedAddr <== addr
+          isReserved  :=  true.B
+          reservedAddr  :=  addr
         }
-        t.ctx.registerLease(this)
+        t.registerReaperEntry(isActive) { agent =>
+          forceReclaim(agent)
+        }
       }
 
       def Release(): HwInline[Unit] = HwInline.stateless(s"Release_$portIdx") { agent =>
@@ -487,17 +492,17 @@ object sync {
         when(isReserved) {
           SysCall.Call(busyPort.ClearBusy(reservedAddr))
           SysCall.Call(busyPort.Release())
-          isReserved <== false.B
+          isReserved  :=  false.B
         }
       }
 
-      override def forceReclaim(agent: HardwareAgent): Unit = {
+      def forceReclaim(agent: HardwareAgent): Unit = {
         val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
         ScoreboardProcess.this.grant(isReserved, agent)
         when(isReserved) {
           SysCall.Call(busyPort.ClearBusy(reservedAddr))
           SysCall.Call(busyPort.Release())
-          isReserved <==! false.B
+          OSReaper.forceAssign(isReserved, false.B)
         }
       }
     }

@@ -26,10 +26,6 @@ object ProcessBuilder {
 
 case class ProcEnv(kernel: Kernel, parent: Option[HwProcess], debugEnable: Boolean)
 abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] = None )(implicit val kernel: Kernel) extends HwContextEntity {
-  ctx.bindIsActive(true.B)
-
-
-
   val parent: Option[HwProcess] = ProcessBuilder.currentParent
 
   val debugEnable: Boolean = overrideDebug.getOrElse {
@@ -45,6 +41,7 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
 
   
   kernel.registerProcess(name, this)
+  kernel.registerEntity(this)
 
 
   
@@ -64,12 +61,14 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     val t = new KernelStepHardwareThread(threadName, this, debugEnable)
     kernel.registerThread(threadName, t)
     kernel.registerContext(t)
+    kernel.registerEntity(t)
     threads += t
     t
   }
   
   protected def createLogic(name: String = "Daemon"): HardwareLogic = {
     val l = new HardwareLogic(s"${this.name}/${name}_logic", this, debugEnable)
+    kernel.registerEntity(l)
     logics += l
     l
   }

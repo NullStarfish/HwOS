@@ -16,7 +16,7 @@ class ContextKillProcess(localName: String)(implicit kernel: Kernel) extends HwP
 
     worker.entry {
       worker.Step("Tick") {
-        hits <== hits + 1.U
+        hits  :=  hits + 1.U
       }
       worker.Step("Hold") {
         worker.waitCondition(false.B)
@@ -68,9 +68,9 @@ class ContextKillModule extends Module {
         when(!proc.controller.active && !proc.controller.done) {
           SysCall.Call(SysCall.start(proc.controller))
         }
-        io.hits <== proc.hits
-        io.workerActive <== proc.worker.active
-        io.workerDone <== proc.worker.done
+        io.hits  :=  proc.hits
+        io.workerActive  :=  proc.worker.active
+        io.workerDone  :=  proc.worker.done
       }
     }
   }

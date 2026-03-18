@@ -45,7 +45,7 @@ class MutexAbortTestProcess(localName: String)(implicit kernel: Kernel) extends 
         SysCall.Call(mutex.Lock(1))
       }
       observer.Step("Success") {
-        observerSuccess <== true.B 
+        observerSuccess  :=  true.B 
         SysCall.Call(mutex.Unlock(1))
       }
       SysCall.Call(SysCall.Return())
@@ -106,8 +106,8 @@ class MutexAbortModule extends Module {
       
       daemon.run {
         when(io.start) { SysCall.Call(SysCall.start(testProc.main)) }
-        io.success <== testProc.observerSuccess
-        io.done    <== testProc.main.done
+        io.success  :=  testProc.observerSuccess
+        io.done     :=  testProc.main.done
       }
     }
   }

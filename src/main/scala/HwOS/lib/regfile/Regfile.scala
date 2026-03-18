@@ -28,10 +28,10 @@ object RegfileLib {
     def Write(addr: UInt, data: UInt): HwInline[Unit] = HwInline.stateless("Base_Write") { _ =>
       if (zeroReg) {
         when(addr =/= 0.U) {
-          regs.at(addr) <== data
+          regs.at(addr)  :=  data
         }
       } else {
-        regs.at(addr) <== data
+        regs.at(addr)  :=  data
       }
       ()
     }
@@ -114,7 +114,7 @@ object RegfileLib {
       grant(rdata, t, GrantAbi.LevelDrivenWire)
 
       when(ready) {
-        rdata <== SysCall.Call(semaReg.Read(addr))
+        rdata  :=  SysCall.Call(semaReg.Read(addr))
       }
       rdata
     }
@@ -186,10 +186,10 @@ object RegfileLib {
       this.grant(pending.addr, t)
       this.grant(pending.ready, t)
       this.grant(publishDone(portIdx), t)
-      pending.busy <== true.B
-      pending.addr <== addr
-      pending.ready <== false.B
-      publishDone(portIdx) <== false.B
+      pending.busy  :=  true.B
+      pending.addr  :=  addr
+      pending.ready  :=  false.B
+      publishDone(portIdx)  :=  false.B
       ()
     }
 
@@ -197,8 +197,8 @@ object RegfileLib {
       val pending = pendingPorts(portIdx)
       this.grant(pending.data, t)
       this.grant(pending.ready, t)
-      pending.data <== data
-      pending.ready <== true.B
+      pending.data  :=  data
+      pending.ready  :=  true.B
       ()
     }
 
@@ -224,9 +224,9 @@ object RegfileLib {
             SysCall.Call(sbLease.Release())
             SysCall.Call(writePort.Release())
             SysCall.Call(windowLease.ForceCommit())
-            pending.busy <== false.B
-            pending.ready <== false.B
-            publishDone(i) <== true.B
+            pending.busy  :=  false.B
+            pending.ready  :=  false.B
+            publishDone(i)  :=  true.B
           }
         }
       }
@@ -245,11 +245,11 @@ object RegfileLib {
       grant(rdata, t, GrantAbi.LevelDrivenWire)
 
       when(if (zeroReg) addr === 0.U else false.B) {
-        rdata <== 0.U
+        rdata  :=  0.U
       }.elsewhen(matchingReady.asUInt.orR) {
-        rdata <== Mux1H(matchingReady, VecInit(pendingPorts.toIndexedSeq.map(_.data)))
+        rdata  :=  Mux1H(matchingReady, VecInit(pendingPorts.toIndexedSeq.map(_.data)))
       }.otherwise {
-        rdata <== SysCall.Call(semaReg.Read(addr))
+        rdata  :=  SysCall.Call(semaReg.Read(addr))
       }
       rdata
     }

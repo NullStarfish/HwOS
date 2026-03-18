@@ -14,55 +14,55 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
 
   private def inner: HwInline[Unit] = HwInline.thread("Inner") { t =>
     t.Step("InnerWrite") {
-      out <== 7.U
+      out  :=  7.U
     }
     SysCall.Call(SysCall.Return())
     t.Step("InnerDead") {
-      out <== 99.U
+      out  :=  99.U
     }
     ()
   }
 
   private def innerMost: HwInline[Unit] = HwInline.thread("InnerMost") { t =>
     t.Step("InnerMostWrite") {
-      out <== 10.U
+      out  :=  10.U
     }
     SysCall.Call(SysCall.Return())
     t.Step("InnerMostDead") {
-      out <== 77.U
+      out  :=  77.U
     }
     ()
   }
 
   private def middle: HwInline[Unit] = HwInline.thread("Middle") { t =>
     t.Step("MiddleWrite") {
-      out <== 5.U
+      out  :=  5.U
     }
     SysCall.Call(innerMost)
     t.Step("MiddleDead") {
-      out <== 66.U
+      out  :=  66.U
     }
     ()
   }
 
   private def outer: HwInline[Unit] = HwInline.thread("Outer") { t =>
     t.Step("OuterInit") {
-      out <== 1.U
+      out  :=  1.U
     }
     SysCall.Call(inner, "OuterResume")
     t.Step("OuterResume") {
-      out <== out + 1.U
+      out  :=  out + 1.U
     }
     ()
   }
 
   private def outerNested: HwInline[Unit] = HwInline.thread("OuterNested") { t =>
     t.Step("OuterNestedInit") {
-      out <== 2.U
+      out  :=  2.U
     }
     SysCall.Call(middle, "OuterNestedResume")
     t.Step("OuterNestedResume") {
-      out <== out + 1.U
+      out  :=  out + 1.U
     }
     ()
   }
@@ -105,8 +105,8 @@ class ReturnModule extends Module {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }
-        io.out <== proc.out
-        io.done <== proc.worker.done
+        io.out  :=  proc.out
+        io.done  :=  proc.worker.done
       }
     }
   }

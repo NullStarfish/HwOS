@@ -1,9 +1,7 @@
 package HwOS.kernel.function
 
 import chisel3._
-import HwOS.kernel.context.HwLease
 import HwOS.kernel.debug.CallStack
-import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{OSReaper, SysCall}
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
@@ -32,27 +30,26 @@ final class HwFunction[T] private (
       val activation: HardwareThread,
       val binding: FunctionCallBindingState,
       val callPending: Bool,
-  ) extends HwLease {
+  ) {
     private val bindingIdValue = bindingId.U(binding.activeBindingId.getWidth.W)
 
-    override def isActive: Bool =
+    def isActive: Bool =
       binding.callActive && binding.activeBindingId === bindingIdValue
 
-    override private[kernel] def forceReclaim(agent: HardwareAgent): Unit = {
+    private[kernel] def forceReclaim(agent: HardwareAgent): Unit = {
       activation.grant(binding.callActive, agent)
       activation.grant(binding.activeBindingId, agent)
       caller.grant(callPending, agent)
 
       when(isActive) {
         activation.grantLifecycleAccess(agent.ctx)
-        activation.grant(activation.ctx.kernelKillSignal, agent, HwOS.kernel.system.GrantAbi.LevelDrivenWire)
-        activation.ctx.kernelKillSignal <==! true.B
+        agent.kernel.threadKillLatch(activation) := true.B
         OSReaper.reclaimThread(activation, agent)
-        binding.callActive <==! false.B
-        binding.activeBindingId <==! 0.U(binding.activeBindingId.getWidth.W)
+        OSReaper.forceAssign(binding.callActive, false.B)
+        OSReaper.forceAssign(binding.activeBindingId, 0.U(binding.activeBindingId.getWidth.W))
       }
 
-      callPending <==! false.B
+      OSReaper.forceAssign(callPending, false.B)
     }
   }
 
@@ -126,7 +123,9 @@ final class HwFunction[T] private (
       callPending = caller.own(RegInit(false.B)),
     )
     nextBindingId += 1
-    caller.ctx.registerLease(lease)
+    caller.registerReaperEntry(lease.isActive) { agent =>
+      lease.forceReclaim(agent)
+    }
     lease
   }
 

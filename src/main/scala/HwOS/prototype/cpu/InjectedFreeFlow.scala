@@ -73,7 +73,7 @@ object InjectedFreeFlow {
       when(!lease.isActive) {
         SysCall.Call(lease.Acquire())
       }
-      delay <== delay + 1.U
+      delay  :=  delay + 1.U
       val done = delay >= 2.U
       t.waitCondition(done)
       when(done) {
@@ -134,11 +134,11 @@ object InjectedFreeFlow {
         }
         withReservedWrite(s"ArithReserve_$slotId") { rx =>
           rx.Step(s"ArithRead_$slotId") {
-            decodedSrc <== SysCall.Call(regFile.Read(rs1))
+            decodedSrc  :=  SysCall.Call(regFile.Read(rs1))
           }
           SysCall.Call(arith.WithPort(slotId, s"ArithAcquire_$slotId") { ax =>
             ax.Step(s"ArithExec_$slotId") {
-              result <== SysCall.Call(arith.Execute(decodedSrc, imm))
+              result  :=  SysCall.Call(arith.Execute(decodedSrc, imm))
             }
           })
           rx.Step(s"ArithAfterExec_$slotId") {
@@ -154,11 +154,11 @@ object InjectedFreeFlow {
         }
         withReservedWrite(s"LoadReserve_$slotId") { rx =>
           rx.Step(s"LoadPrepare_$slotId") {
-            loadDelay <== 0.U
+            loadDelay  :=  0.U
           }
           SysCall.Call(load.WithPort(slotId, s"LoadAcquire_$slotId") { lx =>
             lx.Step(s"LoadExec_$slotId") {
-              result <== SysCall.Call(load.Load(slotId, loadDelay, imm))
+              result  :=  SysCall.Call(load.Load(slotId, loadDelay, imm))
             }
           })
           rx.Step(s"LoadAfterExec_$slotId") {
@@ -174,22 +174,22 @@ object InjectedFreeFlow {
         }
         withReservedWrite(s"LoadAddLoadReserve_$slotId") { rx =>
           rx.Step(s"LoadAddPrepare_$slotId") {
-            loadDelay <== 0.U
+            loadDelay  :=  0.U
           }
           SysCall.Call(load.WithPort(slotId, s"LoadAddLoadAcquire_$slotId") { lx =>
             lx.Step(s"LoadAddLoadExec_$slotId") {
-              loadedValue <== SysCall.Call(load.Load(slotId, loadDelay, imm))
+              loadedValue  :=  SysCall.Call(load.Load(slotId, loadDelay, imm))
             }
           })
           rx.Step(s"LoadAddArithWait_$slotId") {
             rx.waitCondition(SysCall.Call(arith.Available()))
           }
           rx.Step(s"LoadAddArithRead_$slotId") {
-            decodedSrc <== SysCall.Call(regFile.Read(rs1))
+            decodedSrc  :=  SysCall.Call(regFile.Read(rs1))
           }
           SysCall.Call(arith.WithPort(slotId, s"LoadAddArithAcquire_$slotId") { ax =>
             ax.Step(s"LoadAddArithExec_$slotId") {
-              result <== SysCall.Call(arith.Execute(loadedValue, decodedSrc))
+              result  :=  SysCall.Call(arith.Execute(loadedValue, decodedSrc))
             }
           })
           rx.Step(s"LoadAddAfterArith_$slotId") {
@@ -265,7 +265,7 @@ object InjectedFreeFlow {
           when(slotFire) {
             for ((slot, idx) <- slots.zipWithIndex) {
               when(slotOH(idx)) {
-                slot.instArg <== inst
+                slot.instArg  :=  inst
                 SysCall.Call(SysCall.start(slot.thread))
               }
             }
@@ -275,7 +275,7 @@ object InjectedFreeFlow {
 
         val issueCount = fires.reduce(_ + _)
         when(issueCount =/= 0.U) {
-          fetchPtr <== fetchPtr + issueCount
+          fetchPtr  :=  fetchPtr + issueCount
         }
       }
     }
@@ -307,10 +307,10 @@ object InjectedFreeFlow {
         this.grant(io.x3, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
         this.grant(io.activeThreads, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
         daemon.run {
-          io.x1 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
-          io.x2 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))
-          io.x3 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(3.U))
-          io.activeThreads <== PopCount(fetch.slots.map(_.thread.active))
+          io.x1  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
+          io.x2  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))
+          io.x3  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(3.U))
+          io.activeThreads  :=  PopCount(fetch.slots.map(_.thread.active))
         }
       }
     }

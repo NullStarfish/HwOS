@@ -16,10 +16,10 @@ object ModuleWrapperExample {
     def Invoke(lhs: UInt, rhs: UInt, dst: UInt): HwInline[Unit] = HwInline.thread(s"${name}_Invoke") { t =>
       val sumReg = t.own(RegInit(0.U(32.W)))
       t.Step("Add") {
-        sumReg <== lhs + rhs
+        sumReg  :=  lhs + rhs
       }
       t.Step("Commit") {
-        dst <== sumReg
+        dst  :=  sumReg
       }
       ()
     }
@@ -72,14 +72,14 @@ object ModuleWrapperExample {
 
         daemon.run {
           when(io.start && !worker.active) {
-            lhsReg <== io.lhs
-            rhsReg <== io.rhs
+            lhsReg  :=  io.lhs
+            rhsReg  :=  io.rhs
             SysCall.Call(SysCall.start(worker))
           }
 
-          io.busy <== worker.active
-          io.done <== worker.done
-          io.result <== resultReg
+          io.busy  :=  worker.active
+          io.done  :=  worker.done
+          io.result  :=  resultReg
         }
       }
     }

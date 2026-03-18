@@ -1,38 +1,15 @@
 package HwOS.kernel.context
 
 import chisel3._
+import scala.reflect.ClassTag
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
-import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.system.{GrantAbi, Kernel}
-import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
+import HwOS.kernel.memory.{ExportCapability, ExportedSymbol, VirtualHandle}
+import HwOS.kernel.thread.HardwareThread
 
-// ==========================================
-// 核心抽象：硬件租约
-// ==========================================
-trait HwLease {
-  def isActive: Bool 
-  private[kernel] def forceReclaim(agent: HardwareAgent): Unit 
-}
-
-// ==========================================
-// HwContext：统一的执行上下文 / 权限中心
-// ==========================================
-// contract:
-// 1. 所有受保护赋值都以 ctx.isActive 为最终门控
-// 2. kernelKillSignal 是 context 级别的系统切断机制，不是 lifecycle 语义
-// 3. 资源 ownership / ACL 挂在 context 上
-// 4. isActive 必须由承载该 context 的类显式绑定；未绑定即为错误
 class HwContext(val self: HwContextEntity) {
   private[kernel] val owns = scala.collection.mutable.Set[Data]()
   private[kernel] val granteds = scala.collection.mutable.Set[Data]()
-
-  private[kernel] val activeLeases = ArrayBuffer[HwLease]()
-  private var activeExpr: Option[Bool] = None
-
-  def registerLease(lease: HwLease): Unit = {
-    activeLeases += lease
-  }
 
   def name: String = self.name
 
@@ -47,8 +24,6 @@ class HwContext(val self: HwContextEntity) {
     ResourceManager.registerAclExemptVector(vec)
     vec
   }
-
-  private[kernel] val kernelKillSignal = own(RegInit(false.B))
 
   def grant(signal: Data, target: HwContext): Unit = {
     grant(signal, target, self.kernel.addressSpace.inferGrantAbi(signal))
@@ -70,15 +45,6 @@ class HwContext(val self: HwContextEntity) {
   }
 
   private[kernel] def getAllOwnedSignals(): Iterable[Data] = owns
-
-  def bindIsActive(expr: Bool): Unit = {
-    activeExpr = Some(expr)
-  }
-
-  def isActive: Bool =
-    activeExpr
-      .map(_ && !kernelKillSignal)
-      .getOrElse(throw new Exception(s"[HwOS Context Error] isActive is not bound for context '${self.name}'."))
 }
 
 
@@ -112,6 +78,14 @@ trait HwContextEntity {
 
   def grant(signal: Data, target: HwContextEntity, abi: GrantAbi): Unit = {
     ctx.grant(signal, target.ctx, abi)
+  }
+
+  def export[T <: Data](symbolName: String, signal: T, caps: ExportCapability): ExportedSymbol[T] = {
+    kernel.addressSpace.registerExport(name, symbolName, signal, caps)
+  }
+
+  def declare[T <: Data: ClassTag](symbolName: String, caps: ExportCapability): VirtualHandle[T] = {
+    kernel.addressSpace.resolveExport[T](symbolName, name, caps)
   }
 
 

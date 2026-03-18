@@ -1,6 +1,7 @@
 package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.memory.ExportCapability
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{AddressKind, Kernel, SysCall}
 import chisel3._
@@ -23,6 +24,8 @@ class AddressTableExportSpec extends AnyFlatSpec {
     assert(rendered.contains("Code Table"))
     assert(rendered.contains("Binding Table"))
     assert(rendered.contains("Grant Table"))
+    assert(rendered.contains("Exported Memory Table"))
+    assert(rendered.contains("Dependency Table"))
     assert(rendered.contains("0 entries"))
 
     val tempDir = Files.createTempDirectory("hwos_address_tables_")
@@ -39,10 +42,14 @@ class AddressTableExportSpec extends AnyFlatSpec {
     assert(json.contains("\"code_table\""))
     assert(json.contains("\"binding_table\""))
     assert(json.contains("\"grant_table\""))
+    assert(json.contains("\"exported_memory_table\""))
+    assert(json.contains("\"dependency_table\""))
     assert(text.contains("State Table"))
     assert(text.contains("Code Table"))
     assert(text.contains("Binding Table"))
     assert(text.contains("Grant Table"))
+    assert(text.contains("Exported Memory Table"))
+    assert(text.contains("Dependency Table"))
     assert(text.contains("code_start"))
     assert(text.contains("code_entry"))
   }
@@ -60,12 +67,17 @@ class AddressTableExportSpec extends AnyFlatSpec {
       object Init extends HwProcess("Init") {
         val worker = createThread("Worker")
         val shared = this.own(RegInit(0.U(8.W)))
+        private val observer = createLogic("Observer")
 
         override def entry(): Unit = {
           this.grant(shared, worker)
+          export("exported.shared", shared, ExportCapability.Read)
           worker.entry {
             worker.Step("Init") {}
             SysCall.Call(SysCall.Return())
+          }
+          observer.run {
+            observer.declare[UInt]("exported.shared", ExportCapability.Read)
           }
         }
       }
@@ -84,9 +96,12 @@ class AddressTableExportSpec extends AnyFlatSpec {
       assert(json.contains("\"code_table\""))
       assert(json.contains("\"binding_table\""))
       assert(json.contains("\"grant_table\""))
+      assert(json.contains("\"exported_memory_table\""))
+      assert(json.contains("\"dependency_table\""))
       assert(json.contains("Init/Worker_thread"))
       assert(json.contains("Init/Worker_thread_segment"))
       assert(json.contains("register-write"))
+      assert(json.contains("exported.shared"))
       assert(json.contains("\"code_start\":0"))
       assert(json.contains("\"code_entry\":0"))
       assert(json.contains("\"cursor_start_address\":"))
@@ -101,9 +116,12 @@ class AddressTableExportSpec extends AnyFlatSpec {
       assert(text.contains("Code Table"))
       assert(text.contains("Binding Table"))
       assert(text.contains("Grant Table"))
+      assert(text.contains("Exported Memory Table"))
+      assert(text.contains("Dependency Table"))
       assert(text.contains("Init/Worker_thread"))
       assert(text.contains("Init/Worker_thread_segment"))
       assert(text.contains("register-write"))
+      assert(text.contains("exported.shared"))
       assert(text.contains("code_start"))
       assert(text.contains("code_entry"))
     }

@@ -49,7 +49,7 @@ class AgeOrderedRegfileModule extends Module {
         }
 
         oldWriter.Step("DelayOld") {
-          delay <== delay + 1.U
+          delay  :=  delay + 1.U
           oldWriter.waitCondition(delay >= 3.U)
         }
 
@@ -86,16 +86,16 @@ class AgeOrderedRegfileModule extends Module {
         this.grant(forwardedValue, reader)
 
         reader.Step("DelayReader") {
-          delay <== delay + 1.U
+          delay  :=  delay + 1.U
           reader.waitCondition(delay >= 1.U)
         }
 
         reader.Step("ReadForwarded") {
-          seen <== SysCall.Call(regFile.Read(2.U))
+          seen  :=  SysCall.Call(regFile.Read(2.U))
         }
 
         reader.Step("Publish") {
-          forwardedValue <== seen
+          forwardedValue  :=  seen
         }
 
         reader.Step("ExitReader") {
@@ -108,7 +108,7 @@ class AgeOrderedRegfileModule extends Module {
       this.grantLifecycle(reader, starter)
       this.grant(launchDelay, starter)
       starter.run {
-        launchDelay <== launchDelay + 1.U
+        launchDelay  :=  launchDelay + 1.U
         when(!oldWriter.active && !oldWriter.done) {
           SysCall.Call(SysCall.start(oldWriter))
         }
@@ -125,9 +125,9 @@ class AgeOrderedRegfileModule extends Module {
       this.grant(io.forwardedX2, monitor, GrantAbi.LevelDrivenWire)
       this.grant(forwardedValue, monitor)
       monitor.run {
-        io.committedX1 <== SysCall.Call(regFile.ReadCommitted(1.U))
-        io.committedX2 <== SysCall.Call(regFile.ReadCommitted(2.U))
-        io.forwardedX2 <== forwardedValue
+        io.committedX1  :=  SysCall.Call(regFile.ReadCommitted(1.U))
+        io.committedX2  :=  SysCall.Call(regFile.ReadCommitted(2.U))
+        io.forwardedX2  :=  forwardedValue
       }
     }
   }

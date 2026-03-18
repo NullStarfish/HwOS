@@ -143,7 +143,7 @@ object StructuredControl {
     val loop = new LoopControl(thread, breakTarget = s"${base}_End", continueTarget = s"${base}_Inc")
 
     thread.Step(s"${base}_Init") {
-      idx <== start.U(width.W)
+      idx  :=  start.U(width.W)
     }
 
     thread.Step(s"${base}_Cond") {
@@ -161,7 +161,7 @@ object StructuredControl {
     SysCall.Call(body(idx, loop), s"${base}_Inc")
 
     thread.Step(s"${base}_Inc") {
-      idx <== idx + 1.U
+      idx  :=  idx + 1.U
       thread.hijack(thread.Next)
     }
 

@@ -38,7 +38,7 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
     stallTracker.run {
       // .active 表示线程未 exit，flagReserved 表示已经过了握手阶段开始尝试读
       when(consumer.active && flagReserved) {
-        stallCounter <== stallCounter + 1.U
+        stallCounter  :=  stallCounter + 1.U
       }
     }
 
@@ -48,7 +48,7 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
       producer.Step("Issue_Reserve") {
         
         SysCall.Call(regfileLease.Reserve( addr = 5.U))
-        flagReserved <== true.B 
+        flagReserved  :=  true.B 
       }
       producer.Step("EX_Cycle1") { /* ALU */ }
       producer.Step("EX_Cycle2") { /* ALU */ }
@@ -70,7 +70,7 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
       }
       consumer.Step("ReadOperand") {
         val rdata = SysCall.Call(regfile.Read(addr = 5.U))
-        resultReg <== rdata 
+        resultReg  :=  rdata 
       }
       // [修复]：提供一个独立的着陆点
       consumer.Step("Retire") {
@@ -119,9 +119,9 @@ class RegfileIntegrationModule extends Module {
           SysCall.Call(SysCall.start(client.consumer))
         }
 
-        io.result <== client.resultReg
-        io.stalls <== client.stallCounter
-        io.done <== client.consumer.done
+        io.result  :=  client.resultReg
+        io.stalls  :=  client.stallCounter
+        io.done  :=  client.consumer.done
       }
     }
   }
@@ -154,7 +154,7 @@ class ScoreboardSpec extends AnyFlatSpec with Matchers {
       }
 
       // 【核心修复】：done 拉高说明最后一步的赋值已经发起，
-      // 但我们需要再步进 1 拍，让 resultReg <== 123.U 真正打入 D 触发器！
+      // 但我们需要再步进 1 拍，让 resultReg  :=  123.U 真正打入 D 触发器！
       c.clock.step()
       cycles += 1
 

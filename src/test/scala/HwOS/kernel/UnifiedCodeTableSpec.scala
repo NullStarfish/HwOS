@@ -14,17 +14,17 @@ class UnifiedCodeTableProcess(localName: String)(implicit kernel: Kernel) extend
 
     worker.entry {
       worker.Step("Init") {
-        out <== 1.U
+        out  :=  1.U
       }
       worker.Step("Dispatch") {
         worker.hijack(worker.Next)
       }
       worker.Step("Merged") {
-        out <== 7.U
+        out  :=  7.U
         worker.jump(worker.stepRef("Target"))
       }
       worker.Step("Target") {
-        out <== out + 3.U
+        out  :=  out + 3.U
       }
       worker.Step("Finish") {
       }
@@ -60,8 +60,8 @@ class UnifiedCodeTableModule extends Module {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }
-        io.out <== proc.out
-        io.done <== proc.worker.done
+        io.out  :=  proc.out
+        io.done  :=  proc.worker.done
       }
     }
   }

@@ -29,11 +29,11 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         .If(worker, "Branch", 3.U > 1.U)(
           HwInline.thread("BranchThen") { t =>
             t.Step("BranchThenWrite") {
-              branchOut <== 7.U
+              branchOut  :=  7.U
             }
             SysCall.Call(SysCall.Return())
             t.Step("BranchThenUnreachable") {
-              branchOut <== 99.U
+              branchOut  :=  99.U
             }
             ()
           },
@@ -41,7 +41,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         .Else(
           HwInline.thread("BranchElse") { t =>
             t.Step("BranchElseWrite") {
-              branchOut <== 9.U
+              branchOut  :=  9.U
             }
             ()
           },
@@ -51,7 +51,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         .If(worker, "ElifChain", 0.U === 1.U)(
           HwInline.thread("ElifThen") { t =>
             t.Step("ElifThenWrite") {
-              elifOut <== 1.U
+              elifOut  :=  1.U
             }
             ()
           },
@@ -59,7 +59,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         .ElseIf(2.U === 2.U)(
           HwInline.thread("ElifMid") { t =>
             t.Step("ElifMidWrite") {
-              elifOut <== 2.U
+              elifOut  :=  2.U
             }
             ()
           },
@@ -67,7 +67,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         .Else(
           HwInline.thread("ElifElse") { t =>
             t.Step("ElifElseWrite") {
-              elifOut <== 3.U
+              elifOut  :=  3.U
             }
             ()
           },
@@ -77,11 +77,11 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         .If(worker, "ReturnProbe", 1.U === 1.U)(
           HwInline.thread("ReturnThen") { t =>
             t.Step("ReturnArm") {
-              returnOut <== 5.U
+              returnOut  :=  5.U
             }
             SysCall.Call(SysCall.Return())
             t.Step("ReturnDead") {
-              returnOut <== 99.U
+              returnOut  :=  99.U
             }
             ()
           },
@@ -96,7 +96,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
             }
           }
           t.Step("LoopAccumulate") {
-            acc <== acc + i
+            acc  :=  acc + i
             when(i === 5.U) {
               loop.Break()
             }
@@ -108,7 +108,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
       StructuredControl.While(worker, "WhileAcc", acc < 12.U) { loop =>
         HwInline.thread("WhileBody") { t =>
           t.Step("WhileBump") {
-            acc <== acc + 2.U
+            acc  :=  acc + 2.U
             when(acc >= 10.U) {
               loop.Break()
             }
@@ -118,7 +118,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
       }
 
       worker.Step("CaptureLoopOut") {
-        loopOut <== acc
+        loopOut  :=  acc
       }
 
       worker.Step("Finish") {
@@ -171,12 +171,12 @@ class StructuredControlModule extends Module {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }
-        io.branchOut <== proc.branchOut
-        io.elifOut <== proc.elifOut
-        io.acc <== proc.acc
-        io.loopOut <== proc.loopOut
-        io.returnOut <== proc.returnOut
-        io.done <== proc.worker.done
+        io.branchOut  :=  proc.branchOut
+        io.elifOut  :=  proc.elifOut
+        io.acc  :=  proc.acc
+        io.loopOut  :=  proc.loopOut
+        io.returnOut  :=  proc.returnOut
+        io.done  :=  proc.worker.done
       }
     }
   }

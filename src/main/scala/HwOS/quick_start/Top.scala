@@ -2,7 +2,7 @@ package HwOS.quick_start
 
 import chisel3._
 import HwOS.kernel.GrantAbi
-import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
+import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符  := 
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{Kernel, SysCall}
 
@@ -38,8 +38,8 @@ class TopModule extends Module {
         when(io.start) {
           SysCall.Call(SysCall.start(counterProc.mainThread)) // 唤醒目标线程
         }
-        io.result <== counterProc.counter
-        io.done   <== counterProc.isDone
+        io.result  :=  counterProc.counter
+        io.done    :=  counterProc.isDone
       }
     }
   }

@@ -4,8 +4,10 @@ import chisel3._
 import chisel3.reflect.DataMirror
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
+import scala.reflect.ClassTag
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import HwOS.kernel.context.HwContextEntity
+import HwOS.kernel.memory.{ExportCapability, ExportedMemoryEntry, ExportedSymbol, MemoryDependencyEntry, VirtualHandle}
 
 final class KernelAddressSpace {
   private val codeSegments = ArrayBuffer[GlobalCodeSegment]()
@@ -14,9 +16,12 @@ final class KernelAddressSpace {
   private val codeTable = ArrayBuffer[CodeTableEntry]()
   private val bindingTable = ArrayBuffer[BindingTableEntry]()
   private val grantTable = ArrayBuffer[GrantTableEntry]()
+  private val exportedMemoryTable = ArrayBuffer[ExportedMemoryEntry]()
+  private val dependencyTable = ArrayBuffer[MemoryDependencyEntry]()
   private val codeLabelMap = new HashMap[String, Int]()
   private val addressObjectMap = new HashMap[String, AddressObject]()
   private val dataAddressMap = new HashMap[Int, AddressObject]()
+  private val exportedSymbolMap = new HashMap[String, ExportedMemoryEntry]()
   private val stateObjectCounters = new HashMap[String, Int]()
   private var nextStateAddress = 0
   private var nextCodeAddress = 0
@@ -94,6 +99,8 @@ final class KernelAddressSpace {
   def codeTableEntries: Seq[CodeTableEntry] = codeTable.toSeq
   def bindingTableEntries: Seq[BindingTableEntry] = bindingTable.toSeq
   def grantTableEntries: Seq[GrantTableEntry] = grantTable.toSeq
+  def exportedMemoryEntries: Seq[ExportedMemoryEntry] = exportedMemoryTable.toSeq
+  def dependencyEntries: Seq[MemoryDependencyEntry] = dependencyTable.toSeq
 
   /** Render the three kernel address tables as a stable human-readable text dump. */
   def renderAddressTables(): String = {
@@ -152,6 +159,28 @@ final class KernelAddressSpace {
       )
     }
 
+    val exportedRows = exportedMemoryEntries.map { entry =>
+      Seq(
+        entry.symbolName,
+        entry.ownerName,
+        entry.addressObject.objectName,
+        entry.addressObject.startAddress.toString,
+        entry.addressObject.span.toString,
+        entry.typeSummary,
+        entry.capability.render,
+      )
+    }
+
+    val dependencyRows = dependencyEntries.map { entry =>
+      Seq(
+        entry.requesterName,
+        entry.symbolName,
+        entry.resolvedOwnerName,
+        entry.requestedCapability.render,
+        entry.resolvedCapability.render,
+      )
+    }
+
     Seq(
       renderSection(
         title = "State Table",
@@ -186,6 +215,16 @@ final class KernelAddressSpace {
         title = "Grant Table",
         headers = Seq("owner", "target", "signal_object", "signal_start", "signal_span", "abi"),
         rows = grantRows,
+      ),
+      renderSection(
+        title = "Exported Memory Table",
+        headers = Seq("symbol", "owner", "backing_object", "start", "span", "type", "capability"),
+        rows = exportedRows,
+      ),
+      renderSection(
+        title = "Dependency Table",
+        headers = Seq("requester", "symbol", "resolved_owner", "requested_capability", "resolved_capability"),
+        rows = dependencyRows,
       ),
     ).mkString("\n\n")
   }
@@ -225,6 +264,62 @@ final class KernelAddressSpace {
     val entry = new GrantTableEntry(ownerName, targetName, signalObject, abi)
     grantTable += entry
     entry
+  }
+
+  def registerExport[T <: Data](
+      ownerName: String,
+      symbolName: String,
+      signal: T,
+      capability: ExportCapability,
+  ): ExportedSymbol[T] = {
+    if (exportedSymbolMap.contains(symbolName)) {
+      throw new Exception(s"[Kernel] Duplicate exported symbol detected: $symbolName")
+    }
+    val addressObject = getAddressObject(signal).getOrElse(registerOwnedSignal(ownerName, signal))
+    val entry = new ExportedMemoryEntry(
+      symbolName = symbolName,
+      ownerName = ownerName,
+      backingSignal = signal,
+      addressObject = addressObject,
+      capability = capability,
+      typeSummary = s"${signal.getClass.getSimpleName}[${signal.getWidth max 0}]",
+    )
+    exportedMemoryTable += entry
+    exportedSymbolMap(symbolName) = entry
+    new ExportedSymbol[T](entry, signal)
+  }
+
+  def resolveExport[T <: Data: ClassTag](
+      symbolName: String,
+      requesterName: String,
+      requestedCaps: ExportCapability,
+  ): VirtualHandle[T] = {
+    val entry = exportedSymbolMap.getOrElse(
+      symbolName,
+      throw new Exception(s"[Kernel] Unknown exported symbol '$symbolName' requested by '$requesterName'."),
+    )
+    if (!entry.capability.allows(requestedCaps)) {
+      throw new Exception(
+        s"[Kernel] Exported symbol '$symbolName' owned by '${entry.ownerName}' does not allow requested capability '${requestedCaps.render}' for '$requesterName'.",
+      )
+    }
+
+    val expectedClass = implicitly[ClassTag[T]].runtimeClass
+    if (!expectedClass.isAssignableFrom(entry.backingSignal.getClass)) {
+      throw new Exception(
+        s"[Kernel] Exported symbol '$symbolName' has type '${entry.backingSignal.getClass.getSimpleName}', which is incompatible with requested handle type '${expectedClass.getSimpleName}'.",
+      )
+    }
+
+    val dependency = new MemoryDependencyEntry(
+      requesterName = requesterName,
+      symbolName = symbolName,
+      resolvedOwnerName = entry.ownerName,
+      requestedCapability = requestedCaps,
+      resolvedCapability = entry.capability,
+    )
+    dependencyTable += dependency
+    new VirtualHandle[T](symbolName, requesterName, requestedCaps, entry.backingSignal.asInstanceOf[T])
   }
 
   /** Default ABI inference for legacy `grant(signal, target)` call sites.
@@ -372,7 +467,15 @@ final class KernelAddressSpace {
       s"""{"owner_name":${json(entry.ownerName)},"target_name":${json(entry.targetName)},"signal_object_name":${json(entry.signalObject.objectName)},"signal_space":${json(entry.signalObject.spaceTag)},"signal_start_address":${entry.signalObject.startAddress},"signal_span":${entry.signalObject.span},"abi":${json(entry.abi.name)}}"""
     }.mkString("[", ",", "]")
 
-    s"""{"state_table":$stateJson,"code_table":$codeJson,"binding_table":$bindingJson,"grant_table":$grantJson}"""
+    val exportedJson = exportedMemoryEntries.map { entry =>
+      s"""{"symbol_name":${json(entry.symbolName)},"owner_name":${json(entry.ownerName)},"backing_object_name":${json(entry.addressObject.objectName)},"backing_start_address":${entry.addressObject.startAddress},"backing_span":${entry.addressObject.span},"type_summary":${json(entry.typeSummary)},"capability":${json(entry.capability.render)}}"""
+    }.mkString("[", ",", "]")
+
+    val dependencyJson = dependencyEntries.map { entry =>
+      s"""{"requester_name":${json(entry.requesterName)},"symbol_name":${json(entry.symbolName)},"resolved_owner_name":${json(entry.resolvedOwnerName)},"requested_capability":${json(entry.requestedCapability.render)},"resolved_capability":${json(entry.resolvedCapability.render)}}"""
+    }.mkString("[", ",", "]")
+
+    s"""{"state_table":$stateJson,"code_table":$codeJson,"binding_table":$bindingJson,"grant_table":$grantJson,"exported_memory_table":$exportedJson,"dependency_table":$dependencyJson}"""
   }
 
   private def renderSection(title: String, headers: Seq[String], rows: Seq[Seq[String]]): String = {

@@ -16,11 +16,11 @@ class HwFunctionProcess(localName: String)(implicit kernel: Kernel) extends HwPr
     val localTmp = t.own(RegInit(0.U(8.W)))
 
     t.Step("LoadTmp") {
-      localTmp <== out + 1.U
+      localTmp  :=  out + 1.U
     }
     t.Step("Commit") {
-      out <== localTmp
-      callCount <== callCount + 1.U
+      out  :=  localTmp
+      callCount  :=  callCount + 1.U
     }
     SysCall.Call(SysCall.Return())
     ()
@@ -34,19 +34,19 @@ class HwFunctionProcess(localName: String)(implicit kernel: Kernel) extends HwPr
 
     worker.entry {
       worker.Step("Init") {
-        out <== 0.U
+        out  :=  0.U
       }
 
       SysCall.Call(addOne.Invoke("AfterCall"))
 
       worker.Step("AfterCall") {
-        out <== out + 10.U
+        out  :=  out + 10.U
       }
 
       SysCall.Call(addOne.Invoke("AfterSecondCall"))
 
       worker.Step("AfterSecondCall") {
-        out <== out + 20.U
+        out  :=  out + 20.U
       }
 
       SysCall.Call(SysCall.Return())
@@ -96,11 +96,11 @@ class HwFunctionModule extends Module {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }
-        io.out <== proc.out
-        io.callCount <== proc.callCount
-        io.done <== proc.worker.done
-        io.functionCodeRegistered <== kernel.addressSpace.codeTableEntries.exists(_.segment.ownerName == activation.name).B
-        io.activationOwnedStateCount <== kernel.addressSpace.stateTableEntries.count(_.ownerName == activation.name).U
+        io.out  :=  proc.out
+        io.callCount  :=  proc.callCount
+        io.done  :=  proc.worker.done
+        io.functionCodeRegistered  :=  kernel.addressSpace.codeTableEntries.exists(_.segment.ownerName == activation.name).B
+        io.activationOwnedStateCount  :=  kernel.addressSpace.stateTableEntries.count(_.ownerName == activation.name).U
       }
     }
   }

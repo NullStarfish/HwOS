@@ -17,10 +17,10 @@ class JumpProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
         worker.jump(worker.stepRef("Target"))
       }
       worker.Step("Skipped") {
-        out <== 1.U
+        out  :=  1.U
       }
       worker.Step("Target") {
-        out <== 2.U
+        out  :=  2.U
       }
       worker.Step("Finish") {
       }
@@ -56,8 +56,8 @@ class JumpModule extends Module {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }
-        io.out <== proc.out
-        io.done <== proc.worker.done
+        io.out  :=  proc.out
+        io.done  :=  proc.worker.done
       }
     }
   }

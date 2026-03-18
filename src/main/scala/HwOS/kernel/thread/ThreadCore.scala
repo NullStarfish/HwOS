@@ -2,7 +2,7 @@ package HwOS.kernel.thread
 
 import chisel3._
 import HwOS.kernel.context.{ContextScope, ThreadCtx}
-import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle, ThreadRuntimeLease, RuntimeReclaimTarget}
+import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle, RuntimeReclaimTarget}
 import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 trait ThreadCore
@@ -11,7 +11,6 @@ trait ThreadCore
     with ThreadDebugApi
     with RuntimeReclaimTarget { self: HardwareThread =>
   private var runtimeContext: Option[RuntimeContext] = None
-  private var runtimeLeaseOpt: Option[ThreadRuntimeLease] = None
   private[kernel] var generatedEntry: Boolean = false
   private[kernel] var hasExitPath: Boolean = false
   private[kernel] val freeze: Bool = WireInit(false.B)
@@ -55,16 +54,6 @@ trait ThreadCore
   override def runtimeActive: Bool = active
 
   override def runtimeName: String = name
-
-  private def registerRuntimeLease(): Unit = {
-    val lease = new ThreadRuntimeLease(runtime, this)
-    runtimeLeaseOpt = Some(lease)
-    ctx.registerLease(lease)
-  }
-
-  private def bindContext(): Unit = {
-    ctx.bindIsActive(active)
-  }
 
   private def verifyExitPath(): Unit = {}
   private def maybePrintCapabilitySummary(): Unit = ()
@@ -126,8 +115,9 @@ trait ThreadCore
       initialState = RuntimeLifecycle.Idle,
     )
     runtimeContext = Some(allocatedRuntime)
-    registerRuntimeLease()
-    bindContext()
+    registerReaperEntry(active) { _ =>
+      resetRuntime()
+    }
     ThreadRuntimeLogic.lowerProgram(
       irState = irState,
       layoutState = layoutState,

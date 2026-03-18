@@ -13,13 +13,13 @@ class ExplicitStartWorkerProcess(localName: String)(implicit kernel: Kernel) ext
     this.grant(counter, worker)
     worker.entry {
       worker.Step("Count0") {
-        counter <== counter + 1.U
+        counter  :=  counter + 1.U
       }
       worker.Step("Count1") {
-        counter <== counter + 1.U
+        counter  :=  counter + 1.U
       }
       worker.Step("Count2") {
-        counter <== counter + 1.U
+        counter  :=  counter + 1.U
       }
       worker.Step("Finish") {
       }
@@ -52,8 +52,8 @@ class ExplicitStartRuntimeModule extends Module {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }
-        io.counter <== proc.counter
-        io.done <== proc.worker.done
+        io.counter  :=  proc.counter
+        io.done  :=  proc.worker.done
       }
     }
   }

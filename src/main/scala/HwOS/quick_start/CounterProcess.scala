@@ -2,7 +2,7 @@ package HwOS.quick_start
 
 import chisel3._
 import HwOS.kernel.function.HwInline
-import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符 <==
+import HwOS.kernel.lang.HwOSLanguage._ // 引入 HwOS 独有的安全赋值操作符  := 
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{GrantAbi, Kernel, SysCall}
 import chisel3.util.log2Ceil
@@ -26,13 +26,13 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
     mainThread.entry {
       
       mainThread.Step("Init") {
-        // 使用 <== 进行安全赋值，受线程 isActive 状态的物理保护
-        counter <== 0.U 
-        isDone  <== false.B
+        // 使用  :=  进行安全赋值，受线程 isActive 状态的物理保护
+        counter  :=  0.U 
+        isDone   :=  false.B
       }
 
       mainThread.Step("CountUp") {
-        counter <== counter + 1.U
+        counter  :=  counter + 1.U
         
         // 硬件级阻塞：如果条件不满足，PC 寄存器将在此挂起
         
@@ -42,7 +42,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
       }
 
       mainThread.Step("Finish") {
-        isDone <== true.B
+        isDone  :=  true.B
       }
       SysCall.Call(SysCall.Return())
     }
@@ -54,7 +54,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
     t.Step("Start") {
       SysCall.Call(SysCall.start(mainThread))
       when (mainThread.done) {
-        cnt <== cnt + 1.U
+        cnt  :=  cnt + 1.U
       }
       t.waitAndAct(cnt >= n.U) {
         t.jump(t.stepRef("Done"))

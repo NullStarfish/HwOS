@@ -5,7 +5,6 @@ import scala.util.Try // 引入 Try
 import HwOS.kernel.context.{AtomicCtx, ContextScope, HwContextEntity, ThreadCtx}
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.function.{HwFunction, HwInline}
-import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 object SysCall {
   // ==========================================
@@ -91,16 +90,16 @@ object SysCall {
 
             when(!pending) {
               when(!binding.callActive && !activation.active) {
-                binding.activeBindingId <== bindingIdValue
-                binding.callActive <== true.B
+                binding.activeBindingId  :=  bindingIdValue
+                binding.callActive  :=  true.B
                 Call(start(activation))
-                pending <== true.B
+                pending  :=  true.B
               }
               caller.waitCondition(false.B)
             }.elsewhen(thisCallActive && activation.done) {
-              binding.callActive <== false.B
-              binding.activeBindingId <== 0.U(binding.activeBindingId.getWidth.W)
-              pending <== false.B
+              binding.callActive  :=  false.B
+              binding.activeBindingId  :=  0.U(binding.activeBindingId.getWidth.W)
+              pending  :=  false.B
               caller.jump(returnTo)
             }.otherwise {
               caller.waitCondition(false.B)
@@ -141,16 +140,14 @@ object SysCall {
    */
   def kill(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall kill"){ agent =>
     target.requireLifecycleAccess(agent.ctx, "kill")
-    target.grant(target.ctx.kernelKillSignal, agent, GrantAbi.LevelDrivenWire)
-    target.ctx.kernelKillSignal <== true.B
+    agent.kernel.threadKillLatch(target) := true.B
   }
 
   /**
    * 普适 context kill：切断一个 ContextEntity 的 context，并交给系统级回收逻辑处理。
    */
   def kill(target: HwContextEntity): HwInline[Unit] = HwInline.stateless("SysCall context kill") { agent =>
-    target.grant(target.ctx.kernelKillSignal, agent, GrantAbi.LevelDrivenWire)
-    target.ctx.kernelKillSignal <== true.B
+    agent.kernel.contextKillLatch(target) := true.B
   }
 
   /**

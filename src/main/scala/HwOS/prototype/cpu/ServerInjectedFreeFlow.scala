@@ -74,10 +74,10 @@ object ServerInjectedFreeFlow {
             when(pendingOH(clientIdx)) {
               for (((slot, _), freeIdx) <- servers.zipWithIndex.zipWithIndex.map { case ((s, id), idx) => ((s, id), idx) }) {
                 when(freeOH(freeIdx)) {
-                  slot.instArg <== req.instBits
-                  slot.ownerValid <== true.B
-                  slot.ownerClient <== clientIdx.U
-                  req.pending <== false.B
+                  slot.instArg  :=  req.instBits
+                  slot.ownerValid  :=  true.B
+                  slot.ownerClient  :=  clientIdx.U
+                  req.pending  :=  false.B
                   SysCall.Call(SysCall.start(slot.thread))
                 }
               }
@@ -88,10 +88,10 @@ object ServerInjectedFreeFlow {
         for ((slot, _) <- servers.zipWithIndex) {
           when(slot.ownerValid && slot.thread.done) {
             val owner = slot.ownerClient
-            slot.ownerValid <== false.B
+            slot.ownerValid  :=  false.B
             for ((req, clientIdx) <- clientReqs.zipWithIndex) {
               when(owner === clientIdx.U) {
-                req.completed <== true.B
+                req.completed  :=  true.B
               }
             }
           }
@@ -112,9 +112,9 @@ object ServerInjectedFreeFlow {
       t.waitCondition(!req.pending)
       when(!req.pending) {
         SysCall.Call(slotLease.Acquire())
-        req.instBits <== instBits
-        req.completed <== false.B
-        req.pending <== true.B
+        req.instBits  :=  instBits
+        req.completed  :=  false.B
+        req.pending  :=  true.B
       }
       t.waitCondition(req.completed)
       when(req.completed) {
@@ -178,7 +178,7 @@ object ServerInjectedFreeFlow {
           when(slotFire) {
             for ((slot, idx) <- slots.zipWithIndex) {
               when(slotOH(idx)) {
-                slot.instArg <== inst
+                slot.instArg  :=  inst
                 SysCall.Call(SysCall.start(slot.thread))
               }
             }
@@ -188,7 +188,7 @@ object ServerInjectedFreeFlow {
 
         val issueCount = fires.reduce(_ + _)
         when(issueCount =/= 0.U) {
-          fetchPtr <== fetchPtr + issueCount
+          fetchPtr  :=  fetchPtr + issueCount
         }
       }
     }
@@ -224,10 +224,10 @@ object ServerInjectedFreeFlow {
         this.grant(io.x3, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
         this.grant(io.activeThreads, daemon, HwOS.kernel.GrantAbi.LevelDrivenWire)
         daemon.run {
-          io.x1 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
-          io.x2 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))
-          io.x3 <== SysCall.Call(fetch.decode.regFile.ReadCommitted(3.U))
-          io.activeThreads <== SysCall.Call(fetch.ActiveThreadCount())
+          io.x1  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
+          io.x2  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))
+          io.x3  :=  SysCall.Call(fetch.decode.regFile.ReadCommitted(3.U))
+          io.activeThreads  :=  SysCall.Call(fetch.ActiveThreadCount())
         }
       }
     }
@@ -301,18 +301,18 @@ object ServerInjectedFreeFlow {
 
         daemon.run {
           for ((((thread, instArg), reqValid), clientId) <- clientSlots.zip(io.reqValid).zipWithIndex) {
-            io.reqBusy.at(clientId) <== thread.active
-            io.reqDone.at(clientId) <== thread.done
+            io.reqBusy.at(clientId)  :=  thread.active
+            io.reqDone.at(clientId)  :=  thread.done
             when(reqValid && !thread.active) {
-              instArg <== io.reqInst(clientId)
+              instArg  :=  io.reqInst(clientId)
               SysCall.Call(SysCall.start(thread))
             }
           }
 
-          io.x1 <== SysCall.Call(decode.regFile.ReadCommitted(1.U))
-          io.x2 <== SysCall.Call(decode.regFile.ReadCommitted(2.U))
-          io.x3 <== SysCall.Call(decode.regFile.ReadCommitted(3.U))
-          io.activeThreads <== PopCount(clientSlots.map(_._1.active)) + SysCall.Call(decode.ActiveServerCount())
+          io.x1  :=  SysCall.Call(decode.regFile.ReadCommitted(1.U))
+          io.x2  :=  SysCall.Call(decode.regFile.ReadCommitted(2.U))
+          io.x3  :=  SysCall.Call(decode.regFile.ReadCommitted(3.U))
+          io.activeThreads  :=  PopCount(clientSlots.map(_._1.active)) + SysCall.Call(decode.ActiveServerCount())
         }
       }
     }

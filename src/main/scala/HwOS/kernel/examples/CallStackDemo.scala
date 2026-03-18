@@ -22,7 +22,7 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
 
   def StoreData(v: UInt): HwInline[Unit] = HwInline.atomic("StoreData") { t =>
     this.grant(dataReg, t)
-    dataReg <== v
+    dataReg  :=  v
   }
 
   // ==========================================
@@ -94,7 +94,7 @@ class CallStackIntegrationModule extends Module {
       this.grantLifecycle(demo.main, daemon)
       daemon.run {
         when(io.start) { SysCall.Call(SysCall.start(demo.main)) }
-        io.done <== demo.main.done
+        io.done  :=  demo.main.done
       }
     }
   }

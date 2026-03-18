@@ -2,7 +2,6 @@ package HwOS
 
 package object kernel {
   // Stable kernel facade: core context, thread, function, process, system, and language APIs.
-  type HwLease = context.HwLease
   type HwContext = context.HwContext
   val HwContext = context.HwContext
   type HwContextEntity = context.HwContextEntity
@@ -42,6 +41,11 @@ package object kernel {
   val GrantAbi = system.GrantAbi
   type OSReaperProcess = system.OSReaperProcess
   val SysCall = system.SysCall
+
+  type ExportCapability = memory.ExportCapability
+  val ExportCapability = memory.ExportCapability
+  type ExportedSymbol[T <: chisel3.Data] = memory.ExportedSymbol[T]
+  type VirtualHandle[T <: chisel3.Data] = memory.VirtualHandle[T]
 
   val CallStack = debug.CallStack
 }

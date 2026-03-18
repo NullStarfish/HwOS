@@ -14,7 +14,7 @@ class UnifiedThreadKernelProcess(localName: String)(implicit kernel: Kernel) ext
 
     worker.entry {
       worker.Step("Bump") {
-        value <== 7.U
+        value  :=  7.U
       }
       worker.Step("Finish") {
       }
@@ -50,8 +50,8 @@ class UnifiedThreadKernelModule extends Module {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }
-        io.value <== proc.value
-        io.done <== proc.worker.done
+        io.value  :=  proc.value
+        io.done  :=  proc.worker.done
       }
     }
   }

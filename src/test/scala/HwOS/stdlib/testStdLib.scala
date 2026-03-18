@@ -38,7 +38,7 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
         SysCall.Call(mutex.Lock(lockId))
       }
       t.Step("CriticalSection") {
-        sharedCounter <== sharedCounter + 10.U
+        sharedCounter  :=  sharedCounter + 10.U
       }
       t.Step("ReleaseAndDone") {
         SysCall.Call(mutex.Unlock(lockId))
@@ -98,8 +98,8 @@ class SyncIntegrationModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(io.start) {SysCall.Call(SysCall.start(sync.main))}
-        io.finalCount <== sync.sharedCounter
-        io.allDone <== sync.main.done
+        io.finalCount  :=  sync.sharedCounter
+        io.allDone  :=  sync.main.done
       }
     }
   }

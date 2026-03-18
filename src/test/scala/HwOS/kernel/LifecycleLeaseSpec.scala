@@ -16,7 +16,7 @@ class LifecycleLeaseProcess(localName: String)(implicit kernel: Kernel) extends 
 
     worker.entry {
       worker.Step("Hit") {
-        hits <== hits + 1.U
+        hits  :=  hits + 1.U
       }
       worker.Step("Park") {
         worker.waitCondition(false.B)
@@ -82,9 +82,9 @@ class LifecycleLeaseModule extends Module {
         when(io.start) {
           SysCall.Call(SysCall.start(proc.controller))
         }
-        io.hits <== proc.hits
-        io.done <== proc.controller.done
-        io.workerActive <== proc.worker.active
+        io.hits  :=  proc.hits
+        io.done  :=  proc.controller.done
+        io.workerActive  :=  proc.worker.active
       }
     }
   }

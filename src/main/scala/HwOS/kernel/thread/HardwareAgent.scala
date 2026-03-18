@@ -27,8 +27,6 @@ trait HardwareAgent extends HwContextEntity {
 }
 
 class HardwareLogic(val name: String, val owner: HwProcess, val debugEnable: Boolean = true) extends HardwareAgent {
-  ctx.bindIsActive(true.B)
-
   def run(block: => Unit): Unit = {
     ContextScope.withContext(LogicCtx(this)) {
       block
@@ -62,6 +60,10 @@ abstract class HardwareThread(
   private[kernel] def runtimeExit(): Unit
   private[kernel] def reset(): Unit
   private[kernel] def runtimeHandle: RuntimeContext
+
+  private[HwOS] def registerReaperEntry(isActive: Bool)(forceReclaim: HardwareAgent => Unit): Unit = {
+    kernel.registerReaperEntry(this, isActive)(forceReclaim)
+  }
 }
 
 private[kernel] final class KernelStepHardwareThread(
