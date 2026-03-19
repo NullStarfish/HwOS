@@ -30,26 +30,13 @@
 - `kernel.addressSpace.renderAddressTables()`
 - `kernel.addressSpace.exportAddressTables(...)`
 
-不建议把下面这些当常规用户入口直接依赖：
-
-- `SysCall.exit()`
-- `KernelAddressSpace.reserveAddressObject(...)`
-
-它们更偏内核内部接口。
-
 ## 重要 API 清单
 
 ### `SysCall.Call(HwInline)`
 
 作用：
 
-- 把一段 inline 逻辑 emit 到当前调用上下文
-
-### `SysCall.Call(HwInline, returnTo)`
-
-作用：
-
-- 给 inline 调用显式绑定 continuation
+- 把一段 inline 控制代码 emit 到当前调用上下文
 
 ### `SysCall.Call(HwFunction, returnTo)`
 
@@ -74,44 +61,43 @@
 
 关键边界：
 
-- 需要 lifecycle ACL
+- 当前是 process-local 直控主线
+- 不再经过旧 lifecycle ACL
 
-### `SysCall.kill(target)`
+### `SysCall.kill(target: HardwareThread)`
 
 作用：
 
-- 杀死目标 thread
+- 终止目标 thread
+
+当前边界：
+
+- 普通 thread 默认最终就是 `reset()`
+- 如果该 thread 关联了显式的 `OSReaperManaged` cleanup holder，系统会先做 reclaim/cleanup，再 `reset()`
+- 也就是说，`OSReaper` 的即时截断是附加神力，不是所有 thread 的默认基础能力
+
+### `SysCall.kill(target: HwContextEntity)`
+
+作用：
+
+- 对显式接入 `OSReaperManaged` 的对象发起系统切断
 
 关键边界：
 
-- 当前语义是系统侧的 `thread_kill = context kill + runtime lease reclaim/reset`
-- kill 后 thread runtime 会回到 `Idle`
-- 如果 caller 正在等待某个 `HwFunction`，当前主线会触发 activation 连坐回收
-
-### `SysCall.kill(contextEntity)`
-
-作用：
-
-- 触发 context 级系统切断
-
-关键边界：
-
-- 它的作用对象是 `HwContextEntity`
-- 它不再天然等价于 thread kill
-- 对 thread context 而言，OSReaper 默认会接管其 runtime lease
-
-### `SysCall.fork(name) { ... }`
-
-作用：
-
-- 创建并启动一个子 thread
+- 它不再被视为所有 entity 的天然能力
+- 未接入 `OSReaperManaged` 的对象不应该把 `kill(contextEntity)` 当通用接口
 
 ### `KernelAddressSpace`
 
 作用：
 
 - 分配 state/code 双地址空间
-- 管理 `state table` / `code table` / `binding table` / `grant table`
+- 管理：
+  - `state table`
+  - `code table`
+  - `binding table`
+  - `exported memory table`
+  - `dependency table`
 - 导出地址表
 
 ## Usage examples
@@ -130,35 +116,7 @@ controller.entry {
 }
 ```
 
-### 示例 2：context kill
-
-```scala
-controller.entry {
-  controller.Step("KillProcessContext") {
-    SysCall.Call(SysCall.kill(proc: HwContextEntity))
-  }
-}
-```
-
-这会切断 `proc` 的 context。  
-它不会天然等于任意 thread 的专用 kill；但如果目标本身就是 thread context，OSReaper 默认会顺带 reset 其 runtime。
-
-### 示例 3：`Return` 到 continuation
-
-```scala
-caller.entry {
-  caller.Step("CallInline") {
-    SysCall.Call(helperInline, "AfterInline")
-  }
-  caller.Step("AfterInline") {
-    SysCall.Call(SysCall.Return())
-  }
-}
-```
-
-如果当前有 continuation，`Return()` 会回到它，而不是直接结束整个 thread。
-
-### 示例 4：导出地址表
+### 示例 2：导出地址表
 
 ```scala
 val text = kernel.addressSpace.renderAddressTables()
@@ -170,9 +128,8 @@ kernel.addressSpace.exportAddressTables("generated")
 - `state_table`
 - `code_table`
 - `binding_table`
-- `grant_table`
-
-并且 `state` / `code` 使用两套独立地址空间。
+- `exported_memory_table`
+- `dependency_table`
 
 ## 常见误区
 
@@ -181,10 +138,10 @@ kernel.addressSpace.exportAddressTables("generated")
 当前用户态正式结束接口是 `SysCall.Return()`。  
 `exit()` 是内核内部生命周期操作。
 
-### `kill(contextEntity)` 不等于 `kill(thread)`
+### `kill(thread)` 默认不是“OSReaper 神力”
 
-一个是 context 级 cut-off，一个是 thread 专用系统终止。  
-当前系统明确区分这两类 kill。
+普通 thread 的基础终止原语最终落点是 `reset()`。  
+只有显式接入 OSReaper 的对象才会拥有额外的即时收尾能力。
 
 ### `KernelAddressSpace` 不只是导出器
 

@@ -5,9 +5,9 @@
 这一组 API 负责解决：
 
 - 如何组织 process 层级
-- 如何创建 thread
-- 如何声明资源 ownership
-- 如何授权别人访问这些资源
+- 如何创建和安装 thread
+- 如何导出资源给其他对象使用
+- 如何在同一 process 内组织本地状态和本地逻辑
 
 它不负责：
 
@@ -27,19 +27,12 @@
 
 - `HwProcess`
 - `createThread(...)`
+- `install(threadDef, name)`
 - `spawn(...)`
-- `own(...)`
-- `grant(...)`
-- `grant(..., abi)`
-- `grantLifecycle(...)`
+- `export(...)`
+- `declare(...)`
 
-不建议把下面这些当常规 public API 直接依赖：
-
-- `ResourceManager`
-- `ctx.kernelKillSignal`
-- `ctx.activeLeases`
-
-这些更偏内核/系统支撑。
+当前不再推荐依赖旧资源组织模型；`own / grant / grantLifecycle / GrantAbi` 已退出主线。
 
 ## 重要 API 清单
 
@@ -48,17 +41,15 @@
 作用：
 
 - 定义 process 层级和命名空间
+- 提供本地状态与本地逻辑环境
 - 创建 thread / logic
 - 作为 root build 入口
 
-使用时机：
-
-- 你要组织一个硬件模块、子模块或子 process 时
-
 关键边界：
 
-- `HwProcess` 是结构容器，不是执行体
-- 真正跑控制流的是它创建出来的 `HardwareThread`
+- 当前 `HwProcess` 更接近 service / environment / physical component
+- 它不是 code-space 一等对象
+- 真正跑控制流的是它承载的 `HardwareThread`
 
 ### `createThread(name)`
 
@@ -68,11 +59,27 @@
 
 使用时机：
 
-- 你需要一个有 `Step` / `jump` / `waitCondition` 的执行体时
+- 你要一个本地 thread，并且线程代码就写在当前 process 里时
 
 关键边界：
 
-- 当前只有统一 thread 主线，不需要再选 backend
+- 这是 instance-first 入口
+- 如果想让 thread code 独立成单文件，优先使用 `install(threadDef, name)`
+
+### `install(threadDef, name)`
+
+作用：
+
+- 把 definition-first 的 thread 定义安装到当前 process
+
+使用时机：
+
+- 你想把 thread code 独立成可复用定义对象时
+
+关键边界：
+
+- process 负责环境和装配
+- `ThreadDef` 负责 code definition
 
 ### `spawn(child)`
 
@@ -80,7 +87,6 @@
 
 - 创建子 process
 - 调用子 process `build()`
-- 对能安全推断 ABI 的 owned signals 做自动向上二次 `grant`
 
 使用时机：
 
@@ -88,82 +94,54 @@
 
 关键边界：
 
-- `Reg` 可以自动二次 `grant`
-- `Wire` 不会自动猜 ABI；需要显式 `grant(..., abi)`
+- `spawn` 继续是 process 组合/实例化动作
+- 它不再承担旧 `own/grant` 的资源 ACL 传播
 
-### `own(signal)`
+### `export(symbol, signal, caps)`
 
 作用：
 
-- 声明该 signal 归当前 context/entity 所有
-- 自动登记到 `state table`
+- 把一个资源注册到 exported memory table
 
 使用时机：
 
-- 当前 process / thread / activation 要拥有某个状态对象时
+- 该资源需要被跨边界复用、声明依赖、或正式导出时
 
 关键边界：
 
-- `own` 只说明“这是我的”
-- 不说明别人怎么访问它
+- v0 下它只承担两件事：
+  - 可见性
+  - 依赖记录
+- 它不追踪所有本地 Chisel 值
 
-### `grant(signal, target[, abi])`
+### `declare(symbol, caps)`
 
 作用：
 
-- 授权另一个 target 访问这个 signal
-- 同时登记 ABI metadata
+- 按符号获取一个虚拟句柄
 
 使用时机：
 
-- 资源要跨 context / process / thread 暴露时
+- thread/logic 需要通过正式接口使用外部资源时
 
 关键边界：
 
-- 对 `Reg` 可以使用默认 `RegisterWrite`
-- 对 `Wire` 必须显式给 `GrantAbi.LevelDrivenWire` 或 `GrantAbi.PulseWire`
-
-### `grantLifecycle(thread, target)`
-
-作用：
-
-- 授予 `target` 对某个 thread 的生命周期控制权
-
-使用时机：
-
-- 需要 `start` / `kill` 某个 thread 时
-
-关键边界：
-
-- lifecycle ACL 不是普通 resource ACL
-- 它服务于 thread 的系统级控制，不等价于 `grant(signal, target)`
-
-### `ctx.kernelKillSignal`
-
-作用：
-
-- context 级系统切断信号
-
-关键边界：
-
-- 它不是 thread 专用 kill 信号
-- 对 thread 而言，OSReaper 默认会通过已注册的 runtime lease 顺带接管其 runtime
+- 同一 process 内的局部实现不强制使用 `declare`
+- `declare` 主要服务于跨边界 provider/consumer 解耦
 
 ## Usage examples
 
-### 示例 1：最小 `HwProcess` + `own` + `grant`
+### 示例 1：本地模式
 
 ```scala
 class CounterProc(name: String)(implicit kernel: Kernel) extends HwProcess(name) {
-  val counter = own(RegInit(0.U(32.W)))
+  val counter = RegInit(0.U(32.W))
   val worker = createThread("Worker")
 
   override def entry(): Unit = {
-    grant(counter, worker)
-
     worker.entry {
       worker.Step("Init") {
-        counter <== 0.U
+        counter := 0.U
       }
       worker.Step("Done") {
         SysCall.Call(SysCall.Return())
@@ -175,59 +153,61 @@ class CounterProc(name: String)(implicit kernel: Kernel) extends HwProcess(name)
 
 这里：
 
-- `counter` 归当前 process 所有
-- `worker` 想写它，必须显式 `grant`
+- `counter` 只是本地实现细节
+- 不进入 exported memory table
+- 不记录 dependency
 
-### 示例 2：显式 ABI 的 `Wire` 授权
+### 示例 2：symbolic 导出
 
 ```scala
-class IoProc(name: String)(implicit kernel: Kernel) extends HwProcess(name) {
-  val fire = own(Wire(Bool()))
-  val worker = createThread("Worker")
+class Provider(name: String)(implicit kernel: Kernel) extends HwProcess(name) {
+  val counter = RegInit(0.U(32.W))
 
   override def entry(): Unit = {
-    grant(fire, worker, GrantAbi.PulseWire)
+    export("demo.counter.value", counter, ExportCapability.ReadWrite)
   }
 }
 ```
 
-这里不能写成默认 `grant(fire, worker)`，因为 `Wire` 的 ABI 不能自动猜。
-
-### 示例 3：父子 process
+### 示例 3：definition-first thread 安装
 
 ```scala
+object WorkerDef extends ThreadDef {
+  override def define(t: HardwareThread): Unit = {
+    t.entry {
+      t.Step("Done") {
+        SysCall.Call(SysCall.Return())
+      }
+    }
+  }
+}
+
 class Parent(name: String)(implicit kernel: Kernel) extends HwProcess(name) {
-  override def entry(): Unit = {
-    spawn(new Child("child"))
-  }
+  val worker = install(WorkerDef, "Worker")
 }
 ```
-
-`spawn` 会建立父子层级，并自动 build 子 process。
 
 ## 常见误区
 
-### `own` 不等于 `grant`
+### `Process` 不是软件意义上的 OS process
 
-`own` 只说明归属。  
-如果另一个 context 要合法写这个资源，仍然必须 `grant`。
+当前它更接近：
 
-### `grant` 不等于 runtime bus
+- service
+- environment
+- physical component
 
-当前 `grant` 挂的是编译期 ABI metadata，不会自动生成一套运行时通信协议。
+### `export / declare` 不是默认开发方式
 
-### lifecycle ACL 不等于普通 ACL
+v0 下，只有跨边界复用和正式接口才推荐 symbolic。  
+同一 process 内的局部 thread/logic 继续允许直接 Scala/Chisel 交互。
 
-能写某个 signal，不等于能 `kill` 或 `start` 某个 thread。  
-lifecycle 控制权走的是 thread 自己的系统级权限路径。
+### `spawn` 不再负责旧 ACL 传播
 
-### `kernelKillSignal` 不等于 thread kill
-
-它是 context 级 cut-off。  
-thread kill 现在走 thread 自己的 runtime kill 路径。
+当前 `spawn` 只是组合/实例化过程，不再承担 `own/grant` 自动传播。
 
 ## 与其他模块的关系
 
-- thread 如何使用这些资源，看 [thread.md](/Users/nullstarfish/HwOS_personal/docs/api/thread.md)
-- `grant` 挂的 ABI 在系统侧如何导出，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)
-- 设计哲学和概念边界，看 [concepts.md](/Users/nullstarfish/HwOS_personal/docs/concepts.md)
+- thread 如何组织控制流，看 [thread.md](/Users/nullstarfish/HwOS_personal/docs/api/thread.md)
+- `HwInline` / `HwFunction` 如何作为控制代码段使用，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
+- 地址表导出与 `exported/dependency` 两张表，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)

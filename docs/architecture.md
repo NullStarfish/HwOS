@@ -21,24 +21,27 @@
 
 当前 HwOS 的主线可以压成一句话：
 
-- `thread` 是唯一正式控制流执行内核
+- `thread` 是唯一正式控制流执行宿主
 - `StepRef` 是编译期 step 引用
 - `RuntimeContext(cursor + stateReg + binding)` 是 thread runtime 的第一性模型
-- `KernelAddressSpace` 负责 state / code / binding / grant 四类元数据
-- thread runtime 通过 `ThreadRuntimeLease` 暴露给 OSReaper 作为系统侧兜底回收对象
-- `HwFunction` 当前是 v1：隐藏 activation thread + blocking call
+- `HwInline` / `HwFunction` 是运行在 thread 上的控制代码段
+- `HwProcess` 当前更接近 service / environment / physical component
+- `KernelAddressSpace` 负责 state / code / binding / exported / dependency 五类元数据
+- `OSReaper` 是可选系统服务，不是基础运行模型的默认组成部分
 
 几个重要边界：
 
 - `kernel.control` 不是 thread 真身，它只放高层控制 DSL 和 demo façade
 - `hijack` 是编译期 splice，不是 runtime jump
 - `exit` 是内核概念；用户态只应该看到 `Return`
-- ABI 是编译期 metadata / 检查，不是运行时总线协议
+- `export / declare` 当前只承担可见性与依赖记录
+- 普通 thread 的基础终止原语是 `reset()`
 
 ```mermaid
 graph TD
-  P["HwProcess"] --> T["HardwareThread / ThreadCore"]
+  P["HwProcess (service / environment / component)"] --> T["HardwareThread / ThreadCore"]
   P --> L["HardwareLogic"]
+  P --> X["export / declare"]
   T --> IR["ThreadIR"]
   IR --> LO["ThreadLayout"]
   LO --> RT["ThreadRuntimeLogic"]
@@ -49,10 +52,12 @@ graph TD
   AS --> ST["State Table"]
   AS --> CT["Code Table"]
   AS --> BT["Binding Table"]
-  AS --> GT["Grant Table"]
-  K --> R["OSReaper"]
+  AS --> ET["Exported Memory Table"]
+  AS --> DT["Dependency Table"]
+  K --> R["OSReaper (optional)"]
   F["HwFunction v1"] --> AT["隐藏 activation thread"]
   AT --> T
+  I["HwInline"] --> T
   C["StructuredControl / ThreadStepDemo"] --> T
 ```
 
@@ -62,7 +67,7 @@ graph TD
 
 `Kernel` 是系统级壳子。它负责：
 
-- 注册 process / thread / context
+- 注册 process / thread
 - 在 `boot()` 时生成 `Kernel/OSReaper`
 - 触发 monitor / symbol dump / 地址表导出
 - 持有唯一的 `KernelAddressSpace`
@@ -71,55 +76,60 @@ graph TD
 
 - thread 控制流 lowering 细节
 - function body 的具体执行逻辑
-- ACL 本身的判定细节
+- 业务对象自己的资源仲裁
 
 `KernelAddressSpace` 是当前所有元数据分配与导出的唯一入口。它负责：
 
 - state 空间地址分配
 - code 空间地址分配
 - `RuntimeContext` 所需元数据绑定
-- ABI grant 元数据登记
-- 四张表的渲染与导出
+- `exported memory table` 登记
+- `dependency table` 登记
+- 五张表的渲染与导出
 
-当前四张表：
+当前五张表：
 
 - `state table`
-  - 真实硬件状态对象
-  - 例如 `Reg`、cursor、thread `stateReg`、lease backing state
+  - 被 kernel 跟踪的真实硬件状态对象
+  - 例如 `Reg`、cursor、thread `stateReg`、export backing state
 - `code table`
   - step/function 的控制编码空间
-  - 不是 state 地址空间
 - `binding table`
   - 把某个 runtime cursor/state 绑定到某段 code segment
-- `grant table`
-  - 记录 `grant` 的 ABI 语义
+- `exported memory table`
+  - 记录显式 `export(...)` 的资源
+- `dependency table`
+  - 记录显式 `declare(...)` 的依赖
 
 ### `process` / `context`
 
-`HwProcess` 负责结构搭建：
+`HwProcess` 当前负责环境与装配：
 
 - 形成 process 层级
+- 持有本地状态
 - 创建 thread / logic
+- `install(threadDef, name)` 安装 definition-first thread
 - `spawn` 子 process
 - 在 root process 上触发 `kernel.boot()`
 
-`HwContext` / `HwContextEntity` 负责权限与 ownership：
+`HwProcess` 当前不负责：
 
-- `own(...)` 注册状态对象 ownership
-- `grant(...)` 授权写权限，并登记 ABI metadata
-- `bindIsActive(...)` 把上下文活跃条件绑定到 runtime
-- `kernelKillSignal` 是 context 级的系统切断机制
+- code space 本体
+- thread runtime
+- 旧式资源 ACL 扩散
 
-边界上要特别注意：
+`HwContext` / `HwContextEntity` 当前已经收成最小上下文壳。它主要负责：
 
-- `own` 只负责 ownership / state table 登记
-- `grant` 负责 ACL 扩散和 ABI metadata
-- ABI 挂在 `grant` 上，而不是 `own` 上
+- entity 身份
+- kernel 挂接
+- `export(...)`
+- `declare(...)`
 
-原因是：
+当前已经不再负责：
 
-- `own` 只说明“这是我的资源”
-- `grant` 才说明“我要如何把它暴露给别人”
+- `own / grant`
+- ACL registry
+- `kernelKillSignal`
 
 ### `thread`
 
@@ -147,13 +157,29 @@ graph TD
 - 绑定 `active/done/pc`
 - 把 `entry { ... }` 收集并 lower
 - 在 debug 模式下打印 step 执行轨迹
-- 默认注册一份 thread runtime lease
 
 `ThreadCore` 不负责：
 
 - state / code 地址分配本体
 - 高层 if/while/for 语法糖
-- function activation 的调用协议
+- OSReaper 的系统级收尾策略
+
+### `ThreadDef`
+
+`ThreadDef` 是 definition-first 的 thread code 对象。它负责：
+
+- 在单文件里定义 thread code
+- 通过 `define(thread)` 把 code 安装到 thread 实例
+
+`HwProcess.install(threadDef, name)` 负责：
+
+- 创建 thread 实例
+- 调用 `ThreadDef.define(...)`
+
+也就是说：
+
+- `ThreadDef` 负责 code definition
+- `HwProcess` 负责环境与装配
 
 ### `thread/step`
 
@@ -167,8 +193,6 @@ graph TD
 - hijack 引用
 - jump target
 - global block
-
-这里仍然完全是编译期语义。
 
 #### `ThreadLayout`
 
@@ -198,17 +222,17 @@ graph TD
 - `start`: `cursor := entry` 且 `stateReg := Running`
 - `exit`: `stateReg := Done`
 - `reset`: `cursor := entry` 且 `stateReg := Idle`
-- `thread_kill`: 走系统级 reclaim 路径，最终让 runtime 回到 `Idle`
 
 ### `function`
 
 当前仓库同时有两类“函数”：
 
 - `HwInline`
-  - 纯 inline
+  - 纯 inline 控制段
   - 直接把逻辑 emit 到当前调用上下文
 - `HwFunction`
   - 当前 v1 的真实函数模型
+  - 是独立 code segment
 
 `HwFunction` 当前不是最终形态，而是 v1 方案：
 
@@ -223,12 +247,6 @@ graph TD
 - 单 activation slot
 - 显式 call binding
 - caller kill 时 activation 连坐 kill / reclaim
-
-`Return` 与 `exit` 的关系：
-
-- 用户只有 `SysCall.Return()`
-- `SysCall.exit()` 是 `private[kernel]`
-- root 下没有 continuation 的 `Return()`，内部就会走 kernel exit
 
 ### `control`
 
@@ -261,25 +279,12 @@ graph TD
 - `stateReg` 表示 `Idle / Running / Done`
 - `binding` 把这份 runtime state 和 code segment 联系起来
 
-### `ThreadRuntimeLease`
-
-每个 thread 默认都会注册一份 runtime lease。
-
-语义：
-
-- 它把 `RuntimeContext` 暴露给 OSReaper
-- 它不是 thread lifecycle 本体
-- 它是系统级 reclaim 的接入点之一
-- 是否接管它，由 OSReaper/Kernel 侧决定，不写进 `RuntimeContext`
-
 ### `AddressObject`
 
-统一的地址对象壳，但现在已经分成两套空间：
+统一的地址对象壳，但当前已经分成两套空间：
 
 - `spaceTag = state`
 - `spaceTag = code`
-
-它们共用同一个对象模型，但不再共用一套编号。
 
 这意味着：
 
@@ -297,16 +302,31 @@ graph TD
 - `startAddress`
 - `entryAddress`
 
-这里的 `startAddress / entryAddress` 已经是 **code space** 地址，不再是混合全局地址。
+这里的 `startAddress / entryAddress` 已经是 **code space** 地址。
 
-### `StepRef`
+### `ExportedMemoryEntry`
 
-`StepRef` 是当前所有 `jump/hijack` 的正式目标表示：
+表示一条显式导出的 symbolic 资源。
 
-- `NamedStepRef("Foo")`
-- `NextStepRef`
+它至少包含：
 
-它只在 collect / layout / lower 期间解析。
+- `symbolName`
+- `ownerName`
+- backing address object
+- capability
+- type summary
+
+### `MemoryDependencyEntry`
+
+表示一条显式的 symbolic 依赖。
+
+它至少包含：
+
+- requester name
+- target symbol
+- resolved owner
+- requested capability
+- resolved capability
 
 ## 关键流程
 
@@ -315,33 +335,15 @@ graph TD
 thread 的完整路径大致是：
 
 1. `HwProcess.createThread("Worker")`
-2. `worker.entry { ... }`
-3. `ThreadCore` 建立 `ThreadIR.IRState`
-4. `Step / jump / hijack / waitCondition` 先进入 `ThreadIR`
-5. `ThreadRuntimeLogic.allocateRuntime(...)`
-6. `KernelAddressSpace.reserveCodeSegment(...)`
-7. `KernelAddressSpace.allocateRuntimeContext(...)`
-8. `ThreadLayout.assignStandaloneLayout(...)`
-9. `ThreadRuntimeLogic.lowerProgram(...)`
-
-```mermaid
-sequenceDiagram
-  participant P as HwProcess
-  participant T as ThreadCore
-  participant IR as ThreadIR
-  participant LO as ThreadLayout
-  participant AS as KernelAddressSpace
-  participant RT as ThreadRuntimeLogic
-
-  P->>T: createThread + entry { ... }
-  T->>IR: collect Step / hijack / jump / waitCondition
-  T->>RT: allocateRuntime(...)
-  RT->>LO: 规约 standalone steps
-  RT->>AS: reserveCodeSegment(...)
-  RT->>AS: allocateRuntimeContext(...)
-  RT->>LO: assignStandaloneLayout(...)
-  RT->>T: lowerProgram(...)
-```
+2. 或 `HwProcess.install(threadDef, "Worker")`
+3. `worker.entry { ... }`
+4. `ThreadCore` 建立 `ThreadIR.IRState`
+5. `Step / jump / hijack / waitCondition` 先进入 `ThreadIR`
+6. `ThreadRuntimeLogic.allocateRuntime(...)`
+7. `KernelAddressSpace.reserveCodeSegment(...)`
+8. `KernelAddressSpace.allocateRuntimeContext(...)`
+9. `ThreadLayout.assignStandaloneLayout(...)`
+10. `ThreadRuntimeLogic.lowerProgram(...)`
 
 ### 2. `StepRef` 控制流流程
 
@@ -364,11 +366,6 @@ sequenceDiagram
 - 不会让 cursor 跳进某个被 splice 的内部 step
 - 它会 stall 回当前入口 step 的地址
 
-standalone suppression 的意思是：
-
-- 某个 step 不再有自己的独立 code slot
-- 但它的 body 会被别的 step 在编译期展开使用
-
 ### 3. function call 流程
 
 当前 `HwFunction` 的调用流程：
@@ -384,72 +381,56 @@ standalone suppression 的意思是：
 6. activation `Return()`
 7. caller 检测 activation done，跳回 continuation
 
-```mermaid
-sequenceDiagram
-  participant C as Caller Thread
-  participant F as HwFunction
-  participant A as Activation Thread
-  participant R as OSReaper
+### 4. symbolic v0 流程
 
-  C->>F: SysCall.Call(func, returnTo)
-  F->>A: ensureActivation + start
-  C->>C: wait in call step
-  A->>A: run function body
-  A->>A: Return()
-  C->>C: jump(returnTo)
-  C-->>R: if killed during call
-  R->>A: kill + reclaim
-```
+symbolic v0 的路径非常轻：
 
-### 4. kill / reclaim 流程
+1. provider/process 显式 `export(symbol, signal, caps)`
+2. `KernelAddressSpace` 记录 exported memory entry
+3. consumer/thread/logic 显式 `declare(symbol, caps)`
+4. `KernelAddressSpace` 记录 dependency entry
+5. 使用方通过 `VirtualHandle.read / write` 访问
 
-当前 kill / reclaim 已经分成三层：
+这里特别要注意：
 
-1. `kill(contextEntity)`
-2. `thread_kill(thread)`
-3. `thread reset`
+- 同一 process 内的本地实现不强制走 symbolic
+- 只有跨边界可见性与依赖记录才使用 `export / declare`
 
-普通 thread kill：
+### 5. reset / kill / reclaim 流程
 
-1. `SysCall.kill(targetThread)` 触发该 thread 的 context cut-off
-2. `ctx.kernelKillSignal` 被拉高
-3. `OSReaper` 观察到该 thread 的 context kill
-4. `OSReaper` 对 active leases 执行 `forceReclaim`
-5. runtime lease 执行 `resetRuntime()`
-6. thread 最终回到 `Idle`
+普通 thread：
 
-context kill：
+1. `SysCall.kill(thread)` 发起系统终止
+2. 如果没有显式 OSReaper 神力接入，最终直接落到 `thread.reset()`
+3. `reset()` 使：
+   - `cursor := entry`
+   - `stateReg := Idle`
 
-1. `kill(contextEntity)` 写 `ctx.kernelKillSignal`
-2. 对普通 context，这意味着 context 级切断
-3. 对 thread context，OSReaper 默认会顺带接管其 runtime lease
-4. runtime lease 执行 reset，使 thread 回到 `Idle`
+显式接入 `OSReaperManaged` 的对象：
 
-function call 期间 kill：
+1. 系统先执行 reaper cleanup / forced reclaim
+2. 再让关联 thread 最终回到 `reset()`
 
-1. caller 被 kill
-2. call binding 识别当前 activation
-3. activation 连坐 kill
-4. activation 自己持有的 leases 被 `forceReclaim`
-5. call binding 清理
-6. caller 后续可 restart，不会被旧 activation 污染
+因此：
+
+- `reset()` 是基础原语
+- 即时截断与强制收尾是附加系统能力
 
 ## 当前设计决策
 
-以下约定是当前主线，后续代码和文档都应围绕它们，而不是围绕历史实现：
+以下约定是当前主线，后续代码和文档都应围绕它们：
 
 - thread 没有多个 backend，只有统一 `ThreadCore`
 - `StepRef` 是正式主语义；字符串跳转只是过渡包装
 - `hijack` 是编译期 splice，不是 runtime jump
-- `waitCondition` stall 在入口 step，不是某个内部 splice 位置
 - `RuntimeContext(cursor + stateReg + binding)` 是 thread runtime 的第一性模型
-- thread lifecycle 不再依赖 lifecycle lease 主语义
-- context kill 与 thread kill 已分离
-- OSReaper 通过 runtime lease 在系统侧决定是否接管 thread runtime
-- ABI 是编译期 metadata / check，不是运行时总线协议
-- state 和 code 是两套独立地址空间
+- `Process` 当前应理解为 service / environment / physical component
+- `ThreadDef` 是 definition-first 的 thread code 接口
+- `HwInline` / `HwFunction` 是控制代码段，不是软件 function 的直接翻版
+- `export / declare` 构成 lightweight symbolic v0
+- `KernelAddressSpace` 不再维护 `grant table`
+- `OSReaper` 是可选系统服务，不是基础模型默认部分
 - `exit` 是内核概念，不是用户 API
-- `ThreadStepDemo` 是 demo façade，不是 kernel 真身
 - `HwFunction` 还是 v1，而不是最终 function 架构
 
 ## 已知局限
@@ -460,25 +441,23 @@ function call 期间 kill：
   - 单 activation slot
   - 隐藏 activation thread
   - 不是最终 function runtime 形态
-- 仓库里仍然会看到不少 `lastconnect warning`
-  - 当前测试主线已经接受这些 warning
-  - 它们不等于当前语义错误
-- README 里仍有少量概念性描述和当前实现不完全同步
-  - 这轮只做最小纠偏，不重写整篇 README
+- symbolic v0 还很轻：
+  - 只支持精确符号名
+  - 还没有 namespace / 模糊匹配
+  - 还不是完整链接器
+- 当前仓库里仍会看到不少旧风格痕迹和迁移遗留警告
+  - 尤其是一些由旧 `own(...)` 去除后留下的纯表达式 warning
 
 ## 建议阅读顺序
 
 如果你要接手当前主线，建议按这个顺序读代码：
 
 1. [src/main/scala/HwOS/kernel/thread/ThreadCore.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/ThreadCore.scala)
-2. [src/main/scala/HwOS/kernel/thread/step/ThreadIR.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/step/ThreadIR.scala)
-3. [src/main/scala/HwOS/kernel/thread/step/ThreadLayout.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/step/ThreadLayout.scala)
-4. [src/main/scala/HwOS/kernel/thread/step/ThreadRuntimeLogic.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/step/ThreadRuntimeLogic.scala)
-5. [src/main/scala/HwOS/kernel/system/KernelAddressSpace.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/system/KernelAddressSpace.scala)
-6. [src/main/scala/HwOS/kernel/system/SysCall.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/system/SysCall.scala)
-7. [src/main/scala/HwOS/kernel/function/HwFunction.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/function/HwFunction.scala)
-8. [src/main/scala/HwOS/kernel/control/StructuredControl.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/control/StructuredControl.scala)
-
-如果要看最小、最纯的可行性演示，再看：
-
-- [src/main/scala/HwOS/kernel/control/ThreadStepDemo.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/control/ThreadStepDemo.scala)
+2. [src/main/scala/HwOS/kernel/thread/ThreadDef.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/ThreadDef.scala)
+3. [src/main/scala/HwOS/kernel/thread/step/ThreadIR.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/step/ThreadIR.scala)
+4. [src/main/scala/HwOS/kernel/thread/step/ThreadLayout.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/step/ThreadLayout.scala)
+5. [src/main/scala/HwOS/kernel/thread/step/ThreadRuntimeLogic.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/step/ThreadRuntimeLogic.scala)
+6. [src/main/scala/HwOS/kernel/system/KernelAddressSpace.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/system/KernelAddressSpace.scala)
+7. [src/main/scala/HwOS/kernel/system/SysCall.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/system/SysCall.scala)
+8. [src/main/scala/HwOS/kernel/function/HwFunction.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/function/HwFunction.scala)
+9. [src/main/scala/HwOS/kernel/examples/symbolic/CounterWorkerThreadUnit.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/examples/symbolic/CounterWorkerThreadUnit.scala)

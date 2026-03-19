@@ -10,33 +10,40 @@
 
 ```mermaid
 graph TD
-  P["Process / HwProcess"] --> C["Context / HwContext"]
-  P --> T["Thread / HardwareThread + ThreadCore"]
-  P --> F["HwFunction"]
+  P["Process / HwProcess (service, environment, physical component)"] --> T["Thread / HardwareThread + ThreadCore"]
+  P --> L["HardwareLogic"]
+  P --> E["export / declare"]
   T --> R["RuntimeContext"]
   T --> S["Step / StepRef / hijack / jump"]
   T --> K["Kernel"]
-  F --> A["Activation Thread"]
+  F["HwFunction"] --> A["Activation Thread"]
   F --> CB["Call Binding"]
+  I["HwInline"] --> T
   K --> AS["KernelAddressSpace"]
   AS --> ST["State Table"]
   AS --> CT["Code Table"]
   AS --> BT["Binding Table"]
-  AS --> GT["Grant Table"]
-  K --> O["OSReaper"]
-  C --> G["Grant / ABI / ACL"]
+  AS --> ET["Exported Memory Table"]
+  AS --> DT["Dependency Table"]
+  K --> O["OSReaper (optional service)"]
 ```
 
 ## Process
 
 ### 它是什么
 
-`HwProcess` 是结构和所有权层级的容器。
+`HwProcess` 当前更接近：
+
+- service
+- environment
+- physical component
+- assembler
 
 它负责：
 
 - 形成 process 层级
-- 创建 thread / logic
+- 持有本地状态
+- 创建 / 安装 thread
 - `spawn` 子 process
 - 在 root 上触发 `kernel.boot()`
 
@@ -44,133 +51,85 @@ graph TD
 
 - 它不是 thread runtime
 - 它不是 code segment
-- 它不是 function activation
+- 它不是软件意义上的 OS process
 
 ### 它的边界
 
-`HwProcess` 主要解决“谁拥有谁、谁创建谁”的问题。  
+process 主要提供：
+
+- 共享环境
+- 物理边界
+- 装配位置
+
 具体控制流执行则交给 `thread`。
 
 ## Context
 
 ### 它是什么
 
-`HwContext` / `HwContextEntity` 是权限与可达性的语义边界。
+`HwContext` / `HwContextEntity` 是最小上下文壳。
 
-它负责：
+当前主线下，它主要负责：
 
-- ownership 归属
-- ACL 扩散
-- `bindIsActive(...)`
-- `kernelKillSignal`
+- entity 身份
+- kernel 挂接
+- `export(...)`
+- `declare(...)`
 
 ### 它不是什么
 
 - 它不是执行单元
-- 它不是地址分配器
-- 它不是 thread runtime 本体
+- 它不是 ACL / ownership 系统
+- 它不是 OSReaper 默认接口壳
 
 ### 它的边界
 
-thread 决定“谁在执行”，context 决定“这个执行体当前能合法触碰什么”。
-
-当前还要补一条边界：
-
-- `kernelKillSignal` 是 context 级 cut-off
-- 它不再天然等价于 thread kill
-
-## Ownership
-
-### 它是什么
-
-`own(...)` 表示：
-
-- 某个状态对象归属于当前 context / owner
-- 该对象会进入 `state table`
-
-### 它不是什么
-
-- 它不是对外接口声明
-- 它不是 ABI
-- 它不说明别人如何使用这个对象
-
-### 它的边界
-
-`own` 只说“这是我的”。  
-如果要让别人访问它，必须再通过 `grant(...)`。
-
-## Grant
-
-### 它是什么
-
-`grant(...)` 表示：
-
-- 把某个对象的写入或交互权限授权给别的 target
-- 同时给这个交互挂上 ABI metadata
-
-### 它不是什么
-
-- 它不是 ownership
-- 它不是 runtime bus 协议
-- 它不是自动代码生成框架
-
-### 它的边界
-
-`own` 说明归属，`grant` 说明暴露方式。  
-所以 ABI 绑定在 `grant` 上，而不是 `own` 上。
-
-## ABI
-
-### 它是什么
-
-ABI 是当前系统中的**编译期交互语义**，现在主要体现在 `grant table` 中。
-
-当前正式类型包括：
-
-- `GrantAbi.RegisterWrite`
-- `GrantAbi.LevelDrivenWire`
-- `GrantAbi.PulseWire`
-
-### 它不是什么
-
-- 它不是运行时总线协议
-- 它不是自动握手控制器
-- 它不是新的硬件通信语言
-
-### 它的边界
-
-ABI 现在负责：
-
-- 约束 `grant` 的写法
-- 导出交互意图
-- 防止错误地把 wire 当 reg 暴露
-
-它不负责在运行时解释协议。
+当前 `HwContextEntity` 不再承担旧 `own/grant` 语义。  
+跨边界正式接口已经收成 symbolic v0 的 `export / declare`。
 
 ## Thread
 
 ### 它是什么
 
-`HardwareThread` + `ThreadCore` 是当前系统唯一正式的控制流执行单元。
+`HardwareThread` + `ThreadCore` 是当前系统唯一正式的控制流执行宿主。
 
 它负责：
 
 - 收集 `entry { ... }`
 - 持有 `RuntimeContext`
 - 执行 `Step` 控制流
-- 响应 `start / kill / Return`
-- 持有 thread 自己的 runtime kill / reset 语义
+- 响应 `start / reset / Return`
 
 ### 它不是什么
 
 - 它不是 process
 - 它不是 function 本体
-- 它不是高层 DSL
+- 它不是主要的代码复用单元
 
 ### 它的边界
 
-process 是结构容器，thread 是执行体。  
-function 当前 v1 则是借助隐藏 activation thread 来获得调用语义。
+thread 更像：
+
+- runtime engine
+- CPU host
+
+而不是最终想要被移植和复用的代码对象。
+
+## ThreadDef
+
+### 它是什么
+
+`ThreadDef` 是 definition-first 的 thread code 定义接口。
+
+### 它不是什么
+
+- 它不是执行实例
+- 它不是 process
+
+### 它的边界
+
+`ThreadDef` 负责定义 thread code；  
+`HwProcess.install(...)` 负责把它安装到具体环境里。
 
 ## Step
 
@@ -248,27 +207,109 @@ function 当前 v1 则是借助隐藏 activation thread 来获得调用语义。
 
 ### 它的边界
 
-`cursor` 和 `stateReg` 负责 thread 本体生命周期；  
-lease 负责资源/调用期语义，不取代这套 runtime 本体。  
-当前每个 thread 会把自己的 runtime 本体再注册成一份 `ThreadRuntimeLease`，供 OSReaper 在系统侧决定是否接管。
+`cursor` 和 `stateReg` 负责 thread 本体生命周期。  
+普通 thread 的基础原语是 `reset()`，不是系统级 reclaim 对象。
 
-## Thread Runtime Lease
+## HwInline
 
 ### 它是什么
 
-thread runtime lease 是对 `RuntimeContext` 的一层 lease-backed reclaim 包装。
+`HwInline` 是纯 inline 控制段。
 
 ### 它不是什么
 
-- 它不是 thread 生命周期本体
-- 它不是普通资源 lease
+- 它不是独立执行体
+- 它不是 activation slot
+- 它不是软件意义上的普通 function
 
 ### 它的边界
 
-它的职责是：
+它直接在当前调用上下文中 emit 控制逻辑。  
+如果需要真实调用/阻塞/kill 传播语义，应使用 `HwFunction`。
 
-- 把 runtime context 暴露给 OSReaper
-- 让系统能在 OSReaper/Kernel 侧选择是否接管某个 thread runtime
+## HwFunction
+
+### 它是什么
+
+`HwFunction` 当前是 v1 的真实函数模型，也是当前最明确的独立 code segment 载体。
+
+特征：
+
+- 隐藏 activation thread
+- blocking call
+- 单 activation slot
+- continuation binding
+
+### 它不是什么
+
+- 它不是纯 inline helper
+- 它不是软件调用栈的直接翻版
+
+### 它的边界
+
+`HwFunction` 当前更像：
+
+- 可调用控制代码段
+- portable / composable code segment
+
+而不是传统软件 function 的直接硬件投影。
+
+## Symbolic v0
+
+### 它是什么
+
+当前最轻量的 symbolic 组织方式。
+
+它只承担两件事：
+
+- 可见性
+- 依赖记录
+
+### 它不是什么
+
+- 它不是完整链接器
+- 它不是默认开发方式
+- 它不是所有本地值的追踪系统
+
+### 它的边界
+
+同一 process 内的局部实现仍允许直接 Scala/Chisel 交互。  
+只有跨边界 provider/consumer 解耦时，才推荐：
+
+- `export(symbol, signal, caps)`
+- `declare(symbol, caps)`
+
+## Exported Resource
+
+### 它是什么
+
+显式通过 `export(...)` 暴露出去的资源。
+
+### 它不是什么
+
+- 它不是所有本地状态
+- 它不是自动导出的 process 字段
+
+### 它的边界
+
+只有 exported resource 才进入 exported memory table。  
+本地实现细节默认不进入 symbolic 表。
+
+## Process-local Access
+
+### 它是什么
+
+同一 process 内的局部代码直接通过 Scala/Chisel 访问本地状态。
+
+### 它不是什么
+
+- 它不是 symbolic 依赖
+- 它不会出现在 dependency table 里
+
+### 它的边界
+
+这是 v0 里保留的本地开发模式。  
+symbolic 不应压垮所有日常局部逻辑。
 
 ## State Space
 
@@ -281,7 +322,7 @@ thread runtime lease 是对 `RuntimeContext` 的一层 lease-backed reclaim 包�
 - `Reg`
 - cursor
 - `stateReg`
-- lease backing state
+- exported resource backing state
 
 ### 它不是什么
 
@@ -330,155 +371,23 @@ cursor 是 state object，
 
 它的职责是“解释关系”，不是“存储状态”。
 
-## HwInline
-
-### 它是什么
-
-`HwInline` 是纯 inline 逻辑包装。
-
-### 它不是什么
-
-- 它不是独立执行体
-- 它不是 activation slot
-- 它不是真正的 runtime function
-
-### 它的边界
-
-它直接在当前调用上下文中 emit 逻辑。  
-如果需要真实调用/阻塞/kill 传播语义，应使用 `HwFunction`。
-
-## HwFunction
-
-### 它是什么
-
-`HwFunction` 当前是 v1 的真实函数模型。
-
-特征：
-
-- 隐藏 activation thread
-- blocking call
-- 单 activation slot
-- 显式 call binding
-
-### 它不是什么
-
-- 它不是纯 inline 包装
-- 它不是最终 function 架构
-- 它不是多实例可重入函数
-
-### 它的边界
-
-它当前优先保证：
-
-- 调用
-- 阻塞
-- continuation
-- kill 传播
-- reclaim
-
-而不是追求最终的函数形态。
-
-## Call Binding
-
-### 它是什么
-
-call binding 是 `HwFunction` v1 里的调用绑定状态。
-
-它负责：
-
-- 记录当前 caller / activation 的关系
-- 标识这次调用是否活跃
-- 支撑 caller kill 时 activation 连坐回收
-
-### 它不是什么
-
-- 它不是一般 thread runtime
-- 它不是长期 ownership 结构
-
-### 它的边界
-
-它服务于一次函数调用，而不是 thread 的日常生命周期。
-
-## Lease
-
-### 它是什么
-
-lease 是当前系统里的资源/调用期语义工具。
-
-它常用于：
-
-- 资源占用
-- function call 期间的回收边界
-- reaper 回收入口
-
-### 它不是什么
-
-- 它不是 thread 生命周期的第一性模型
-- 它不是 `active/done` 的唯一来源
-
-### 它的边界
-
-thread runtime 首先来自 `RuntimeContext`。  
-lease 是附着其上的资源/调用期层。
-
 ## OSReaper
 
 ### 它是什么
 
-`OSReaper` 是系统级回收器。
-
-它负责：
-
-- 扫描 active leases
-- 在 kill / abort 后强制 reclaim
-- 在系统侧决定是否接管 thread runtime
-- 配合 function call binding 做 activation 连坐回收
+`OSReaper` 是可选系统级回收器。
 
 ### 它不是什么
 
-- 它不是 thread scheduler
-- 它不是 thread runtime 本体
+- 它不是所有 thread 的默认组成部分
+- 它不是基础语言的一部分
 
 ### 它的边界
 
-它处理的是“死后怎么收干净”，  
-而不是“活着时怎么执行”。
+当前只有显式接入 `OSReaperManaged` 的对象才拥有：
 
-## 关键关系图
+- 即时截断
+- 强制收尾
+- 系统级 reclaim
 
-```mermaid
-graph TD
-  TH["Thread"] --> RC["RuntimeContext"]
-  RC --> CUR["cursor"]
-  RC --> SR["stateReg"]
-  RC --> BD["binding"]
-  CUR --> CS["Code Space"]
-  BD --> SEG["GlobalCodeSegment"]
-  SEG --> CT["Code Table"]
-  TH --> OW["own"]
-  TH --> GR["grant"]
-  OW --> ST["State Table"]
-  GR --> GT["Grant Table"]
-  RC --> BT["Binding Table"]
-```
-
-## 当前主线下的几个最重要区分
-
-- `own` vs `grant`
-  - 一个讲归属，一个讲暴露
-- `thread` vs `function`
-  - 一个是正式执行体，一个当前通过 activation thread 获得调用语义
-- `HwInline` vs `HwFunction`
-  - 一个 inline，一个真实调用
-- `jump` vs `hijack`
-  - 一个 runtime control transfer，一个 compile-time splice
-- `state table` vs `code table`
-  - 一个是真实状态，一个是控制编码
-- `Return` vs `exit`
-  - 一个是用户语义，一个是内核语义
-- `thread runtime` vs `function activation`
-  - 一个是 thread 本体，一个是函数调用期执行体
-- `lease` vs lifecycle
-  - lease 负责资源/调用期，不再是 thread 生命周期本体
-- `context kill` vs `thread kill`
-  - 一个切断 context，一个终止 thread runtime
+普通 thread 的基础终止原语仍然是 `reset()`。

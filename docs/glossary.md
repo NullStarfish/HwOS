@@ -1,7 +1,6 @@
 # HwOS 术语表
 
 这份术语表用于统一当前主线下的命名。  
-它不是历史记录，也不是愿景说明。  
 如果术语和代码不一致，应以当前代码为准并及时更新这份表。
 
 ## A-C
@@ -10,11 +9,6 @@
 
 当前 `HwFunction` v1 内部隐藏的执行 thread。  
 它承载 function body 的真实运行，不等于 caller thread。
-
-### `ABI`
-
-当前系统中的编译期交互语义，挂在 `grant(...)` 上。  
-它不是运行时总线协议。
 
 ### `binding`
 
@@ -31,6 +25,11 @@
 `HwFunction` v1 为一次调用建立的显式绑定状态。  
 它支撑 continuation、kill propagation 与 reclaim。
 
+### `code segment`
+
+HwOS 中真正可移植、可组合、可被链接的控制代码段。  
+当前 `HwInline` 和 `HwFunction` 都属于 code segment 家族，但结构代价不同。
+
 ### `code space`
 
 step/function 控制编码所在的空间。  
@@ -41,39 +40,47 @@ step/function 控制编码所在的空间。
 `KernelAddressSpace` 导出的元数据表之一。  
 它描述 code space 中的 segment、entry 和 labels。
 
-## G-H
+## D-H
 
-### `GrantAbi.LevelDrivenWire`
+### `declare`
 
-表示某个导出的 `Wire` 应按持续电平驱动来理解。  
-常用于 enable、mode、valid-like 信号。
+symbolic v0 中的依赖声明接口。  
+consumer/thread/logic 通过 `declare(symbol)` 获取虚拟句柄。  
+它的作用是建立正式依赖并记录到 dependency table。
 
-### `GrantAbi.PulseWire`
-
-表示某个导出的 `Wire` 应按单拍脉冲来理解。  
-常用于 done、notify 一类事件信号。
-
-### `grant table`
+### `dependency table`
 
 `KernelAddressSpace` 导出的元数据表之一。  
-它记录 `grant(...)` 的目标、地址对象与 ABI。
+它记录谁声明了哪个 exported symbol，以及请求了什么 capability。
+
+### `export`
+
+symbolic v0 中的导出接口。  
+provider/process 通过 `export(symbol, signal, caps)` 把资源注册到 exported memory table。
+
+### `exported memory table`
+
+`KernelAddressSpace` 导出的元数据表之一。  
+它只记录显式 export 的资源，不记录所有本地 Chisel 值。
 
 ### `HwFunction`
 
-当前 v1 的真实函数模型。  
-它通过隐藏 activation thread、blocking call 与 call binding 获得调用语义。
+当前 v1 的真实硬件函数模型。  
+它通过隐藏 activation thread、blocking call 与 call binding 获得调用语义。  
+它是独立 code segment，不是纯 inline helper。
 
 ### `HwInline`
 
-纯 inline 逻辑包装。  
-它不会创建独立 activation thread，也不提供真实调用协议。
+纯 inline 控制段。  
+它不会创建独立 activation thread，也不提供真实调用协议。  
+它很像软件里的局部 helper，但其结构代价在硬件里必须显式考虑。
 
 ## K-N
 
 ### `KernelAddressSpace`
 
 当前所有地址与元数据分配的唯一入口。  
-它管理 state/code 双 allocator，以及 state/code/binding/grant 四张表。
+它管理 state/code 双 allocator，以及 state/code/binding/exported/dependency 五张表。
 
 ### `NamedStepRef`
 
@@ -89,19 +96,20 @@ step/function 控制编码所在的空间。
 
 ### `OSReaper`
 
-系统级回收器。  
-它负责在 kill / abort 后回收 active leases，并处理 function activation 的连坐 reclaim。  
-当前它还会在系统侧决定是否接管某个 thread runtime lease。
+可选系统级回收器。  
+它负责在 kill / abort 后做系统级强制收尾与 reclaim。  
+它不是基础语言或基础 runtime 的默认组成部分。
 
-### `own`
+### `OSReaperManaged`
 
-注册某个状态对象的 ownership。  
-它说明“这是我的资源”，并会让该对象进入 `state table`。
+显式声明接入 OSReaper 服务的对象接口。  
+只有 mixin 了这个 trait 的对象，才会暴露 reaper kill / reclaim 所需接口。
 
 ### `Process`
 
 通常指 `HwProcess`。  
-它是结构层级与资源组织容器，不是执行体。
+当前更接近 service / environment / physical component，而不是软件意义上的 OS process。  
+它是共享状态、仲裁和装配的物理边界。
 
 ### `Return`
 
@@ -113,22 +121,17 @@ step/function 控制编码所在的空间。
 thread runtime 的第一性结构。  
 当前包含 `cursor`、`stateReg` 与 `binding`。
 
-### `ThreadRuntimeLease`
-
-thread runtime 本体对应的 lease-backed reclaim 包装。  
-它让 OSReaper 可以在系统侧决定是否接管一份 thread runtime。
-
 ## S
 
 ### `state space`
 
 真实硬件状态所在的地址空间。  
-例如 `Reg`、cursor、`stateReg`、lease backing state。
+例如 `Reg`、cursor、`stateReg`、export backing state。
 
 ### `state table`
 
 `KernelAddressSpace` 导出的元数据表之一。  
-它记录 state space 中的状态对象。
+它记录 state space 中被 kernel 跟踪的状态对象。
 
 ### `stateReg`
 
@@ -145,6 +148,12 @@ thread 控制流中的正式控制点。
 编译期 step 引用。  
 当前正式形态是 `NamedStepRef` 和 `NextStepRef`。
 
+### `symbolic v0`
+
+当前最轻量的 symbolic 主线。  
+它只承担两件事：可见性与依赖记录。  
+同一 process 内的本地实现仍允许直接 Scala/Chisel 交互。
+
 ## T-Z
 
 ### `ThreadCore`
@@ -152,10 +161,16 @@ thread 控制流中的正式控制点。
 当前 thread 的正式内核入口。  
 它负责收集 `entry { ... }`、绑定 runtime、接入 IR/layout/runtime lowering。
 
-### `ThreadStepDemo`
+### `ThreadDef`
 
-当前的 demo façade。  
-它复用 thread 主线，但不是 thread 真身。
+definition-first 的 thread 定义接口。  
+它让 thread code 可以独立成单文件定义，再由 process 负责安装。
+
+### `thread`
+
+HwOS 的正式执行宿主。  
+它持有 `RuntimeContext` 并执行 code segment。  
+它更像 CPU/runtime engine，而不是主要的代码复用单元。
 
 ### `waitCondition`
 
@@ -174,41 +189,36 @@ thread runtime 中表示当前控制位置的状态寄存器。
 
 ### `kill(contextEntity)`
 
-context 级系统切断接口。  
-它作用于 `HwContextEntity`，不再天然等价于 thread kill。
-
-### `thread_kill`
-
-thread 专用系统终止语义。  
-当前通常由 `SysCall.kill(thread)` 承担，并表现为 `context kill + runtime lease reclaim/reset`。
+context-like 对象的系统切断接口。  
+当前只对显式接入 OSReaper 的对象有效，不再被视为所有 entity 的天然能力。
 
 ### `reset`
 
 thread 自己的 runtime 复位语义。  
-默认只复位 `cursor/stateReg`，不主动 reclaim 普通 leases。
+默认只复位 `cursor/stateReg`，不主动 reclaim 普通状态。
 
 ## 不再作为当前主线描述使用的旧说法
 
 下面这些说法不应再被用来描述当前主线：
 
-### “多 backend thread”
+### “`own / grant` 是主编程模型”
 
-当前 thread 已经收成统一主线，不再有多个 backend 竞争同一语义位置。
+当前主线已经收成：
 
-### “`Next.hijack()` 是正式接口”
+- 本地实现：直接 Scala/Chisel 交互
+- 跨边界接口：`export / declare`
 
-当前正式接口是：
+`own / grant` 已退出主线。
 
-- `thread.Next`
-- `thread.hijack(thread.Next)`
+### “grant table”
 
-`Next.hijack()` 不再是正式主语义。
+当前 `KernelAddressSpace` 不再导出 `grant table`。  
+它已经被 exported/dependency 两张 symbolic 表替代。
 
 ### “thread lifecycle 主要靠 lifecycle lease”
 
 当前 thread lifecycle 首先来自 `RuntimeContext(cursor + stateReg + binding)`。  
-lease 主要用于资源/调用期语义。  
-现在 runtime context 会额外挂一层 runtime lease，但那是系统接管入口，不是 lifecycle 本体。
+`OSReaper` 是可选系统服务，不是 thread 生命周期本体。
 
 ### “state/code 共用一个地址空间”
 

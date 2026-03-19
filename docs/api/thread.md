@@ -7,11 +7,11 @@
 - 如何定义一个正式 thread
 - 如何用 `Step` 组织控制流
 - 如何通过 `StepRef` 做 `jump` / `hijack`
-- 如何观察 thread runtime 状态
+- 如何观察和复位 thread runtime
 
 它不负责：
 
-- process 层级与 ownership 策略
+- process 资源导出策略
 - function 调用协议本身
 - 地址表导出
 
@@ -21,12 +21,24 @@
 - [thread/ThreadControlApi.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/ThreadControlApi.scala)
 - [thread/ThreadRuntimeApi.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/ThreadRuntimeApi.scala)
 - [thread/ThreadCore.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/ThreadCore.scala)
+- [thread/ThreadDef.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/ThreadDef.scala)
+
+## 模块定位补充
+
+当前主线里：
+
+- `thread` 是 **code-space 的正式执行宿主**
+- 它更像 runtime engine / CPU host
+- 真正 portable / combinable 的控制代码通常是运行在 thread 上的 `HwInline` / `HwFunction`
+
+所以 thread 很重要，但它不是当前最核心的代码复用单元。
 
 ## 文件与正式入口
 
 当前建议直接使用这些正式入口：
 
 - `HardwareThread`
+- `ThreadDef`
 - `entry { ... }`
 - `Step(name) { ... }`
 - `Next`
@@ -39,6 +51,7 @@
 - `active`
 - `done`
 - `pc`
+- `reset()`
 
 内部实现背景：
 
@@ -49,6 +62,21 @@
 这些是 lowering 支撑，不是优先给使用者直接依赖的 API 面。
 
 ## 重要 API 清单
+
+### `ThreadDef`
+
+作用：
+
+- 定义一个 definition-first 的 thread code object
+
+使用时机：
+
+- 你想把 thread code 独立成单文件并由 process 安装时
+
+关键边界：
+
+- `ThreadDef` 负责 code definition
+- `HwProcess.install(...)` 负责实例化和装配
 
 ### `entry { ... }`
 
@@ -63,16 +91,13 @@
 关键边界：
 
 - 同一个 thread 只能 `entry` 一次
+- 当前 `ThreadDef` 的默认实现仍然通过 `entry { ... }` 来定义 thread body
 
 ### `Step(name) { ... }`
 
 作用：
 
 - 定义一个正式控制点
-
-使用时机：
-
-- 需要显式切分时序/控制阶段时
 
 关键边界：
 
@@ -85,10 +110,6 @@
 
 - 表示“当前 step 的后继 step”的编译期引用
 
-使用时机：
-
-- 要做 `hijack(thread.Next)` 这类当前后继 splice 时
-
 关键边界：
 
 - 它是 `StepRef`
@@ -100,20 +121,11 @@
 
 - 生成一个命名 `StepRef`
 
-使用时机：
-
-- 要显式引用某个 step 时
-
 ### `jump(ref)`
 
 作用：
 
 - 在运行期把 thread 的控制流跳到目标 standalone step
-
-关键边界：
-
-- 正式主语义是 `jump(stepRef(...))`
-- `jump("name")` 只是过渡包装
 
 ### `hijack(ref)`
 
@@ -132,23 +144,6 @@
 
 - 当条件不满足时让当前入口 step stall
 
-关键边界：
-
-- 它 stall 回入口 step
-- 不会跳进某个被 splice 的内部位置
-
-### `waitAndAct(cond) { ... }`
-
-作用：
-
-- 条件满足时执行 block，否则等价于 wait
-
-### `Global { ... }`
-
-作用：
-
-- 注册 thread 级全局逻辑块
-
 ### `active / done / pc`
 
 作用：
@@ -159,9 +154,8 @@
 
 - `active` / `done` 来自 `RuntimeContext.stateReg`
 - `pc` 对应当前 `cursor`
-- `start` / `kill` 不是 thread 自己对外的高层 API，而是通过 `SysCall`
 
-### `reset`
+### `reset()`
 
 作用：
 
@@ -171,12 +165,12 @@
 
 - `cursor := entry`
 - `stateReg := Idle`
-- 默认不 reclaim 普通 leases
 
 边界：
 
-- 它不是 context kill
-- 它不是系统级 thread reclaim
+- 这是 thread 自己的基础原语
+- 普通 `kill(thread)` 默认最终落到 `reset()`
+- `OSReaper` 的即时截断和强制收尾是额外系统神力，不是 `reset()` 本体
 
 ## Usage examples
 
@@ -195,7 +189,20 @@ worker.entry {
 }
 ```
 
-### 示例 2：命名跳转
+### 示例 2：definition-first thread
+
+```scala
+object WorkerDef extends ThreadDef {
+  override def define(worker: HardwareThread): Unit = {
+    worker.entry {
+      worker.Step("Body") {}
+      SysCall.Call(SysCall.Return())
+    }
+  }
+}
+```
+
+### 示例 3：命名跳转
 
 ```scala
 worker.entry {
@@ -209,9 +216,7 @@ worker.entry {
 }
 ```
 
-`jump` 目标必须是一个真正保留下来的 standalone step。
-
-### 示例 3：`hijack(Next)`
+### 示例 4：`hijack(Next)`
 
 ```scala
 worker.entry {
@@ -227,21 +232,6 @@ worker.entry {
 }
 ```
 
-### 示例 4：`waitCondition`
-
-```scala
-worker.entry {
-  worker.Step("WaitReady") {
-    worker.waitCondition(ioReady)
-  }
-  worker.Step("Run") {
-    SysCall.Call(SysCall.Return())
-  }
-}
-```
-
-这里如果 `ioReady` 不满足，thread 会停在 `WaitReady` 入口 step。
-
 ## 常见误区
 
 ### `hijack` 不是 runtime jump
@@ -249,22 +239,21 @@ worker.entry {
 它是编译期 splice。  
 如果你想在运行期改控制流，应使用 `jump`。
 
-### `Next.hijack()` 不再是正式接口
+### `thread` 不是主要的代码复用单元
 
-当前正式写法是：
+当前 thread 更像执行宿主。  
+真正 portable / combinable 的控制代码更多体现在：
 
-```scala
-thread.hijack(thread.Next)
-```
+- `HwInline`
+- `HwFunction`
 
-### `active/done` 不是 lease 状态
+### `Process` 不是 thread 的“父线程”
 
-当前 thread runtime 首先由 `RuntimeContext(cursor + stateReg + binding)` 驱动。  
-lease 主要用于资源/调用期语义，不是 thread 生命周期本体。  
-runtime 现在会被包上一层 runtime lease，但那是 OSReaper 的接入点，不是 `active/done` 的来源。
+它更像 environment / service / physical component。  
+对 thread 来说，process 内部资源更像它所运行的外设环境。
 
 ## 与其他模块的关系
 
-- thread 创建与 ownership，看 [process-context.md](/Users/nullstarfish/HwOS_personal/docs/api/process-context.md)
-- inline / function 调用，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
-- `start/kill/Return`，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)
+- process 如何提供环境和安装 thread，看 [process-context.md](/Users/nullstarfish/HwOS_personal/docs/api/process-context.md)
+- `HwInline` / `HwFunction` 作为控制代码段的用法，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
+- `start/kill/Return` 的系统语义，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)

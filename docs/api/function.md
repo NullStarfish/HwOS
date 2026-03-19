@@ -4,9 +4,9 @@
 
 这一组 API 负责解决：
 
-- 如何写可复用的 inline helper
+- 如何写可复用的局部控制段
 - 如何写当前 v1 的真实 `HwFunction`
-- 如何通过 `SysCall.Call(...)` 调用它们
+- 如何把控制代码作为 portable / composable segment 来组织
 
 它不负责：
 
@@ -18,6 +18,20 @@
 
 - [function/HwInline.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/function/HwInline.scala)
 - [function/HwFunction.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/function/HwFunction.scala)
+
+## 模块定位补充
+
+当前主线下：
+
+- `thread` 是执行宿主
+- `HwInline` 和 `HwFunction` 是运行在 thread 上的控制代码段
+
+其中：
+
+- `HwInline` 更像局部可组合控制段
+- `HwFunction` 更像独立 code segment
+
+它们都不能简单等同于软件里的普通 function，因为在硬件里，控制段本身就带结构代价。
 
 ## 文件与正式入口
 
@@ -44,12 +58,13 @@
 
 作用：
 
-- 定义一段会被直接 emit 到当前 agent / thread 上的 inline 逻辑
+- 定义一段会被直接 emit 到当前 agent / thread 上的 inline 控制代码
 
 关键边界：
 
 - 它不是独立 activation
 - 它不创建独立 runtime
+- 它很像软件里的局部 helper，但结构代价在硬件里必须显式看待
 
 #### `HwInline.atomic`
 
@@ -61,19 +76,13 @@
 
 使用时机：
 
-- 需要 thread 级上下文的 inline 逻辑
+- 需要 thread 级上下文的 inline 控制段
 
 #### `HwInline.stateless`
 
 使用时机：
 
 - 只需要 agent，不依赖 thread runtime 的组合逻辑片段
-
-#### `HwInline.bindings`
-
-使用时机：
-
-- 你只想拿到当前 agent，不强制上下文形状
 
 ### `HwFunction.thread`
 
@@ -87,6 +96,7 @@
 - blocking call
 - 单 activation slot
 - 不是最终 function 架构
+- 但它已经是正式独立 code segment，而不是纯 inline helper
 
 ### `Invoke() / Invoke(returnTo)`
 
@@ -112,7 +122,7 @@
 
 ```scala
 val zeroCounter = HwInline.atomic("ZeroCounter") { t =>
-  counter <== 0.U
+  counter := 0.U
 }
 
 worker.entry {
@@ -130,7 +140,7 @@ worker.entry {
 ```scala
 val workerFn = HwFunction.thread("WorkerFn") { t =>
   t.Step("Body") {
-    counter <== counter + 1.U
+    counter := counter + 1.U
   }
   t.Step("Ret") {
     SysCall.Call(SysCall.Return())
@@ -146,48 +156,31 @@ caller.entry {
     SysCall.Call(workerFn, "AfterCall")
   }
   caller.Step("AfterCall") {
-    doneReg <== true.B
+    doneReg := true.B
     SysCall.Call(SysCall.Return())
   }
 }
 ```
 
-这里：
-
-- caller 会阻塞等待 activation 完成
-- function 内的 `Return()` 会把 caller 带回 `AfterCall`
-
-### 示例 4：inline return 的含义
-
-```scala
-val helper = HwInline.thread("Helper") { t =>
-  SysCall.Call(SysCall.Return())
-}
-```
-
-这里的 `Return()` 不是“退出一个独立函数实例”，而是：
-
-- 如果有 continuation，就跳回 continuation
-- 如果没有 continuation，就结束当前 root thread
-
 ## 常见误区
 
-### `HwInline` 不是独立 activation
+### `HwInline` 不是软件意义上的普通 function
 
-它只是被 emit 到当前 agent 上的代码段。  
-所以它的 `Return()` 最终还是作用在当前 thread 上。
+它承担的是局部控制段职责。  
+在硬件里，控制段的结构代价不能像软件那样被编译器/OS 完全隐藏。
 
 ### `HwFunction` 不是纯 inline helper
 
 当前 `HwFunction` 会创建隐藏 activation thread，并具备独立调用/阻塞/kill 传播语义。
 
-### `Return` 不是公开 `exit`
+### `function` 的核心价值不只是“像软件”
 
-用户写的是 `Return()`。  
-是否落到 continuation 或 root-exit，由当前调用上下文决定。
+当前更重要的是：
+
+- 它让控制代码段成为可移植、可组合的正式对象
+- 它把控制复用从“只复用数据通路”推进到了“复用控制流”
 
 ## 与其他模块的关系
 
 - thread 上下文与 `Step`，看 [thread.md](/Users/nullstarfish/HwOS_personal/docs/api/thread.md)
 - `SysCall.Call/Return/start/kill` 的系统语义，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)
-

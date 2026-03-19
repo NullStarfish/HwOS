@@ -4,11 +4,11 @@
 [![Chisel Version](https://img.shields.io/badge/Chisel-3.6+-blue.svg)](https://www.chisel-lang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**HwOS** is a novel hardware construction framework built on top of Chisel/Scala. It introduces Operating System (OS) abstractions into the Register-Transfer Level (RTL) domain, addressing the exponential growth of control logic complexity in modern heterogeneous computing and out-of-order processors. 
+**HwOS** is a hardware construction framework built on top of Chisel/Scala. Its current main line is **control-flow-first**: it treats thread-hosted control flow and reusable control segments as first-class hardware design objects, rather than treating control as an afterthought attached to datapaths.
 
-HwOS operates on a simple but radical philosophy: **"Hardware is an Operating System, Everything is a Thread."**
+HwOS operates on a simple but radical philosophy: **"Hardware is an Operating System"**.
 
-By replacing fragmented Finite State Machines (FSMs) and explicit `Valid-Ready` handshakes with a **Thread-Level RTL (TL-RTL)** paradigm, HwOS enables designers to write complex, concurrent hardware using an imperative, software-like mindset without sacrificing physical area or timing performance.
+By replacing fragmented FSMs and ad-hoc control glue with a **thread-hosted control-flow model**, HwOS explores how hardware control can become portable, composable, and observable without hiding its structural cost.
 
 For the current implementation architecture, see [docs/architecture.md](docs/architecture.md).  
 For a paper-style statement of vision and core definitions, see [docs/vision.md](docs/vision.md).  
@@ -20,9 +20,10 @@ For practical kernel API usage, see [docs/api/README.md](docs/api/README.md).
 
 * **Thread-Level RTL (TL-RTL):** Write sequential hardware logic using `HardwareThread` and `Step`. The compiler automatically flattens these into optimal FSMs with assigned Program Counters (PCs).
 * **Zero-Bubble `hijack`:** A compiler-level metaprogramming directive that inlines the closure of the next `Step` into the current cycle, enabling 0-cycle, zero-bubble state transitions without writing complex manual combinational bypasses.
-* **Functional Hardware (`HwFunction`):** Decouples the execution container (the "CPU") from the logic payload (the "Program"). Hardware logic can be passed, nested, and invoked via `SysCall`.
-* **Ownership & Context-Aware Safety:** Hardware resources (wires/registers) are strictly managed via an Access Control List (ACL). The native `<==` operator physically gates assignments based on the thread's active state, preventing illegal out-of-context logic generation (`ContextScope`).
-* **OS Reaper & `HwLease`:** A system-level Garbage Collector for RTL. If a thread is aborted or killed, the OS Reaper uses privileged assignments (`<==!`) to forcibly reclaim stateful resources (like Mutexes) to prevent system deadlocks.
+* **Portable Control Segments:** `HwInline` and `HwFunction` let control code exist as explicit hardware code segments, with different structural/runtime costs.
+* **Thread as Execution Host:** `HardwareThread` is the unified runtime host for control flow, while `HwFunction` and `HwInline` carry the actual control payload.
+* **Lightweight Symbolic v0:** `export / declare` provide explicit cross-boundary visibility and dependency recording, while same-process local code can still use direct Scala/Chisel interaction.
+* **Optional OSReaper Services:** system-level reclaim and forced cleanup exist as explicit extra power, not as the default semantics of every thread.
 * **Hardware Stdlib:** Comes with a built-in, highly optimized concurrency library including `Mutex`, `Semaphore`, `WaitGroup` (using concurrent adder-trees), and `Scoreboard`.
 * **Native Semantic Observability (HwOSgdb):** A DPI-C and ncurses-based TUI debugger. It visualizes the dual-track CallStack (macro-temporal and micro-combinational) and supports time-travel debugging.
 
@@ -50,34 +51,30 @@ The generated SystemVerilog and `hwos.symbols` file will be located in the `gene
 
 ### 2. A Glimpse of TL-RTL Code
 
-Here is how you define a hardware process with thread-level concurrency and safe resource ownership in HwOS:
+Here is how you define a hardware process with a local thread in current HwOS:
 
 ```scala
 class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-  // 1. Declare resources and claim ownership
-  val counter  = this.own(RegInit(0.U(32.W)))
+  // 1. Local process state
+  val counter  = RegInit(0.U(32.W))
   
   // 2. Spawn a hardware thread
   val mainThread = createThread("MainThread")
 
   override def entry(): Unit = {
-    // 3. Grant write permissions to the thread
-    this.grant(counter, mainThread)
-
-    // 4. Define sequential logic
+    // 3. Define sequential logic
     mainThread.entry {
       mainThread.Step("Init") {
-        counter <== 0.U // Safe assignment gated by thread's isActive
+        counter := 0.U
       }
       mainThread.Step("CountUp") {
-        counter <== counter + 1.U
-        // Hardware-level blocking: PC stalls here until condition is met
+        counter := counter + 1.U
         mainThread.waitAndAct(counter === 10.U) {
-          mainThread.hijack(mainThread.Next) // 编译期 splice 下一个 step
+          mainThread.hijack(mainThread.Next)
         }
       }
       mainThread.Step("Finish") {
-        SysCall.Call(SysCall.Return()) // 用户侧以 Return 结束，root 下会走内核 exit
+        SysCall.Call(SysCall.Return())
       }
     }
   }
@@ -117,7 +114,7 @@ make
 ## 📂 Project Structure
 
 * `src/main/scala/HwOS/`
-* `kernel/`: The core framework (`HwProcess`, `HardwareThread`, `ContextScope`, `HwOwnerShip`, `SysCall`).
+* `kernel/`: The core framework (`HwProcess`, `HardwareThread`, `ThreadDef`, `HwInline`, `HwFunction`, `SysCall`).
 * `stdlib/`: Hardware synchronization primitives (`Mutex`, `WaitGroup`, `Scoreboard`).
 * `lib/`: Standard components (e.g., `ScoreboardRegfile`).
 * `quick_start/`: Hello World examples.
