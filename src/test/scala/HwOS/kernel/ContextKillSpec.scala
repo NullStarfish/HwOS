@@ -1,6 +1,7 @@
 package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.system.OSReaper
 import chisel3._
 import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
@@ -31,7 +32,7 @@ class ContextKillProcess(localName: String)(implicit kernel: Kernel) extends HwP
         SysCall.Call(SysCall.start(worker))
       }
       controller.Step("ContextKill") {
-        SysCall.Call(SysCall.kill(contextGate: HwContextEntity))
+        OSReaper.kill(contextGate, controller)
       }
       controller.Step("Finish") {}
       SysCall.Call(SysCall.Return())

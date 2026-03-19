@@ -2,7 +2,7 @@ package HwOS.kernel.system
 
 import chisel3._
 import scala.util.Try // 引入 Try
-import HwOS.kernel.context.{AtomicCtx, ContextScope, HwContextEntity, ThreadCtx}
+import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.debug.{CallStack, ContinuationNaming}
 import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
@@ -134,26 +134,10 @@ object SysCall {
 
 
   /**
-   * 远程杀手：强制中止目标线程 (他杀)
+   * 线程级 kill sugar：本质上就是 reset。
    */
   def kill(target: HardwareThread): HwInline[Unit] = HwInline.stateless("SysCall kill"){ agent =>
-    if (OSReaper.usesManagedThreadKill(target)) {
-      OSReaper.requestThreadKill(target)
-    } else {
-      target.reset()
-    }
-  }
-
-  /**
-   * 普适 context kill：切断一个 ContextEntity 的 context，并交给系统级回收逻辑处理。
-   */
-  def kill(target: HwContextEntity): HwInline[Unit] = HwInline.stateless("SysCall context kill") { agent =>
-    target match {
-      case managed: OSReaperManaged =>
-        managed.reaperKillLatch := true.B
-      case _ =>
-        throw new Exception(s"[HwOS] Context kill requires OSReaper gate service: '${target.name}' does not opt in.")
-    }
+    target.reset()
   }
 
   /**

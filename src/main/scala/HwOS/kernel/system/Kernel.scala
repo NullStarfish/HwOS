@@ -59,8 +59,7 @@ class Kernel {
       implicit val selfKernel: Kernel = this
 
       object SystemKernel extends HwProcess("Kernel", overrideDebug = Some(false)) {
-        val reaper =
-          spawn(new OSReaperProcess(Kernel.this.threads.toSeq, collectManagedEntities(), "OSReaper")(Kernel.this))
+        val reaper = spawn(new OSReaperProcess(collectManagedEntities(), "OSReaper")(Kernel.this))
         override def entry(): Unit = {}
       }
 

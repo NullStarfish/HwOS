@@ -152,7 +152,7 @@ class HwFunctionKillModule extends Module {
 }
 
 class HwFunctionKillSpec extends AnyFlatSpec {
-  "HwFunction kill propagation" should "kill the activation, reclaim its leases, and allow a clean restart" in {
+  "HwFunction kill propagation" should "reset the caller thread without invoking OSReaper reclaim, and still allow a clean restart" in {
     simulate(new HwFunctionKillModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()
@@ -165,7 +165,6 @@ class HwFunctionKillSpec extends AnyFlatSpec {
         finished =
           c.io.done.peek().litValue == 1 &&
             c.io.out.peek().litValue == 11 &&
-            c.io.reclaimCount.peek().litValue >= 1 &&
             c.io.workerActive.peek().litValue == 0 &&
             c.io.activationActive.peek().litValue == 0 &&
             c.io.activationHeld.peek().litValue == 0
@@ -187,7 +186,7 @@ class HwFunctionKillSpec extends AnyFlatSpec {
       c.io.activationActive.expect(false.B)
       c.io.activationHeld.expect(false.B)
       c.io.done.expect(true.B)
-      assert(c.io.reclaimCount.peek().litValue >= 1, "activation reclaim count never incremented")
+      c.io.reclaimCount.expect(0.U)
       c.io.out.expect(11.U)
     }
   }

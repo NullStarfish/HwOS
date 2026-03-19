@@ -5,7 +5,6 @@ import HwOS.kernel.context.HwContextEntity
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.thread.{HardwareAgent, HardwareLogic, HardwareThread}
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable
 
 private[HwOS] final class ReclaimEntry(
     val target: HwContextEntity,
@@ -33,39 +32,11 @@ private[kernel] final class OSReaperManagedLogic(
   override def reaperEntries: Seq[ReclaimEntry] = localReaperEntries.toSeq
 
   def registerReclaimEntry(target: HwContextEntity, isActive: Bool)(forceReclaim: HardwareAgent => Unit): Unit = {
-    target match {
-      case thread: HardwareThread => OSReaper.registerManagedThread(thread)
-      case _ =>
-    }
     localReaperEntries += new ReclaimEntry(target, isActive, forceReclaim)
   }
 }
 
 private[HwOS] object OSReaper {
-  private val threadKillLatches = mutable.HashMap.empty[HardwareThread, Bool]
-  private val managedThreads = mutable.HashSet.empty[HardwareThread]
-
-  private[kernel] def attachThreadKillLatch(thread: HardwareThread, killLatch: Bool): Unit = {
-    threadKillLatches(thread) = killLatch
-  }
-
-  private[kernel] def registerManagedThread(thread: HardwareThread): Unit = {
-    managedThreads += thread
-  }
-
-  private[kernel] def usesManagedThreadKill(thread: HardwareThread): Boolean =
-    managedThreads.contains(thread)
-
-  private[kernel] def threadKillLatchOf(thread: HardwareThread): Bool =
-    threadKillLatches.getOrElse(
-      thread,
-      throw new Exception(s"[HwOS] Missing OSReaper thread-kill latch for '${thread.name}'."),
-    )
-
-  private[kernel] def requestThreadKill(thread: HardwareThread): Unit = {
-    forceAssign(threadKillLatchOf(thread), true.B)
-  }
-
   def gatedAssign[T <: Data](enable: Bool, lhs: T, rhs: T): Unit = {
     when(enable) {
       lhs := rhs
@@ -78,6 +49,28 @@ private[HwOS] object OSReaper {
 
   def shouldReclaimEntry(target: HwContextEntity, entry: ReclaimEntry): Boolean =
     (entry.target eq target) || (target.isInstanceOf[OSReaperManaged] && entry.target.eq(target))
+
+  private[kernel] def requestReclaimForTarget(target: HwContextEntity, managedEntities: Seq[OSReaperManaged]): Unit = {
+    managedEntities.foreach { managed =>
+      val hasMatchingEntries = managed.reaperEntries.exists(entry => shouldReclaimEntry(target, entry))
+      when(hasMatchingEntries.B) {
+        requestManagedKill(managed)
+      }
+    }
+  }
+
+  private[kernel] def requestManagedKill(target: OSReaperManaged): Unit = {
+    forceAssign(target.reaperKillLatch, true.B)
+  }
+
+  private[kernel] def kill(target: HwContextEntity, agent: HardwareAgent): Unit = {
+    target match {
+      case managed: OSReaperManaged =>
+        requestManagedKill(managed)
+      case _ =>
+        throw new Exception(s"[HwOS] OSReaper.kill requires OSReaper-managed context service: '${target.name}' does not opt in.")
+    }
+  }
 
   def reclaimManaged(target: OSReaperManaged, agent: HardwareAgent): Unit = {
     target.reaperEntries.foreach { entry =>
@@ -98,13 +91,12 @@ private[HwOS] object OSReaper {
         }
       }
     }
-    forceAssign(threadKillLatchOf(thread), false.B)
+    requestReclaimForTarget(thread, managedEntities)
     thread.reset()
   }
 }
 
 class OSReaperProcess(
-    monitoredThreads: Seq[HardwareThread],
     managedEntities: Seq[OSReaperManaged],
     localName: String,
 )(implicit kernel: Kernel)
@@ -114,12 +106,6 @@ class OSReaperProcess(
     val daemon = createLogic("Daemon")
 
     daemon.run {
-      monitoredThreads.foreach { thread =>
-        when(OSReaper.threadKillLatchOf(thread)) {
-          OSReaper.reclaimThread(thread, managedEntities, daemon)
-        }
-      }
-
       managedEntities.foreach { managed =>
         when(managed.reaperKillLatch && managed.reaperIsActive) {
           OSReaper.reclaimManaged(managed, daemon)

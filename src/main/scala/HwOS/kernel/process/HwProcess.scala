@@ -4,7 +4,7 @@ import chisel3._
 import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
 import HwOS.kernel.context.HwContextEntity
-import HwOS.kernel.system.{Kernel, OSReaper, OSReaperManaged, OSReaperManagedLogic}
+import HwOS.kernel.system.{Kernel, OSReaperManaged, OSReaperManagedLogic}
 import HwOS.kernel.thread._
 
 //命名永远让上一级来命名
@@ -58,7 +58,6 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
   ): HardwareThread = {
     val threadName = s"${this.name}/${name}_thread"
     val t = new KernelStepHardwareThread(threadName, this, debugEnable)
-    OSReaper.attachThreadKillLatch(t, RegInit(false.B))
     kernel.registerThread(threadName, t)
     threads += t
     t
