@@ -24,7 +24,7 @@ For practical kernel API usage, see [docs/api/README.md](docs/api/README.md).
 * **Thread as Execution Host:** `HardwareThread` is the unified runtime host for control flow, while `HwFunction` and `HwInline` carry the actual control payload.
 * **Lightweight Symbolic v0:** `export / declare` provide explicit cross-boundary visibility and dependency recording, while same-process local code can still use direct Scala/Chisel interaction.
 * **Optional OSReaper Services:** system-level reclaim and forced cleanup exist as explicit extra power, not as the default semantics of every thread.
-* **Hardware Stdlib:** Comes with a built-in, highly optimized concurrency library including `Mutex`, `Semaphore`, `WaitGroup` (using concurrent adder-trees), and `Scoreboard`.
+* **Hardware Stdlib:** Comes with a built-in, highly optimized concurrency library including `Semaphore` (with `initialCount = 1` as single-permit mutual exclusion), `WaitGroup` (using concurrent adder-trees), and `Scoreboard`.
 * **Native Semantic Observability (HwOSgdb):** A DPI-C and ncurses-based TUI debugger. It visualizes the dual-track CallStack (macro-temporal and micro-combinational) and supports time-travel debugging.
 
 ## 🚀 Quick Start
@@ -115,7 +115,7 @@ make
 
 * `src/main/scala/HwOS/`
 * `kernel/`: The core framework (`HwProcess`, `HardwareThread`, `ThreadDef`, `HwInline`, `HwFunction`, `SysCall`).
-* `stdlib/`: Hardware synchronization primitives (`Mutex`, `WaitGroup`, `Scoreboard`).
+* `stdlib/`: Hardware synchronization primitives (`Semaphore`, `WaitGroup`, `Scoreboard`).
 * `lib/`: Standard components (e.g., `ScoreboardRegfile`).
 * `quick_start/`: Hello World examples.
 

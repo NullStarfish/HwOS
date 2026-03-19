@@ -5,7 +5,6 @@ import chisel3.simulator.EphemeralSimulator._
 import org.scalatest.flatspec.AnyFlatSpec
 import HwOS.kernel._
 import HwOS.kernel.HwOSLanguage._
-import HwOS.stdlib.sync.MutexProcess
 
 class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
   val main    = createThread("Main")
@@ -17,10 +16,8 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
   (sharedCounter)
   // ===================================================================
   // 核心亮点：孵化 Stdlib 并发原语 (作为子进程)
-  // 注意：spawn 内部已经自动将 mutex 和 wg 的访问权 grant 给 SyncProcess 了！
-  // 构造函数完整传递 n, d, p, kr 以维护进程树
   // ===================================================================
-  val mutex = spawn( new sync.MutexProcess(maxClients = 2, "Mutex") )
+  val permit = spawn(new sync.SemaphoreProcess(maxClients = 2, initialCount = 1, "Permit"))
   val wg    = spawn( new sync.WaitGroupProcess(maxClients = 3, "WG") )
 
   override def entry(): Unit = {
@@ -29,14 +26,15 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
 
     // Worker 模板逻辑：抢锁 -> 执行关键区 -> 释放并汇报 -> 退出
     def workerLogic(t: HardwareThread, lockId: Int, wgId: Int): Unit = {
-      t.Step("AcquireLock") {
-        SysCall.Call(mutex.Lock(lockId))
+      val lease = SysCall.Call(permit.RequestLease(lockId))
+      t.Step("AcquirePermit") {
+        SysCall.Call(lease.Acquire())
       }
       t.Step("CriticalSection") {
         sharedCounter  :=  sharedCounter + 10.U
       }
-      t.Step("ReleaseAndDone") {
-        SysCall.Call(mutex.Unlock(lockId))
+      t.Step("ReleasePermitAndDone") {
+        SysCall.Call(lease.Release())
         SysCall.Call(wg.Done(wgId))
       }
       SysCall.Call(SysCall.Return())
@@ -102,7 +100,7 @@ class SyncIntegrationModule extends Module {
 // ScalaTest 驱动程序
 // ---------------------------------------------------------
 class StdlibSpec extends AnyFlatSpec {
-  "HwOS stdlib.sync" should "correctly orchestrate WaitGroup and Mutex across multiple threads without SegFault" in {
+  "HwOS stdlib.sync" should "correctly orchestrate WaitGroup and a single-permit semaphore across multiple threads without SegFault" in {
     simulate(new SyncIntegrationModule) { c =>
       println("\n=== Stdlib Sync Integration Test ===")
       
@@ -132,7 +130,7 @@ class StdlibSpec extends AnyFlatSpec {
       // worker1 加 10，worker2 加 10，总和必定是 20
       c.io.finalCount.expect(20.U) 
 
-      println("=== Test Passed: Mutex and WaitGroup work perfectly as HwProcess ===\n")
+      println("=== Test Passed: single-permit semaphore and WaitGroup work perfectly as HwProcess ===\n")
     }
   }
 }

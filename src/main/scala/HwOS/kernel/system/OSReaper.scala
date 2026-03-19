@@ -63,7 +63,7 @@ private[HwOS] object OSReaper {
     forceAssign(target.reaperKillLatch, true.B)
   }
 
-  private[kernel] def kill(target: HwContextEntity, agent: HardwareAgent): Unit = {
+  private[HwOS] def kill(target: HwContextEntity, agent: HardwareAgent): Unit = {
     target match {
       case managed: OSReaperManaged =>
         requestManagedKill(managed)

@@ -27,7 +27,7 @@ class AgeOrderedRegfileModule extends Module {
     (io.forwardedX2)
 
     val regFile = spawn(new AgeOrderedScoreboardRegfileProcess(8, 32, 4, 8, zeroReg = true, "RegFile"))
-    val ingress = spawn(new sync.MutexProcess(4, "Ingress"))
+    val ingress = spawn(new sync.SemaphoreProcess(4, initialCount = 1, "Ingress"))
     val starter = createLogic("Starter")
     val monitor = createLogic("Monitor")
     val forwardedValue = (RegInit(0.U(32.W)))
@@ -40,12 +40,13 @@ class AgeOrderedRegfileModule extends Module {
     override def entry(): Unit = {
       oldWriter.entry {
         val writePort = SysCall.Call(regFile.RequestWritePort(0))
+        val ingressPermit = SysCall.Call(ingress.RequestLease(0))
         val delay = (RegInit(0.U(3.W)))
 
         oldWriter.Step("ReserveOld") {
-          SysCall.Call(ingress.Lock(0))
+          SysCall.Call(ingressPermit.Acquire())
           SysCall.Call(writePort.Reserve(1.U))
-          SysCall.Call(ingress.Unlock(0))
+          SysCall.Call(ingressPermit.Release())
         }
 
         oldWriter.Step("DelayOld") {
@@ -64,11 +65,12 @@ class AgeOrderedRegfileModule extends Module {
 
       youngWriter.entry {
         val writePort = SysCall.Call(regFile.RequestWritePort(1))
+        val ingressPermit = SysCall.Call(ingress.RequestLease(1))
 
         youngWriter.Step("ReserveYoung") {
-          SysCall.Call(ingress.Lock(1))
+          SysCall.Call(ingressPermit.Acquire())
           SysCall.Call(writePort.Reserve(2.U))
-          SysCall.Call(ingress.Unlock(1))
+          SysCall.Call(ingressPermit.Release())
         }
 
         youngWriter.Step("CompleteYoung") {
