@@ -1,13 +1,14 @@
 package HwOS.kernel.function
 
-import chisel3._
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{OSReaper, OSReaperManagedLogic, SysCall}
-import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
+import HwOS.kernel.system.SysCall
+import HwOS.kernel.thread.HardwareThread
 
 /**
- * 真正的硬件函数。
+ * HwFunction v1 is a single-slot, entry-arbitrated, service-owned control
+ * segment. It is implemented with a hidden activation thread and a blocking
+ * call protocol. This is not yet the pure linkable function model.
  *
  * v1 语义：
  * - function 拥有一个独立 activation slot（内部隐藏 thread）
@@ -18,44 +19,11 @@ final class HwFunction[T] private (
     val name: String,
     private val body: HardwareThread => T,
 ) {
-  private[kernel] final class FunctionCallBindingState(
-      val activation: HardwareThread,
-      val callActive: Bool,
-      val activeBindingId: UInt,
-  )
-
-  private[kernel] final class FunctionCallLease(
-      val bindingId: Int,
-      val caller: HardwareThread,
-      val activation: HardwareThread,
-      val binding: FunctionCallBindingState,
-      val callPending: Bool,
-  ) {
-    private val bindingIdValue = bindingId.U(binding.activeBindingId.getWidth.W)
-
-    def isActive: Bool =
-      binding.callActive && binding.activeBindingId === bindingIdValue
-
-    private[kernel] def forceReclaim(agent: HardwareAgent): Unit = {
-      when(isActive) {
-        OSReaper.reclaimThread(activation, agent.kernel.managedReaperEntities, agent)
-        OSReaper.forceAssign(binding.callActive, false.B)
-        OSReaper.forceAssign(binding.activeBindingId, 0.U(binding.activeBindingId.getWidth.W))
-      }
-
-      OSReaper.forceAssign(callPending, false.B)
-    }
-  }
-
   private var activationOwner: Option[HwProcess] = None
-  private var activationThread: Option[HardwareThread] = None
-  private var resultHandle: Option[T] = None
-  private var callBindingState: Option[FunctionCallBindingState] = None
-  private var reaperHolder: Option[OSReaperManagedLogic] = None
-  private var nextBindingId: Int = 1
+  private var runtimeHost: Option[FunctionRuntimeHost[T]] = None
 
-  private[kernel] def ensureActivation(owner: HwProcess): HardwareThread = {
-    activationThread match {
+  private[kernel] def ensureRuntimeHost(owner: HwProcess): FunctionRuntimeHost[T] = {
+    runtimeHost match {
       case Some(existing) =>
         activationOwner.foreach { existingOwner =>
           if (existingOwner ne owner) {
@@ -67,74 +35,26 @@ final class HwFunction[T] private (
         existing
       case None =>
         activationOwner = Some(owner)
-        val activation = owner.createThread(
-          name = s"${name}_activation",
-        )
-        var built: Option[T] = None
-        CallStack.withIsolatedStack {
-          activation.entry {
-            built = Some(body(activation))
-          }
-        }
-        if (built.isEmpty) {
-          throw new Exception(s"[HwOS] Function '$name' did not produce a build result while generating its activation body.")
-        }
-        activationThread = Some(activation)
-        resultHandle = built
-        activation
+        val created = new FunctionRuntimeHost[T](name, body, owner)
+        runtimeHost = Some(created)
+        created
     }
   }
 
-  private[kernel] def ensureResultHandle(owner: HwProcess): T = {
-    ensureActivation(owner)
-    resultHandle.getOrElse(throw new Exception(s"[HwOS] Function '$name' result handle was not initialized."))
-  }
+  private[kernel] def ensureActivation(owner: HwProcess): HardwareThread =
+    ensureRuntimeHost(owner).activation
 
-  private[kernel] def ensureCallBinding(owner: HwProcess): FunctionCallBindingState = {
-    ensureActivation(owner)
-    callBindingState match {
-      case Some(existing) => existing
-      case None =>
-        val activation = activationThread.getOrElse(
-          throw new Exception(s"[HwOS] Function '$name' activation thread was not initialized."),
-        )
-        val binding = new FunctionCallBindingState(
-          activation = activation,
-          callActive = RegInit(false.B),
-          activeBindingId = RegInit(0.U(32.W)),
-        )
-        callBindingState = Some(binding)
-        binding
-    }
-  }
+  private[kernel] def ensureResultHandle(owner: HwProcess): T =
+    ensureRuntimeHost(owner).result
 
-  private def ensureReaperHolder(owner: HwProcess): OSReaperManagedLogic =
-    reaperHolder match {
-      case Some(existing) => existing
-      case None =>
-        val holder = owner.createReaperManagedLogic(s"${name}_reaper")
-        reaperHolder = Some(holder)
-        holder
-    }
+  private[kernel] def ensureCallBinding(owner: HwProcess): FunctionCallBindingState =
+    ensureRuntimeHost(owner).bindingState
 
-  private[kernel] def allocateCallLease(caller: HardwareThread): FunctionCallLease = {
-    val binding = ensureCallBinding(caller.owner)
-    val holder = ensureReaperHolder(caller.owner)
-    val lease = new FunctionCallLease(
-      bindingId = nextBindingId,
-      caller = caller,
-      activation = binding.activation,
-      binding = binding,
-      callPending = RegInit(false.B),
-    )
-    nextBindingId += 1
-    holder.registerReclaimEntry(caller, lease.isActive) { agent =>
-      lease.forceReclaim(agent)
-    }
-    lease
-  }
+  private[kernel] def allocateCallLease(caller: HardwareThread): FunctionCallLease =
+    ensureRuntimeHost(caller.owner).allocateCallLease(caller)
 
-  private[kernel] def debugActivationThread: Option[HardwareThread] = activationThread
+  private[kernel] def debugActivationThread: Option[HardwareThread] = runtimeHost.map(_.activation)
+  private[kernel] def debugRuntimeHost: Option[FunctionRuntimeHost[T]] = runtimeHost
 
   def Invoke(returnTo: String): HwInline[T] =
     HwInline.thread(s"${name}_call") { _ =>

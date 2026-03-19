@@ -3,7 +3,7 @@ package HwOS.kernel.system
 import chisel3._
 import scala.util.Try // 引入 Try
 import HwOS.kernel.context.{AtomicCtx, ContextScope, HwContextEntity, ThreadCtx}
-import HwOS.kernel.debug.CallStack
+import HwOS.kernel.debug.{CallStack, ContinuationNaming}
 import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 
@@ -77,7 +77,7 @@ object SysCall {
           val activation = func.ensureActivation(caller.owner)
           val callLease = func.allocateCallLease(caller)
           val result = func.ensureResultHandle(caller.owner)
-          val callStepName = CallStack.freshFunctionCallStepName(System.identityHashCode(caller), func.name, returnTo)
+          val callStepName = ContinuationNaming.freshFunctionCallStepName(System.identityHashCode(caller), func.name, returnTo)
 
           caller.Step(callStepName) {
             val binding = callLease.binding
@@ -118,11 +118,11 @@ object SysCall {
   def Return(): HwInline[Unit] = HwInline.thread("SysCall return") { t =>
     CallStack.currentReturnTarget match {
       case Some(target) =>
-        t.Step(CallStack.freshReturnStepName(System.identityHashCode(t), target)) {
+        t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), target)) {
           t.jump(target)
         }
       case None =>
-        t.Step(CallStack.freshReturnStepName(System.identityHashCode(t), "ThreadExit")) {
+        t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), "ThreadExit")) {
           Call(exit())
         }
     }
