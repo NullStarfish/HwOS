@@ -54,21 +54,21 @@ class SemaphoreScoreboardProcess(
   // Protocol handle for scoreboard update slot ownership.
   class BusyPort(val clientId: Int) {
     def Acquire(): HwInline[Unit] = HwInline.atomic(s"AcquireBusySlot_$clientId") { _ =>
-      val slotLease = SysCall.Call(updateSlots.RequestLease(clientId))
-      SysCall.Call(slotLease.Acquire())
+      val slotLease = SysCall.Inline(updateSlots.RequestLease(clientId))
+      SysCall.Inline(slotLease.Acquire())
     }
 
     def SetBusy(addr: UInt): HwInline[Unit] = HwInline.stateless(s"SetBusy_$clientId") { _ =>
-      SysCall.Call(base.SetBusy(addr))
+      SysCall.Inline(base.SetBusy(addr))
     }
 
     def ClearBusy(addr: UInt): HwInline[Unit] = HwInline.stateless(s"ClearBusy_$clientId") { _ =>
-      SysCall.Call(base.ClearBusy(addr))
+      SysCall.Inline(base.ClearBusy(addr))
     }
 
     def Release(): HwInline[Unit] = HwInline.stateless(s"ReleaseBusySlot_$clientId") { _ =>
-      val slotLease = SysCall.Call(updateSlots.RequestLease(clientId))
-      SysCall.Call(slotLease.Release())
+      val slotLease = SysCall.Inline(updateSlots.RequestLease(clientId))
+      SysCall.Inline(slotLease.Release())
     }
   }
 
@@ -91,7 +91,7 @@ class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val
 
   // Facade-first API
   def Guard(addr: UInt): HwInline[Bool] = HwInline.atomic("Guard") { t =>
-    val isBusy = SysCall.Call(semaScoreboard.ReadBusy(addr))
+    val isBusy = SysCall.Inline(semaScoreboard.ReadBusy(addr))
     t.waitCondition(!isBusy)
     when(!isBusy) { t.hijack(t.Next) }
     !isBusy
@@ -108,15 +108,15 @@ class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val
     def isActive: Bool = isReserved
 
     def Reserve(addr: UInt): HwInline[Unit] = HwInline.atomic(s"Reserve_$portIdx") { t =>
-      val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
-      val isBusy = SysCall.Call(semaScoreboard.ReadBusy(addr))
+      val busyPort = SysCall.Inline(semaScoreboard.RequestBusyPort(portIdx))
+      val isBusy = SysCall.Inline(semaScoreboard.ReadBusy(addr))
       val alreadyReserved = isReserved && (reservedAddr === addr)
       val canReserve = alreadyReserved || !isBusy
       t.waitCondition(canReserve)
 
       when(!alreadyReserved && !isBusy) {
-        SysCall.Call(busyPort.Acquire())
-        SysCall.Call(busyPort.SetBusy(addr))
+        SysCall.Inline(busyPort.Acquire())
+        SysCall.Inline(busyPort.SetBusy(addr))
         isReserved := true.B
         reservedAddr := addr
       }
@@ -126,19 +126,19 @@ class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val
     }
 
     def Release(): HwInline[Unit] = HwInline.stateless(s"Release_$portIdx") { _ =>
-      val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
+      val busyPort = SysCall.Inline(semaScoreboard.RequestBusyPort(portIdx))
       when(isReserved) {
-        SysCall.Call(busyPort.ClearBusy(reservedAddr))
-        SysCall.Call(busyPort.Release())
+        SysCall.Inline(busyPort.ClearBusy(reservedAddr))
+        SysCall.Inline(busyPort.Release())
         isReserved := false.B
       }
     }
 
     def forceReclaim(agent: HardwareAgent): Unit = {
-      val busyPort = SysCall.Call(semaScoreboard.RequestBusyPort(portIdx))
+      val busyPort = SysCall.Inline(semaScoreboard.RequestBusyPort(portIdx))
       when(isReserved) {
-        SysCall.Call(busyPort.ClearBusy(reservedAddr))
-        SysCall.Call(busyPort.Release())
+        SysCall.Inline(busyPort.ClearBusy(reservedAddr))
+        SysCall.Inline(busyPort.Release())
         OSReaper.forceAssign(isReserved, false.B)
       }
     }
@@ -153,28 +153,28 @@ class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val
 
   // Facade-first API
   def WaitUntilFree(addr: UInt): HwInline[Unit] = HwInline.atomic("WaitUntilFree") { _ =>
-    SysCall.Call(Guard(addr))
+    SysCall.Inline(Guard(addr))
     ()
   }
 
   def Reserve(portIdx: Int, addr: UInt): HwInline[Unit] = HwInline.atomic(s"SBReserve_$portIdx") { _ =>
-    val lease = SysCall.Call(RequestLease(portIdx))
-    SysCall.Call(lease.Reserve(addr))
+    val lease = SysCall.Inline(RequestLease(portIdx))
+    SysCall.Inline(lease.Reserve(addr))
   }
 
   def Release(portIdx: Int): HwInline[Unit] = HwInline.stateless(s"SBRelease_$portIdx") { _ =>
-    val lease = SysCall.Call(RequestLease(portIdx))
-    SysCall.Call(lease.Release())
+    val lease = SysCall.Inline(RequestLease(portIdx))
+    SysCall.Inline(lease.Release())
   }
 
   def WithReservation(portIdx: Int, addr: UInt)(body: HardwareThread => Unit): HwInline[Unit] =
     HwInline.thread(s"WithReservation_$portIdx") { t =>
       t.Step(s"ReserveBusy_$portIdx") {
-        SysCall.Call(Reserve(portIdx, addr))
+        SysCall.Inline(Reserve(portIdx, addr))
       }
       body(t)
       t.Step(s"ReleaseBusy_$portIdx") {
-        SysCall.Call(Release(portIdx))
+        SysCall.Inline(Release(portIdx))
       }
       ()
     }

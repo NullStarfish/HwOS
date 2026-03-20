@@ -22,23 +22,25 @@ private object DecodePathSegments {
         body: => Unit
     ): Unit = {
       tx.Step(entryLabel) {
-        SysCall.Call(writePort.Reserve(targetRd))
+        SysCall.Inline(writePort.Reserve(targetRd))
       }
       body
     }
 
     val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
     val arith = tx.importService[ArithmeticServiceProcess]("Arithmetic")
-    val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
+    val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
 
     withReservedWrite(writePort, rd, s"ArithReserve_$serverId") {
       tx.Step(s"ArithRead_$serverId") {
-        decodedSrc := SysCall.Call(regFile.Read(rs1))
+        decodedSrc := SysCall.Inline(regFile.Read(rs1))
       }
       tx.Step(s"ArithExec_$serverId") {
-        result := SysCall.Call(arith.RequestExecute(serverId, decodedSrc, imm))
+        result := SysCall.Call(arith.RequestExecute(serverId, decodedSrc, imm), s"AddiReturn_$serverId")
       }
 
+      tx.Step(s"AddiReturn_$serverId") {
+      }
       SysCall.Return()
       ()
     }
@@ -53,13 +55,15 @@ private object DecodePathSegments {
   ): HwInline[Unit] = HwInline.thread(s"LoadPath_$serverId") { tx =>
     val load = tx.importService[LoadServiceProcess]("Load")
     val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
-    val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
+    val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
 
     tx.Step(s"LoadReserve_$serverId") {
-      SysCall.Call(writePort.Reserve(rd))
+      SysCall.Inline(writePort.Reserve(rd))
     }
     tx.Step(s"LoadExec_$serverId") {
-      result := SysCall.Call(load.RequestLoad(serverId, imm))
+      result := SysCall.Call(load.RequestLoad(serverId, imm), s"LoadReturn_$serverId")
+    }
+    tx.Step(s"LoadReturn_$serverId") {
     }
     SysCall.Return()
     ()
@@ -79,19 +83,21 @@ private object DecodePathSegments {
     val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
     val load = tx.importService[LoadServiceProcess]("Load")
     val arith = tx.importService[ArithmeticServiceProcess]("Arithmetic")
-    val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
+    val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
 
     tx.Step(s"LoadAddReserve_$serverId") {
-      SysCall.Call(writePort.Reserve(rd))
+      SysCall.Inline(writePort.Reserve(rd))
     }
     tx.Step(s"LoadAddLoadExec_$serverId") {
-      loadedValue := SysCall.Call(load.RequestLoad(serverId, imm))
+      loadedValue := SysCall.Call(load.RequestLoad(serverId, imm), s"LoadAddArithRead_$serverId")
     }
     tx.Step(s"LoadAddArithRead_$serverId") {
-      decodedSrc := SysCall.Call(regFile.Read(rs1))
+      decodedSrc := SysCall.Inline(regFile.Read(rs1))
     }
     tx.Step(s"LoadAddArithExec_$serverId") {
-      result := SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc))
+      result := SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc), s"LoadAddReturn_$serverId")
+    }
+    tx.Step(s"LoadAddReturn_$serverId") {
     }
     SysCall.Return()
   }
@@ -197,8 +203,8 @@ final class ServerDecodeProcess(
           }
 
         slot.thread.Step(routeWritebackLabel) {
-          val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
-          SysCall.Call(writePort.WritebackAndClear(rd, slot.result))
+          val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
+          SysCall.Inline(writePort.WritebackAndClear(rd, slot.result))
         }
         slot.thread.Step(threadExitLabel) {
           SysCall.Return()
@@ -219,7 +225,7 @@ final class ServerDecodeProcess(
                 slot.ownerValid := true.B
                 slot.ownerClient := clientIdx.U
                 req.pending := false.B
-                SysCall.Call(SysCall.start(slot.thread))
+                SysCall.Inline(SysCall.start(slot.thread))
               }
             }
           }
@@ -251,12 +257,12 @@ final class ServerDecodeProcess(
     t.waitCondition(req.completed)
     when(req.completed) {
       req.completed := false.B
-      t.hijack(t.Next)
+      SysCall.Return()
     }
     ()
   }
 
   def ActiveServerCount(): HwInline[UInt] = HwInline.stateless(s"${name}_ActiveServerCount") { _ =>
-    PopCount(servers.map(_.thread.active)) + SysCall.Call(arith.ActiveServerCount()) + SysCall.Call(load.ActiveServerCount())
+    PopCount(servers.map(_.thread.active)) + SysCall.Inline(arith.ActiveServerCount()) + SysCall.Inline(load.ActiveServerCount())
   }
 }

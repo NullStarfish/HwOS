@@ -19,7 +19,7 @@ class HwFunctionStructureProcess(localName: String)(implicit kernel: Kernel) ext
 
   override def entry(): Unit = {
     worker.entry {
-      SysCall.Call(fn.Invoke("AfterCall"))
+      SysCall.Inline(fn.Invoke("AfterCall"))
       worker.Step("AfterCall") {
         out := out + 10.U
       }
@@ -48,7 +48,7 @@ class HwFunctionStructureModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
         io.done := proc.worker.done
         io.hasRuntimeHost := proc.fn.debugRuntimeHost.nonEmpty.B

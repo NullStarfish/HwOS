@@ -25,19 +25,19 @@ class LifecycleLeaseProcess(localName: String)(implicit kernel: Kernel) extends 
 
     controller.entry {
       controller.Step("Start1") {
-        SysCall.Call(SysCall.start(worker))
+        SysCall.Inline(SysCall.start(worker))
       }
       controller.Step("Wait1") {}
       controller.Step("Kill1") {
-        SysCall.Call(SysCall.kill(worker))
+        SysCall.Inline(SysCall.kill(worker))
       }
       controller.Step("Gap1") {}
       controller.Step("Start2") {
-        SysCall.Call(SysCall.start(worker))
+        SysCall.Inline(SysCall.start(worker))
       }
       controller.Step("Wait2") {}
       controller.Step("Kill2") {
-        SysCall.Call(SysCall.kill(worker))
+        SysCall.Inline(SysCall.kill(worker))
       }
       controller.Step("Gap2") {}
       controller.Step("Finish") {
@@ -72,7 +72,7 @@ class LifecycleLeaseModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(io.start) {
-          SysCall.Call(SysCall.start(proc.controller))
+          SysCall.Inline(SysCall.start(proc.controller))
         }
         io.hits  :=  proc.hits
         io.done  :=  proc.controller.done

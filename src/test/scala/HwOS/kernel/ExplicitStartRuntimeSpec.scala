@@ -46,7 +46,7 @@ class ExplicitStartRuntimeModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
         io.counter  :=  proc.counter
         io.done  :=  proc.worker.done

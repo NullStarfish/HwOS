@@ -29,7 +29,7 @@ class ContextKillProcess(localName: String)(implicit kernel: Kernel) extends HwP
 
     controller.entry {
       controller.Step("Start") {
-        SysCall.Call(SysCall.start(worker))
+        SysCall.Inline(SysCall.start(worker))
       }
       controller.Step("ContextKill") {
         OSReaper.kill(contextGate, controller)
@@ -64,7 +64,7 @@ class ContextKillModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.controller.active && !proc.controller.done) {
-          SysCall.Call(SysCall.start(proc.controller))
+          SysCall.Inline(SysCall.start(proc.controller))
         }
         io.hits  :=  proc.hits
         io.workerActive  :=  proc.worker.active

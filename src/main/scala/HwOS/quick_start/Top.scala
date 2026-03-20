@@ -30,7 +30,7 @@ class TopModule extends Module {
       // 守护逻辑：处理外部 IO 并启动线程
       daemon.run {
         when(io.start) {
-          SysCall.Call(SysCall.start(counterProc.mainThread)) // 唤醒目标线程
+          SysCall.Inline(SysCall.start(counterProc.mainThread)) // 唤醒目标线程
         }
         io.result  :=  counterProc.counter
         io.done    :=  counterProc.isDone

@@ -85,22 +85,22 @@ class SemaphoreProcess(val maxClients: Int, val initialCount: Int, localName: St
   }
 
   def AcquirePermit(id: Int): HwInline[Unit] = HwInline.atomic(s"AcquirePermit_$id") { _ =>
-    val lease = SysCall.Call(RequestLease(id))
-    SysCall.Call(lease.Acquire())
+    val lease = SysCall.Inline(RequestLease(id))
+    SysCall.Inline(lease.Acquire())
   }
 
   def ReleasePermit(id: Int): HwInline[Unit] = HwInline.stateless(s"ReleasePermit_$id") { _ =>
-    val lease = SysCall.Call(RequestLease(id))
-    SysCall.Call(lease.Release())
+    val lease = SysCall.Inline(RequestLease(id))
+    SysCall.Inline(lease.Release())
   }
 
   def WithPermit(id: Int)(body: HardwareThread => Unit): HwInline[Unit] = HwInline.thread(s"WithPermit_$id") { t =>
     t.Step(s"AcquirePermit_$id") {
-      SysCall.Call(AcquirePermit(id))
+      SysCall.Inline(AcquirePermit(id))
     }
     body(t)
     t.Step(s"ReleasePermit_$id") {
-      SysCall.Call(ReleasePermit(id))
+      SysCall.Inline(ReleasePermit(id))
     }
     ()
   }

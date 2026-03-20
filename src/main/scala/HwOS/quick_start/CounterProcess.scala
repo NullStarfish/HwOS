@@ -48,7 +48,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
   def DoNTimes(n: Int): HwInline[Unit] = HwInline.thread("do n times") {t =>
     val cnt = (RegInit(0.U(log2Ceil(n + 1).W)))
     t.Step("Start") {
-      SysCall.Call(SysCall.start(mainThread))
+      SysCall.Inline(SysCall.start(mainThread))
       when (mainThread.done) {
         cnt  :=  cnt + 1.U
       }

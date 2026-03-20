@@ -29,7 +29,7 @@ class CounterProviderProcess(
     val installedWorker = worker
     daemon.run {
       when(!installedWorker.active && !installedWorker.done) {
-        SysCall.Call(SysCall.start(installedWorker))
+        SysCall.Inline(SysCall.start(installedWorker))
       }
     }
   }
@@ -65,7 +65,7 @@ class CounterProviderDemoModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
         io.done := proc.worker.done
         io.counter := proc.currentCounter
@@ -97,7 +97,7 @@ class AltCounterProviderDemoModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
         io.done := proc.worker.done
         io.counter := proc.currentCounter

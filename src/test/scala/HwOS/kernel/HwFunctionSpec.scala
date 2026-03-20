@@ -32,13 +32,13 @@ class HwFunctionProcess(localName: String)(implicit kernel: Kernel) extends HwPr
         out  :=  0.U
       }
 
-      SysCall.Call(addOne.Invoke("AfterCall"))
+      SysCall.Inline(addOne.Invoke("AfterCall"))
 
       worker.Step("AfterCall") {
         out  :=  out + 10.U
       }
 
-      SysCall.Call(addOne.Invoke("AfterSecondCall"))
+      SysCall.Inline(addOne.Invoke("AfterSecondCall"))
 
       worker.Step("AfterSecondCall") {
         out  :=  out + 20.U
@@ -76,7 +76,7 @@ class HwFunctionModule extends Module {
           throw new Exception("[HwOS Test] Function activation thread was not initialized."),
         )
         when(!proc.worker.active && !proc.worker.done) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
         io.out  :=  proc.out
         io.callCount  :=  proc.callCount

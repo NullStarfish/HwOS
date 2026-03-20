@@ -31,10 +31,10 @@ class ServerInjectedCpuModule(program: Seq[ISA.Instr], initData: Seq[Int] = Seq.
 
     override def entry(): Unit = {
       daemon.run {
-        io.x1 := SysCall.Call(fetch.decode.regFile.ReadCommitted(1.U))
-        io.x2 := SysCall.Call(fetch.decode.regFile.ReadCommitted(2.U))
-        io.x3 := SysCall.Call(fetch.decode.regFile.ReadCommitted(3.U))
-        io.activeThreads := SysCall.Call(fetch.ActiveThreadCount())
+        io.x1 := SysCall.Inline(fetch.decode.regFile.ReadCommitted(1.U))
+        io.x2 := SysCall.Inline(fetch.decode.regFile.ReadCommitted(2.U))
+        io.x3 := SysCall.Inline(fetch.decode.regFile.ReadCommitted(3.U))
+        io.activeThreads := SysCall.Inline(fetch.ActiveThreadCount())
       }
     }
   }
@@ -88,7 +88,7 @@ class ServerDecodeWrapperModule(
       for (((thread, instArg), clientId) <- clientSlots.zipWithIndex) {
         thread.entry {
           thread.Step(s"SubmitDecode_$clientId") {
-            SysCall.Call(decode.RequestDecode(clientId, instArg))
+            SysCall.Call(decode.RequestDecode(clientId, instArg), s"Retire_$clientId")
           }
           thread.Step(s"Retire_$clientId") {}
           SysCall.Return()
@@ -101,14 +101,14 @@ class ServerDecodeWrapperModule(
           io.reqDone(clientId) := thread.done
           when(reqValid && !thread.active) {
             instArg := io.reqInst(clientId)
-            SysCall.Call(SysCall.start(thread))
+            SysCall.Inline(SysCall.start(thread))
           }
         }
 
-        io.x1 := SysCall.Call(decode.regFile.ReadCommitted(1.U))
-        io.x2 := SysCall.Call(decode.regFile.ReadCommitted(2.U))
-        io.x3 := SysCall.Call(decode.regFile.ReadCommitted(3.U))
-        io.activeThreads := PopCount(clientSlots.map(_._1.active)) + SysCall.Call(decode.ActiveServerCount())
+        io.x1 := SysCall.Inline(decode.regFile.ReadCommitted(1.U))
+        io.x2 := SysCall.Inline(decode.regFile.ReadCommitted(2.U))
+        io.x3 := SysCall.Inline(decode.regFile.ReadCommitted(3.U))
+        io.activeThreads := PopCount(clientSlots.map(_._1.active)) + SysCall.Inline(decode.ActiveServerCount())
       }
     }
   }

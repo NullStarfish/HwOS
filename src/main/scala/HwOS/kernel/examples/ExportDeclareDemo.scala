@@ -44,7 +44,7 @@ class ExportDeclareDemoModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
         val counter = daemon.declare[UInt]("demo.counter", ExportCapability.Read)
         io.done  :=  proc.worker.done

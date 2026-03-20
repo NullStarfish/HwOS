@@ -8,6 +8,23 @@ import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 
 object SysCall {
+  private sealed trait InlineCallMode
+  private case object InlineMode extends InlineCallMode
+  private case object CallMode extends InlineCallMode
+
+  private val invokeModeStack = new ThreadLocal[List[InlineCallMode]] {
+    override def initialValue(): List[InlineCallMode] = Nil
+  }
+
+  private def pushInvokeMode(mode: InlineCallMode): Unit =
+    invokeModeStack.set(mode :: invokeModeStack.get())
+
+  private def popInvokeMode(): Unit =
+    invokeModeStack.set(invokeModeStack.get().drop(1))
+
+  private def currentInvokeMode: Option[InlineCallMode] =
+    invokeModeStack.get().headOption
+
   // ==========================================
   // 1. Function Linker Layer (逻辑注入)
   // ==========================================
@@ -16,22 +33,17 @@ object SysCall {
    * 硬件函数调用：纯粹的代码内联展开，不涉及生命周期权限。
    * 目标线程在此过程中直接获取生成的逻辑所属权。
    */
-  def Call[T](func: HwInline[T]): T = {
-    CallStack.push(func.name, returnTarget = CallStack.currentReturnTarget)
+  def Inline[T](func: HwInline[T]): T = {
+    pushInvokeMode(InlineMode)
     try {
-      scala.util.Try {
-        ContextScope.current match {
-          case AtomicCtx(t: ThreadDebugApi) =>
-            t.recordAtomicCallSnapshot(CallStack.getSnapshot)
-          case ThreadCtx(t) => // 线程级调用的暂不挂载到具体的 PC
-          case _ =>
-        }
-      }
       func.emit(ContextScope.getCurrentAgent())
     } finally {
-      CallStack.pop()
+      popInvokeMode()
     }
   }
+
+  @deprecated("Use SysCall.Inline(...) for natural fallthrough segments or SysCall.Call(..., returnTo) for formal calls.", "vNext")
+  def Call[T](func: HwInline[T]): T = Inline(func)
 
   def Call[T](func: HwFunction[T]): T = {
     ContextScope.current match {
@@ -54,23 +66,28 @@ object SysCall {
    * Return() 将跳转到该返回地址。
    */
   def Call[T](func: HwInline[T], returnTo: String): T = {
-    CallStack.push(func.name, returnTarget = Some(returnTo))
+    CallStack.pushCall(func.name, returnTarget = Some(returnTo))
+    pushInvokeMode(CallMode)
     try {
       scala.util.Try {
         ContextScope.current match {
-          case ThreadCtx(_) =>
+          case ThreadCtx(_) | AtomicCtx(_) =>
           case _ =>
-            throw new Exception(s"[HwOS] Call('$returnTo') with explicit return target must be used inside ThreadCtx.")
+            throw new Exception(
+              s"[HwOS] Call('$returnTo') with explicit return target must be used inside ThreadCtx or AtomicCtx.",
+            )
         }
       }
       func.emit(ContextScope.getCurrentAgent())
     } finally {
+      popInvokeMode()
       CallStack.pop()
     }
   }
 
   def Call[T](func: HwFunction[T], returnTo: String): T = {
-    CallStack.push(func.name, returnTarget = Some(returnTo))
+    CallStack.pushCall(func.name, returnTarget = Some(returnTo))
+    pushInvokeMode(CallMode)
     try {
       ContextScope.current match {
         case ThreadCtx(caller) =>
@@ -90,7 +107,7 @@ object SysCall {
               when(!binding.callActive && !activation.active) {
                 binding.activeBindingId  :=  bindingIdValue
                 binding.callActive  :=  true.B
-                Call(start(activation))
+                Inline(start(activation))
                 pending  :=  true.B
               }
               caller.waitCondition(false.B)
@@ -108,6 +125,7 @@ object SysCall {
           throw new Exception(s"[HwOS] Call('$returnTo') on HwFunction '${func.name}' must be used inside ThreadCtx.")
       }
     } finally {
+      popInvokeMode()
       CallStack.pop()
     }
   }
@@ -118,8 +136,18 @@ object SysCall {
    * 则会自动补一个尾部 return step。
    */
   def Return(): Unit = {
+    currentInvokeMode match {
+      case Some(InlineMode) =>
+        throw new Exception(
+          s"[HwOS] SysCall.Return() is illegal inside Inline(...). " +
+            s"Use SysCall.Inline(...) only for natural-fallthrough segments.",
+        )
+      case _ =>
+    }
+
     ContextScope.current match {
       case AtomicCtx(t: ThreadDebugApi) =>
+        CallStack.markReturned()
         CallStack.currentReturnTarget match {
           case Some(target) =>
             t.jump(target)
@@ -127,6 +155,7 @@ object SysCall {
             t.runtimeExit()
         }
       case ThreadCtx(t) =>
+        CallStack.markReturned()
         CallStack.currentReturnTarget match {
           case Some(target) =>
             t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), target)) {
@@ -189,7 +218,7 @@ object SysCall {
     }
 
     // 4. 启动并返回句柄
-    Call(start(child))
+    Inline(start(child))
     child
   }
 

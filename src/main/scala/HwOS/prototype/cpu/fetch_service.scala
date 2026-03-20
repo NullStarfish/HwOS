@@ -32,7 +32,7 @@ final class ServerFetchProcess(
     for (slot <- slots) {
       slot.thread.entry {
         slot.thread.Step(s"SubmitDecode_${slot.slotId}") {
-          SysCall.Call(decode.RequestDecode(slot.slotId, slot.instArg))
+          SysCall.Call(decode.RequestDecode(slot.slotId, slot.instArg), s"Retire_${slot.slotId}")
         }
         slot.thread.Step(s"Retire_${slot.slotId}") {}
         SysCall.Return()
@@ -53,7 +53,7 @@ final class ServerFetchProcess(
           for ((slot, idx) <- slots.zipWithIndex) {
             when(slotOH(idx)) {
               slot.instArg := inst
-              SysCall.Call(SysCall.start(slot.thread))
+              SysCall.Inline(SysCall.start(slot.thread))
             }
           }
         }
@@ -68,6 +68,6 @@ final class ServerFetchProcess(
   }
 
   def ActiveThreadCount(): HwInline[UInt] = HwInline.stateless(s"${name}_ActiveThreadCount") { _ =>
-    PopCount(slots.map(_.thread.active)) + SysCall.Call(decode.ActiveServerCount())
+    PopCount(slots.map(_.thread.active)) + SysCall.Inline(decode.ActiveServerCount())
   }
 }

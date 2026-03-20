@@ -64,7 +64,7 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
         out  :=  0.U
       }
 
-      SysCall.Call(blocker.Invoke("AfterCall"))
+      SysCall.Inline(blocker.Invoke("AfterCall"))
 
       worker.Step("AfterCall") {
         out  :=  out + 10.U
@@ -76,18 +76,18 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
     controller.entry {
       controller.Step("Start1") {
         releaseFlag  :=  false.B
-        SysCall.Call(SysCall.start(worker))
+        SysCall.Inline(SysCall.start(worker))
       }
       controller.Step("Gap1") {}
       controller.Step("Gap2") {}
       controller.Step("Kill1") {
-        SysCall.Call(SysCall.kill(worker))
+        SysCall.Inline(SysCall.kill(worker))
       }
       controller.Step("ObserveKill1") {}
       controller.Step("ObserveKill2") {}
       controller.Step("ReleaseAndRestart") {
         releaseFlag  :=  true.B
-        SysCall.Call(SysCall.start(worker))
+        SysCall.Inline(SysCall.start(worker))
       }
       controller.Step("WaitDone") {
         controller.waitCondition(worker.done)
@@ -136,7 +136,7 @@ class HwFunctionKillModule extends Module {
 
       daemon.run {
         when(!proc.controller.active && !proc.controller.done) {
-          SysCall.Call(SysCall.start(proc.controller))
+          SysCall.Inline(SysCall.start(proc.controller))
         }
         io.done  :=  proc.controller.done
         io.out  :=  proc.out

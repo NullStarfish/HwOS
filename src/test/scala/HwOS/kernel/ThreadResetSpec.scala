@@ -54,7 +54,7 @@ class ThreadResetModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done && !proc.resetIssued && !proc.restarted) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
 
         when(proc.hits === 1.U && !proc.resetIssued) {
@@ -63,7 +63,7 @@ class ThreadResetModule extends Module {
         }
 
         when(proc.resetIssued && !proc.worker.active && !proc.worker.done && !proc.restarted) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
           proc.restarted := true.B
         }
 

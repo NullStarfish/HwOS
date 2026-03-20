@@ -77,7 +77,7 @@ final class LoadServiceProcess(val maxClients: Int, val ports: Int, val initData
                 slot.ownerValid := true.B
                 slot.ownerClient := clientIdx.U
                 req.pending := false.B
-                SysCall.Call(SysCall.start(slot.thread))
+                SysCall.Inline(SysCall.start(slot.thread))
               }
             }
           }
@@ -110,7 +110,7 @@ final class LoadServiceProcess(val maxClients: Int, val ports: Int, val initData
     t.waitCondition(req.completed)
     when(req.completed) {
       req.completed := false.B
-      t.hijack(t.Next)
+      SysCall.Return()
     }
     req.result
   }

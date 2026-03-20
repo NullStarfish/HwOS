@@ -30,8 +30,8 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
   def SendPayload(): HwInline[Unit] = HwInline.thread("SendPayload") { t =>
     t.Step("PrepareHeader") {
       // 这里的 SysCall.Call 将会被记录在当前 Step 的 invokedCalls 中
-      val hashed = SysCall.Call(HashData(100.U))
-      SysCall.Call(StoreData(hashed))
+      val hashed = SysCall.Inline(HashData(100.U))
+      SysCall.Inline(StoreData(hashed))
     }
     t.Step("Transmit") {
       // 模拟传输等待
@@ -45,7 +45,7 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
     
     // 时序层面的深层嵌套调用！
     // SendPayload 内部的 Step 将继承 "NetworkTX,SendPayload" 的 threadCallStack
-    SysCall.Call(SendPayload()) 
+    SysCall.Inline(SendPayload()) 
     
     t.Step("Ack") {
       // 模拟确认逻辑
@@ -55,11 +55,11 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
   override def entry(): Unit = {
     main.entry {
       main.Step("Init") {
-        SysCall.Call(StoreData(0.U))
+        SysCall.Inline(StoreData(0.U))
       }
       
       // 主线程发起时序调用
-      SysCall.Call(NetworkTX())
+      SysCall.Inline(NetworkTX())
       
       main.Step("Finish") {
       }
@@ -89,7 +89,7 @@ class CallStackIntegrationModule extends Module {
 
     override def entry(): Unit = {
       daemon.run {
-        when(io.start) { SysCall.Call(SysCall.start(demo.main)) }
+        when(io.start) { SysCall.Inline(SysCall.start(demo.main)) }
         io.done  :=  demo.main.done
       }
     }

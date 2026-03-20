@@ -39,14 +39,14 @@ class AgeOrderedRegfileModule extends Module {
 
     override def entry(): Unit = {
       oldWriter.entry {
-        val writePort = SysCall.Call(regFile.RequestWritePort(0))
-        val ingressPermit = SysCall.Call(ingress.RequestLease(0))
+        val writePort = SysCall.Inline(regFile.RequestWritePort(0))
+        val ingressPermit = SysCall.Inline(ingress.RequestLease(0))
         val delay = (RegInit(0.U(3.W)))
 
         oldWriter.Step("ReserveOld") {
-          SysCall.Call(ingressPermit.Acquire())
-          SysCall.Call(writePort.Reserve(1.U))
-          SysCall.Call(ingressPermit.Release())
+          SysCall.Inline(ingressPermit.Acquire())
+          SysCall.Inline(writePort.Reserve(1.U))
+          SysCall.Inline(ingressPermit.Release())
         }
 
         oldWriter.Step("DelayOld") {
@@ -55,7 +55,7 @@ class AgeOrderedRegfileModule extends Module {
         }
 
         oldWriter.Step("CompleteOld") {
-          SysCall.Call(writePort.WritebackAndClear(1.U, 11.U))
+          SysCall.Inline(writePort.WritebackAndClear(1.U, 11.U))
         }
 
         oldWriter.Step("ExitOld") {
@@ -64,17 +64,17 @@ class AgeOrderedRegfileModule extends Module {
       }
 
       youngWriter.entry {
-        val writePort = SysCall.Call(regFile.RequestWritePort(1))
-        val ingressPermit = SysCall.Call(ingress.RequestLease(1))
+        val writePort = SysCall.Inline(regFile.RequestWritePort(1))
+        val ingressPermit = SysCall.Inline(ingress.RequestLease(1))
 
         youngWriter.Step("ReserveYoung") {
-          SysCall.Call(ingressPermit.Acquire())
-          SysCall.Call(writePort.Reserve(2.U))
-          SysCall.Call(ingressPermit.Release())
+          SysCall.Inline(ingressPermit.Acquire())
+          SysCall.Inline(writePort.Reserve(2.U))
+          SysCall.Inline(ingressPermit.Release())
         }
 
         youngWriter.Step("CompleteYoung") {
-          SysCall.Call(writePort.WritebackAndClear(2.U, 22.U))
+          SysCall.Inline(writePort.WritebackAndClear(2.U, 22.U))
         }
 
         youngWriter.Step("ExitYoung") {
@@ -91,7 +91,7 @@ class AgeOrderedRegfileModule extends Module {
         }
 
         reader.Step("ReadForwarded") {
-          seen  :=  SysCall.Call(regFile.Read(2.U))
+          seen  :=  SysCall.Inline(regFile.Read(2.U))
         }
 
         reader.Step("Publish") {
@@ -106,19 +106,19 @@ class AgeOrderedRegfileModule extends Module {
       starter.run {
         launchDelay  :=  launchDelay + 1.U
         when(!oldWriter.active && !oldWriter.done) {
-          SysCall.Call(SysCall.start(oldWriter))
+          SysCall.Inline(SysCall.start(oldWriter))
         }
         when(launchDelay >= 1.U && !youngWriter.active && !youngWriter.done) {
-          SysCall.Call(SysCall.start(youngWriter))
+          SysCall.Inline(SysCall.start(youngWriter))
         }
         when(launchDelay >= 2.U && !reader.active && !reader.done) {
-          SysCall.Call(SysCall.start(reader))
+          SysCall.Inline(SysCall.start(reader))
         }
       }
 
       monitor.run {
-        io.committedX1  :=  SysCall.Call(regFile.ReadCommitted(1.U))
-        io.committedX2  :=  SysCall.Call(regFile.ReadCommitted(2.U))
+        io.committedX1  :=  SysCall.Inline(regFile.ReadCommitted(1.U))
+        io.committedX2  :=  SysCall.Inline(regFile.ReadCommitted(2.U))
         io.forwardedX2  :=  forwardedValue
       }
     }

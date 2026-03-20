@@ -8,21 +8,33 @@ import scala.collection.mutable.Stack
  * is delegated to dedicated helpers.
  */
 object CallStack {
-  final case class Frame(name: String, returnTarget: Option[String])
+  final class Frame(
+      val name: String,
+      val returnTarget: Option[String],
+  ) {
+    var returned: Boolean = false
+  }
 
   // 使用 ThreadLocal 确保并行编译时的安全性
   private val stack = new ThreadLocal[Stack[Frame]] {
     override def initialValue(): Stack[Frame] = Stack[Frame]()
   }
 
-  def push(name: String, returnTarget: Option[String] = None): Unit = stack.get().push(Frame(name, returnTarget))
+  private def pushFrame(frame: Frame): Unit = stack.get().push(frame)
+
+  def pushCall(name: String, returnTarget: Option[String]): Unit =
+    pushFrame(new Frame(name, returnTarget))
   
-  def pop(): Unit = {
-    if (stack.get().nonEmpty) stack.get().pop()
-  }
+  def pop(): Option[Frame] = Option.when(stack.get().nonEmpty)(stack.get().pop())
+
+  def currentFrame: Option[Frame] = stack.get().headOption
 
   def currentReturnTarget: Option[String] = {
-    stack.get().iterator.collectFirst { case Frame(_, Some(target)) => target }
+    stack.get().iterator.collectFirst { case frame if frame.returnTarget.nonEmpty => frame.returnTarget.get }
+  }
+
+  def markReturned(): Unit = {
+    currentFrame.foreach(_.returned = true)
   }
 
   /**

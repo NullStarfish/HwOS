@@ -48,7 +48,7 @@ class JumpModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
         io.out  :=  proc.out
         io.done  :=  proc.worker.done

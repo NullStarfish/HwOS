@@ -59,29 +59,29 @@ object RegfileLib {
     def Read(addr: UInt): HwInline[UInt] = baseReg.Read(addr)
 
     def Write(clientId: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"SemaWrite_$clientId") { _ =>
-      val writePort = SysCall.Call(RequestWritePort(clientId))
-      SysCall.Call(writePort.Acquire())
-      SysCall.Call(writePort.Write(addr, data))
-      SysCall.Call(writePort.Release())
+      val writePort = SysCall.Inline(RequestWritePort(clientId))
+      SysCall.Inline(writePort.Acquire())
+      SysCall.Inline(writePort.Write(addr, data))
+      SysCall.Inline(writePort.Release())
       ()
     }
 
     class RegWritePort(val clientId: Int) {
       def Acquire(): HwInline[Unit] = HwInline.atomic(s"AcquireWriteSlot_$clientId") { t =>
-        val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
-        SysCall.Call(slotLease.Acquire())
+        val slotLease = SysCall.Inline(writeSlots.RequestLease(clientId))
+        SysCall.Inline(slotLease.Acquire())
       }
 
       def Write(addr: UInt, data: UInt): HwInline[Unit] = HwInline.stateless(s"Write_$clientId") { _ =>
-        val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
+        val slotLease = SysCall.Inline(writeSlots.RequestLease(clientId))
         chisel3.assert(slotLease.isActive, s"RegWritePort[$clientId].Write requires an acquired write-slot lease")
-        SysCall.Call(baseReg.Write(addr, data))
+        SysCall.Inline(baseReg.Write(addr, data))
         ()
       }
 
       def Release(): HwInline[Unit] = HwInline.stateless(s"ReleaseWriteSlot_$clientId") { _ =>
-        val slotLease = SysCall.Call(writeSlots.RequestLease(clientId))
-        SysCall.Call(slotLease.Release())
+        val slotLease = SysCall.Inline(writeSlots.RequestLease(clientId))
+        SysCall.Inline(slotLease.Release())
       }
     }
 
@@ -108,36 +108,36 @@ object RegfileLib {
     def Read(addr: UInt): HwInline[UInt] = GuardedRead(addr)
 
     def GuardedRead(addr: UInt): HwInline[UInt] = HwInline.atomic("GuardedRead") { t =>
-      val ready = SysCall.Call(scoreboard.Guard(addr))
+      val ready = SysCall.Inline(scoreboard.Guard(addr))
 
       val rdata = (WireInit(0.U(width.W)))
       when(ready) {
-        rdata  :=  SysCall.Call(semaReg.Read(addr))
+        rdata  :=  SysCall.Inline(semaReg.Read(addr))
       }
       rdata
     }
 
     class RegWritePort(val portIdx: Int) {
       def Reserve(addr: UInt): HwInline[Unit] = HwInline.atomic(s"Reserve_$portIdx") { t =>
-        val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
-        val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
-        SysCall.Call(writePort.Acquire())
-        SysCall.Call(sbLease.Reserve(addr))
+        val writePort = SysCall.Inline(semaReg.RequestWritePort(portIdx))
+        val sbLease = SysCall.Inline(scoreboard.RequestLease(portIdx))
+        SysCall.Inline(writePort.Acquire())
+        SysCall.Inline(sbLease.Reserve(addr))
       }
 
       def WritebackAndClear(addr: UInt, data: UInt): HwInline[Unit] = HwInline.stateless(s"WB_$portIdx") { _ =>
-        val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
-        val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
-        SysCall.Call(writePort.Write(addr, data))
-        SysCall.Call(sbLease.Release())
-        SysCall.Call(writePort.Release())
+        val writePort = SysCall.Inline(semaReg.RequestWritePort(portIdx))
+        val sbLease = SysCall.Inline(scoreboard.RequestLease(portIdx))
+        SysCall.Inline(writePort.Write(addr, data))
+        SysCall.Inline(sbLease.Release())
+        SysCall.Inline(writePort.Release())
       }
     }
 
     def Write(portIdx: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"RegWrite_$portIdx") { _ =>
-      val writePort = SysCall.Call(RequestWritePort(portIdx))
-      SysCall.Call(writePort.Reserve(addr))
-      SysCall.Call(writePort.WritebackAndClear(addr, data))
+      val writePort = SysCall.Inline(RequestWritePort(portIdx))
+      SysCall.Inline(writePort.Reserve(addr))
+      SysCall.Inline(writePort.WritebackAndClear(addr, data))
       ()
     }
 
@@ -203,14 +203,14 @@ object RegfileLib {
 
       daemon.run {
         for ((pending, i) <- pendingPorts.zipWithIndex) {
-          val windowLease = SysCall.Call(orderWindow.RequestLease(i))
-          when(pending.busy && pending.ready && SysCall.Call(windowLease.Committed())) {
-            val writePort = SysCall.Call(semaReg.RequestWritePort(i))
-            SysCall.Call(writePort.Write(pending.addr, pending.data))
-            val sbLease = SysCall.Call(scoreboard.RequestLease(i))
-            SysCall.Call(sbLease.Release())
-            SysCall.Call(writePort.Release())
-            SysCall.Call(windowLease.ForceCommit())
+          val windowLease = SysCall.Inline(orderWindow.RequestLease(i))
+          when(pending.busy && pending.ready && SysCall.Inline(windowLease.Committed())) {
+            val writePort = SysCall.Inline(semaReg.RequestWritePort(i))
+            SysCall.Inline(writePort.Write(pending.addr, pending.data))
+            val sbLease = SysCall.Inline(scoreboard.RequestLease(i))
+            SysCall.Inline(sbLease.Release())
+            SysCall.Inline(writePort.Release())
+            SysCall.Inline(windowLease.ForceCommit())
             pending.busy  :=  false.B
             pending.ready  :=  false.B
             publishDone(i)  :=  true.B
@@ -234,35 +234,35 @@ object RegfileLib {
       }.elsewhen(matchingReady.asUInt.orR) {
         rdata  :=  Mux1H(matchingReady, VecInit(pendingPorts.toIndexedSeq.map(_.data)))
       }.otherwise {
-        rdata  :=  SysCall.Call(semaReg.Read(addr))
+        rdata  :=  SysCall.Inline(semaReg.Read(addr))
       }
       rdata
     }
 
     class OrderedRegWritePort(val portIdx: Int) {
       def Reserve(addr: UInt): HwInline[Unit] = HwInline.atomic(s"Reserve_$portIdx") { t =>
-        val writePort = SysCall.Call(semaReg.RequestWritePort(portIdx))
-        val sbLease = SysCall.Call(scoreboard.RequestLease(portIdx))
-        val windowLease = SysCall.Call(orderWindow.RequestLease(portIdx))
-        SysCall.Call(writePort.Acquire())
-        SysCall.Call(sbLease.Reserve(addr))
-        SysCall.Call(windowLease.Reserve())
-        SysCall.Call(BeginPendingWrite(portIdx, addr))
+        val writePort = SysCall.Inline(semaReg.RequestWritePort(portIdx))
+        val sbLease = SysCall.Inline(scoreboard.RequestLease(portIdx))
+        val windowLease = SysCall.Inline(orderWindow.RequestLease(portIdx))
+        SysCall.Inline(writePort.Acquire())
+        SysCall.Inline(sbLease.Reserve(addr))
+        SysCall.Inline(windowLease.Reserve())
+        SysCall.Inline(BeginPendingWrite(portIdx, addr))
       }
 
       def WritebackAndClear(addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"WB_$portIdx") { t =>
-        val windowLease = SysCall.Call(orderWindow.RequestLease(portIdx))
-        SysCall.Call(FinishPendingWrite(portIdx, data))
-        SysCall.Call(windowLease.Commit())
+        val windowLease = SysCall.Inline(orderWindow.RequestLease(portIdx))
+        SysCall.Inline(FinishPendingWrite(portIdx, data))
+        SysCall.Inline(windowLease.Commit())
         t.waitCondition(publishDone(portIdx))
         ()
       }
     }
 
     def Write(portIdx: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"OrderedRegWrite_$portIdx") { _ =>
-      val writePort = SysCall.Call(RequestWritePort(portIdx))
-      SysCall.Call(writePort.Reserve(addr))
-      SysCall.Call(writePort.WritebackAndClear(addr, data))
+      val writePort = SysCall.Inline(RequestWritePort(portIdx))
+      SysCall.Inline(writePort.Reserve(addr))
+      SysCall.Inline(writePort.WritebackAndClear(addr, data))
       ()
     }
 

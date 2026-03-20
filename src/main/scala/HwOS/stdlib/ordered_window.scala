@@ -118,22 +118,22 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
 
   // Facade-first API
   def Reserve(id: Int): HwInline[Unit] = HwInline.atomic(s"WindowReserve_$id") { _ =>
-    val lease = SysCall.Call(RequestLease(id))
-    SysCall.Call(lease.Reserve())
+    val lease = SysCall.Inline(RequestLease(id))
+    SysCall.Inline(lease.Reserve())
   }
 
   def Commit(id: Int): HwInline[Unit] = HwInline.stateless(s"WindowCommit_$id") { _ =>
-    val lease = SysCall.Call(RequestLease(id))
-    SysCall.Call(lease.Commit())
+    val lease = SysCall.Inline(RequestLease(id))
+    SysCall.Inline(lease.Commit())
   }
 
   def Committed(id: Int): HwInline[Bool] = HwInline.stateless(s"WindowCommitted_$id") { _ =>
-    val lease = SysCall.Call(RequestLease(id))
-    SysCall.Call(lease.Committed())
+    val lease = SysCall.Inline(RequestLease(id))
+    SysCall.Inline(lease.Committed())
   }
 
   def ForceCommit(id: Int): HwInline[Unit] = HwInline.stateless(s"WindowForceCommit_$id") { _ =>
-    val lease = SysCall.Call(RequestLease(id))
-    SysCall.Call(lease.ForceCommit())
+    val lease = SysCall.Inline(RequestLease(id))
+    SysCall.Inline(lease.ForceCommit())
   }
 }

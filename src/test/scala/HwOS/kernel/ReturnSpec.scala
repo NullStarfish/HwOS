@@ -38,10 +38,11 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     t.Step("MiddleWrite") {
       out  :=  5.U
     }
-    SysCall.Call(innerMost)
-    t.Step("MiddleDead") {
+    SysCall.Call(innerMost, "MiddleResume")
+    t.Step("MiddleResume") {
       out  :=  66.U
     }
+    SysCall.Return()
     ()
   }
 
@@ -69,8 +70,8 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
 
   override def entry(): Unit = {
     worker.entry {
-      SysCall.Call(outer)
-      SysCall.Call(outerNested)
+      SysCall.Inline(outer)
+      SysCall.Inline(outerNested)
       SysCall.Return()
     }
   }
@@ -97,7 +98,7 @@ class ReturnModule extends Module {
     override def entry(): Unit = {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
-          SysCall.Call(SysCall.start(proc.worker))
+          SysCall.Inline(SysCall.start(proc.worker))
         }
         io.out  :=  proc.out
         io.done  :=  proc.worker.done
@@ -122,7 +123,34 @@ class ReturnSpec extends AnyFlatSpec {
       }
 
       c.io.done.expect(true.B)
-      c.io.out.expect(11.U)
+      c.io.out.expect(67.U)
     }
+  }
+
+  it should "reject Return() inside SysCall.Inline(...)" in {
+    val ex = intercept[Exception] {
+      class IllegalInlineReturnModule extends Module {
+        implicit val kernel: Kernel = new Kernel()
+
+        object Init extends HwProcess("Init") {
+          val worker = createThread("Worker")
+
+          override def entry(): Unit = {
+            worker.entry {
+              SysCall.Inline(HwInline.thread("BadInline") { _ =>
+                SysCall.Return()
+                ()
+              })
+            }
+          }
+        }
+
+        Init.build()
+      }
+
+      _root_.circt.stage.ChiselStage.emitCHIRRTL(new IllegalInlineReturnModule)
+    }
+
+    assert(ex.getMessage.contains("illegal inside Inline"))
   }
 }

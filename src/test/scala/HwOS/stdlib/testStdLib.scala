@@ -26,16 +26,16 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
 
     // Worker 模板逻辑：抢锁 -> 执行关键区 -> 释放并汇报 -> 退出
     def workerLogic(t: HardwareThread, lockId: Int, wgId: Int): Unit = {
-      val lease = SysCall.Call(permit.RequestLease(lockId))
+      val lease = SysCall.Inline(permit.RequestLease(lockId))
       t.Step("AcquirePermit") {
-        SysCall.Call(lease.Acquire())
+        SysCall.Inline(lease.Acquire())
       }
       t.Step("CriticalSection") {
         sharedCounter  :=  sharedCounter + 10.U
       }
       t.Step("ReleasePermitAndDone") {
-        SysCall.Call(lease.Release())
-        SysCall.Call(wg.Done(wgId))
+        SysCall.Inline(lease.Release())
+        SysCall.Inline(wg.Done(wgId))
       }
       SysCall.Return()
     }
@@ -46,12 +46,12 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
     main.entry {
       main.Step("Init") {
         // Main 使用 WG 的 ID 0
-        SysCall.Call(wg.Add(0, 2.U)) 
-        SysCall.Call(SysCall.start(worker1))
-        SysCall.Call(SysCall.start(worker2))
+        SysCall.Inline(wg.Add(0, 2.U)) 
+        SysCall.Inline(SysCall.start(worker1))
+        SysCall.Inline(SysCall.start(worker2))
       }
       main.Step("WaitWorkers") {
-        SysCall.Call(wg.Wait())
+        SysCall.Inline(wg.Wait())
       }
       main.Step("Finish") {
       }
@@ -85,7 +85,7 @@ class SyncIntegrationModule extends Module {
     val daemon = createLogic("daemon")
     override def entry(): Unit = {
       daemon.run {
-        when(io.start) {SysCall.Call(SysCall.start(sync.main))}
+        when(io.start) {SysCall.Inline(SysCall.start(sync.main))}
         io.finalCount  :=  sync.sharedCounter
         io.allDone  :=  sync.main.done
       }

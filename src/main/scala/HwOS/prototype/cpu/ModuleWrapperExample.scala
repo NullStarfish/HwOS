@@ -55,7 +55,7 @@ object ModuleWrapperExample {
 
       override def entry(): Unit = {
         worker.entry {
-          SysCall.Call(adder.Invoke(lhsReg, rhsReg, resultReg))
+          SysCall.Inline(adder.Invoke(lhsReg, rhsReg, resultReg))
           worker.Step("Finish") {
           }
           SysCall.Return()
@@ -65,7 +65,7 @@ object ModuleWrapperExample {
           when(io.start && !worker.active) {
             lhsReg  :=  io.lhs
             rhsReg  :=  io.rhs
-            SysCall.Call(SysCall.start(worker))
+            SysCall.Inline(SysCall.start(worker))
           }
 
           io.busy  :=  worker.active

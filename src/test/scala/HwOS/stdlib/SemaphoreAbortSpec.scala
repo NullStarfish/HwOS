@@ -22,16 +22,16 @@ class SemaphoreAbortTestProcess(localName: String)(implicit kernel: Kernel) exte
 
   override def entry(): Unit = {
     victim.entry {
-      val lease = SysCall.Call(permit.RequestLease(0))
+      val lease = SysCall.Inline(permit.RequestLease(0))
       victimLeaseOpt = Some(lease)
       victim.Step("AcquirePermit") {
-        SysCall.Call(lease.Acquire())
+        SysCall.Inline(lease.Acquire())
       }
       victim.Step("InfiniteLoop") {
         victim.waitCondition(false.B)
       }
       victim.Step("NeverReachesHere") {
-        SysCall.Call(lease.Release())
+        SysCall.Inline(lease.Release())
       }
       SysCall.Return()
     }
@@ -42,27 +42,27 @@ class SemaphoreAbortTestProcess(localName: String)(implicit kernel: Kernel) exte
     }
 
     observer.entry {
-      val lease = SysCall.Call(permit.RequestLease(1))
+      val lease = SysCall.Inline(permit.RequestLease(1))
       observer.Step("TryAcquirePermit") {
-        SysCall.Call(lease.Acquire())
+        SysCall.Inline(lease.Acquire())
       }
       observer.Step("Success") {
         observerSuccess  :=  true.B
-        SysCall.Call(lease.Release())
+        SysCall.Inline(lease.Release())
       }
       SysCall.Return()
     }
 
     main.entry {
       main.Step("StartVictim") {
-        SysCall.Call(SysCall.start(victim))
+        SysCall.Inline(SysCall.start(victim))
       }
       main.Step("WaitAWhile1") {}
       main.Step("WaitAWhile2") {}
 
       main.Step("KillAndRescue") {
         OSReaper.kill(contextGate, main)
-        SysCall.Call(SysCall.start(observer))
+        SysCall.Inline(SysCall.start(observer))
       }
 
       main.Step("WaitObserver") {
@@ -94,7 +94,7 @@ class SemaphoreAbortModule extends Module {
 
     override def entry(): Unit = {
       daemon.run {
-        when(io.start) { SysCall.Call(SysCall.start(testProc.main)) }
+        when(io.start) { SysCall.Inline(SysCall.start(testProc.main)) }
         io.success  :=  testProc.observerSuccess
         io.done     :=  testProc.main.done
       }
