@@ -5,6 +5,7 @@ import HwOS.kernel.context.{ContextScope, HwContext, HwContextEntity, LogicCtx}
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.RuntimeContext
 import HwOS.kernel.system.Kernel
+import scala.reflect.ClassTag
 
 trait HardwareAgent extends HwContextEntity {
   val owner: HwProcess
@@ -43,6 +44,9 @@ abstract class HardwareThread(
     with ThreadControlApi
     with ThreadRuntimeApi {
   val tls = scala.collection.mutable.Map[String, HwContext]() //used for visibility
+
+  def importService[T <: HwProcess: ClassTag](serviceName: String): T =
+    owner.importService[T](serviceName)
 
   private[kernel] def runtimeStart(): Unit
   private[kernel] def runtimeExit(): Unit

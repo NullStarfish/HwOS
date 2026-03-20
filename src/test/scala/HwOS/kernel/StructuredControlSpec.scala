@@ -2,7 +2,6 @@ package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
 import HwOS.kernel.control.StructuredControl
-import HwOS.kernel.function.HwInline
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.SysCall
 import chisel3._
@@ -16,98 +15,76 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
   val acc = (RegInit(0.U(8.W)))
   val loopOut = (RegInit(0.U(8.W)))
   val returnOut = (RegInit(0.U(8.W)))
+  val actionOut = (RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
     worker.entry {
       StructuredControl
-        .If(worker, "Branch", 3.U > 1.U)(
-          HwInline.thread("BranchThen") { t =>
-            t.Step("BranchThenWrite") {
-              branchOut  :=  7.U
-            }
-            SysCall.Call(SysCall.Return())
-            t.Step("BranchThenUnreachable") {
-              branchOut  :=  99.U
-            }
-            ()
-          },
-        )
-        .Else(
-          HwInline.thread("BranchElse") { t =>
-            t.Step("BranchElseWrite") {
-              branchOut  :=  9.U
-            }
-            ()
-          },
-        )
+        .If(worker, "Branch", 3.U > 1.U) {
+          worker.Step("BranchThenWrite") {
+            branchOut  :=  7.U
+          }
+        }
+        .Else {
+          worker.Step("BranchElseWrite") {
+            branchOut  :=  9.U
+          }
+        }
 
       StructuredControl
-        .If(worker, "ElifChain", 0.U === 1.U)(
-          HwInline.thread("ElifThen") { t =>
-            t.Step("ElifThenWrite") {
-              elifOut  :=  1.U
-            }
-            ()
-          },
-        )
-        .ElseIf(2.U === 2.U)(
-          HwInline.thread("ElifMid") { t =>
-            t.Step("ElifMidWrite") {
-              elifOut  :=  2.U
-            }
-            ()
-          },
-        )
-        .Else(
-          HwInline.thread("ElifElse") { t =>
-            t.Step("ElifElseWrite") {
-              elifOut  :=  3.U
-            }
-            ()
-          },
-        )
+        .If(worker, "ElifChain", 0.U === 1.U) {
+          worker.Step("ElifThenWrite") {
+            elifOut  :=  1.U
+          }
+        }
+        .ElseIf(2.U === 2.U) {
+          worker.Step("ElifMidWrite") {
+            elifOut  :=  2.U
+          }
+        }
+        .Else {
+          worker.Step("ElifElseWrite") {
+            elifOut  :=  3.U
+          }
+        }
 
       StructuredControl
-        .If(worker, "ReturnProbe", 1.U === 1.U)(
-          HwInline.thread("ReturnThen") { t =>
-            t.Step("ReturnArm") {
-              returnOut  :=  5.U
-            }
-            SysCall.Call(SysCall.Return())
-            t.Step("ReturnDead") {
-              returnOut  :=  99.U
-            }
-            ()
-          },
-        )
-        .End()
+        .If(worker, "ActionBranch", 0.U === 1.U) {
+          worker.Step("ActionThenWrite") {
+            actionOut := 1.U
+          }
+        }
+        .ElseIf(2.U === 2.U) {
+          worker.Step("ActionElifWrite") {
+            actionOut := 3.U
+          }
+        }
+        .Else {
+          worker.Step("ActionElseWrite") {
+            actionOut := 9.U
+          }
+        }
 
       StructuredControl.ForRange(worker, "Loop", start = 0, endExclusive = 6, width = 8) { (i, loop) =>
-        HwInline.thread("LoopBody") { t =>
-          t.Step("LoopSkipEven") {
-            when(i(0) === 0.U) {
-              loop.Continue()
-            }
+        worker.Step("LoopSkipEven") {
+          when(i(0) === 0.U) {
+            loop.Continue()
           }
-          t.Step("LoopAccumulate") {
-            acc  :=  acc + i
-            when(i === 5.U) {
-              loop.Break()
-            }
+        }
+        worker.Step("LoopAccumulate") {
+          acc  :=  acc + i
+          when(i === 5.U) {
+            loop.Break()
           }
-          ()
         }
       }
 
       StructuredControl.While(worker, "WhileAcc", acc < 12.U) { loop =>
-        HwInline.thread("WhileBody") { t =>
-          t.Step("WhileBump") {
-            acc  :=  acc + 2.U
-            when(acc >= 10.U) {
-              loop.Break()
-            }
+        worker.Step("WhileBump") {
+          acc  :=  acc + 2.U
+          when(acc >= 10.U) {
+            loop.Break()
           }
-          ()
         }
       }
 
@@ -115,8 +92,19 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         loopOut  :=  acc
       }
 
-      worker.Step("Finish") {
-      }
+      StructuredControl
+        .If(worker, "ReturnProbe", 1.U === 1.U) {
+          worker.Step("ReturnArm") {
+            returnOut  :=  5.U
+          }
+          SysCall.Call(SysCall.Return())
+          worker.Step("ReturnDead") {
+            returnOut  :=  99.U
+          }
+        }
+        .End()
+
+      worker.Step("Finish") {}
       SysCall.Call(SysCall.Return())
     }
   }
@@ -129,6 +117,7 @@ class StructuredControlModule extends Module {
     val acc = Output(UInt(8.W))
     val loopOut = Output(UInt(8.W))
     val returnOut = Output(UInt(8.W))
+    val actionOut = Output(UInt(8.W))
     val done = Output(Bool())
   })
 
@@ -137,6 +126,7 @@ class StructuredControlModule extends Module {
   io.acc := DontCare
   io.loopOut := DontCare
   io.returnOut := DontCare
+  io.actionOut := DontCare
   io.done := DontCare
 
   implicit val kernel: Kernel = new Kernel()
@@ -147,13 +137,14 @@ class StructuredControlModule extends Module {
     (io.acc)
     (io.loopOut)
     (io.returnOut)
+    (io.actionOut)
     (io.done)
 
     val proc = spawn(new StructuredControlProcess("Structured"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
-        daemon.run {
+      daemon.run {
         when(!proc.worker.active && !proc.worker.done) {
           SysCall.Call(SysCall.start(proc.worker))
         }
@@ -162,6 +153,7 @@ class StructuredControlModule extends Module {
         io.acc  :=  proc.acc
         io.loopOut  :=  proc.loopOut
         io.returnOut  :=  proc.returnOut
+        io.actionOut  :=  proc.actionOut
         io.done  :=  proc.worker.done
       }
     }
@@ -189,6 +181,7 @@ class StructuredControlSpec extends AnyFlatSpec {
       c.io.acc.expect(13.U)
       c.io.loopOut.expect(13.U)
       c.io.returnOut.expect(5.U)
+      c.io.actionOut.expect(3.U)
     }
   }
 }

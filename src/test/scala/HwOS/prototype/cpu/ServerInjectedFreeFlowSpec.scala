@@ -50,7 +50,7 @@ class ServerInjectedFreeFlowSpec extends AnyFlatSpec {
       c.clock.step()
       c.reset.poke(false.B)
 
-      c.clock.step(40)
+      c.clock.step(45)
 
       c.io.x1.expect(9.U)
       c.io.x2.expect(51.U)

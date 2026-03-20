@@ -11,91 +11,91 @@ import chisel3.util._
 
 private object DecodePathSegments {
   def AddiPath(
-      serviceName: String,
       serverId: Int,
-      thread: HardwareThread,
       rd: UInt,
       rs1: UInt,
       imm: UInt,
       decodedSrc: UInt,
       result: UInt,
-      regFile: ScoreboardRegfileProcess,
-      arith: ArithmeticServiceProcess,
-      withReservedWrite: (String, HardwareThread => Unit) => Unit,
-      routeWritebackLabel: String,
-  ): HwInline[Unit] = HwInline.thread(s"${serviceName}_AddiPath_$serverId") { _ =>
-    withReservedWrite(s"ArithReserve_$serverId", { rx =>
-      rx.Step(s"ArithRead_$serverId") {
+  ): HwInline[Unit] = HwInline.thread(s"AddiPath_$serverId") { tx =>
+    def withReservedWrite(writePort: ScoreboardRegfileProcess#RegWritePort, targetRd: UInt, entryLabel: String)(
+        body: => Unit
+    ): Unit = {
+      tx.Step(entryLabel) {
+        SysCall.Call(writePort.Reserve(targetRd))
+      }
+      body
+    }
+
+    val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
+    val arith = tx.importService[ArithmeticServiceProcess]("Arithmetic")
+    val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
+
+    withReservedWrite(writePort, rd, s"ArithReserve_$serverId") {
+      tx.Step(s"ArithRead_$serverId") {
         decodedSrc := SysCall.Call(regFile.Read(rs1))
       }
-      rx.Step(s"ArithExec_$serverId") {
+      tx.Step(s"ArithExec_$serverId") {
         result := SysCall.Call(arith.RequestExecute(serverId, decodedSrc, imm))
       }
-      rx.Step(s"ArithAfterExec_$serverId") {
-        rx.jump(routeWritebackLabel)
-      }
-    })
+
+      SysCall.Call(SysCall.Return())
+      ()
+    }
     ()
   }
 
   def LoadPath(
-      serviceName: String,
       serverId: Int,
+      rd: UInt,
       imm: UInt,
       result: UInt,
-      load: LoadServiceProcess,
-      withReservedWrite: (String, HardwareThread => Unit) => Unit,
-      routeWritebackLabel: String,
-  ): HwInline[Unit] = HwInline.thread(s"${serviceName}_LoadPath_$serverId") { _ =>
-    withReservedWrite(s"LoadReserve_$serverId", { rx =>
-      rx.Step(s"LoadExec_$serverId") {
-        result := SysCall.Call(load.RequestLoad(serverId, imm))
-      }
-      rx.Step(s"LoadAfterExec_$serverId") {
-        rx.jump(routeWritebackLabel)
-      }
-    })
+  ): HwInline[Unit] = HwInline.thread(s"LoadPath_$serverId") { tx =>
+    val load = tx.importService[LoadServiceProcess]("Load")
+    val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
+    val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
+
+    tx.Step(s"LoadReserve_$serverId") {
+      SysCall.Call(writePort.Reserve(rd))
+    }
+    tx.Step(s"LoadExec_$serverId") {
+      result := SysCall.Call(load.RequestLoad(serverId, imm))
+    }
+    SysCall.Call(SysCall.Return())
     ()
   }
 
   def LoadAddPath(
-      serviceName: String,
       serverId: Int,
+      rd: UInt,
       rs1: UInt,
       imm: UInt,
       decodedSrc: UInt,
       loadedValue: UInt,
       result: UInt,
-      regFile: ScoreboardRegfileProcess,
-      load: LoadServiceProcess,
-      arith: ArithmeticServiceProcess,
-      withReservedWrite: (String, HardwareThread => Unit) => Unit,
-      routeWritebackLabel: String,
-  ): HwInline[Unit] = HwInline.thread(s"${serviceName}_LoadAddPath_$serverId") { _ =>
-    withReservedWrite(s"LoadAddReserve_$serverId", { rx =>
-      rx.Step(s"LoadAddLoadExec_$serverId") {
-        loadedValue := SysCall.Call(load.RequestLoad(serverId, imm))
-      }
-      rx.Step(s"LoadAddArithRead_$serverId") {
-        decodedSrc := SysCall.Call(regFile.Read(rs1))
-      }
-      rx.Step(s"LoadAddArithExec_$serverId") {
-        result := SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc))
-      }
-      rx.Step(s"LoadAddAfterExec_$serverId") {
-        rx.jump(routeWritebackLabel)
-      }
-    })
-    ()
+  ): HwInline[Unit] = HwInline.thread(s"LoadAddPath_$serverId") { tx =>
+
+
+    val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
+    val load = tx.importService[LoadServiceProcess]("Load")
+    val arith = tx.importService[ArithmeticServiceProcess]("Arithmetic")
+    val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
+
+    tx.Step(s"LoadAddReserve_$serverId") {
+      SysCall.Call(writePort.Reserve(rd))
+    }
+    tx.Step(s"LoadAddLoadExec_$serverId") {
+      loadedValue := SysCall.Call(load.RequestLoad(serverId, imm))
+    }
+    tx.Step(s"LoadAddArithRead_$serverId") {
+      decodedSrc := SysCall.Call(regFile.Read(rs1))
+    }
+    tx.Step(s"LoadAddArithExec_$serverId") {
+      result := SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc))
+    }
+    SysCall.Call(SysCall.Return())
   }
 
-  def InvalidPath(serviceName: String, serverId: Int, threadExitLabel: String): HwInline[Unit] =
-    HwInline.thread(s"${serviceName}_InvalidPath_$serverId") { tx =>
-      tx.Step(s"UnsupportedOpcode_$serverId") {
-        tx.jump(threadExitLabel)
-      }
-      ()
-    }
 }
 
 final class ServerDecodeProcess(
@@ -151,73 +151,55 @@ final class ServerDecodeProcess(
       val imm = ISA.imm(slot.instArg)
 
       slot.thread.entry {
-        val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
-
-        def withReservedWrite(entryLabel: String)(body: HardwareThread => Unit): Unit = {
-          slot.thread.Step(entryLabel) {
-            SysCall.Call(writePort.Reserve(rd))
-          }
-          body(slot.thread)
-        }
-
-        val reserveWrite: (String, HardwareThread => Unit) => Unit = (entryLabel, body) =>
-          withReservedWrite(entryLabel)(body)
-
         val routeWritebackLabel = s"RouteWriteback_$serverId"
         val threadExitLabel = s"ThreadExit_$serverId"
 
         val addiPath = DecodePathSegments.AddiPath(
-          name,
           serverId,
-          slot.thread,
           rd,
           rs1,
           imm,
           slot.decodedSrc,
           slot.result,
-          regFile,
-          arith,
-          reserveWrite,
-          routeWritebackLabel,
         )
 
         val loadPath = DecodePathSegments.LoadPath(
-          name,
           serverId,
+          rd,
           imm,
           slot.result,
-          load,
-          reserveWrite,
-          routeWritebackLabel,
         )
 
         val loadAddPath = DecodePathSegments.LoadAddPath(
-          name,
           serverId,
+          rd,
           rs1,
           imm,
           slot.decodedSrc,
           slot.loadedValue,
           slot.result,
-          regFile,
-          load,
-          arith,
-          reserveWrite,
-          routeWritebackLabel,
         )
 
-        val invalidPath = DecodePathSegments.InvalidPath(name, serverId, threadExitLabel)
-
         StructuredControl
-          .If(slot.thread, "DecodeIsAddi", opcode === ISA.OP_ADDI)(addiPath)
-          .ElseIf(opcode === ISA.OP_LOAD)(loadPath)
-          .ElseIf(opcode === ISA.OP_LOADADD)(loadAddPath)
-          .Else(invalidPath)
+          .If(slot.thread, "DecodeIsAddi", opcode === ISA.OP_ADDI) {
+            SysCall.Call(addiPath, routeWritebackLabel)
+          }
+          .ElseIf(opcode === ISA.OP_LOAD) {
+            SysCall.Call(loadPath, routeWritebackLabel)
+          }
+          .ElseIf(opcode === ISA.OP_LOADADD) {
+            SysCall.Call(loadAddPath, routeWritebackLabel)
+          }
+          .Else {
+            slot.thread.Step(s"UnsupportedOpcode_$serverId") {
+              slot.thread.jump(threadExitLabel)
+            }
+          }
 
         slot.thread.Step(routeWritebackLabel) {
+          val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
           SysCall.Call(writePort.WritebackAndClear(rd, slot.result))
         }
-
         slot.thread.Step(threadExitLabel) {}
         SysCall.Call(SysCall.Return())
       }

@@ -3,6 +3,7 @@ package HwOS.kernel.process
 import chisel3._
 import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 import HwOS.kernel.context.HwContextEntity
 import HwOS.kernel.system.{Kernel, OSReaperManaged, OSReaperManagedLogic}
 import HwOS.kernel.thread._
@@ -51,6 +52,23 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
   val threads = ArrayBuffer[HardwareThread]()
   val logics  = ArrayBuffer[HardwareLogic]()
   val children = ArrayBuffer[HwProcess]()
+
+  def importService[T <: HwProcess: ClassTag](serviceName: String): T = {
+    val child = children.find(_.localName == serviceName).getOrElse {
+      throw new Exception(
+        s"[HwOS] Process '$name' cannot import service '$serviceName' because no direct child service with that local name exists.",
+      )
+    }
+
+    val expectedClass = implicitly[ClassTag[T]].runtimeClass
+    if (!expectedClass.isAssignableFrom(child.getClass)) {
+      throw new Exception(
+        s"[HwOS] Service '$serviceName' under '$name' has type '${child.getClass.getSimpleName}', incompatible with requested '${expectedClass.getSimpleName}'.",
+      )
+    }
+
+    child.asInstanceOf[T]
+  }
 
 
   def createThread(
