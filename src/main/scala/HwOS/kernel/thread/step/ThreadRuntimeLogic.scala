@@ -4,8 +4,7 @@ import chisel3._
 import HwOS.kernel.context.HwContextEntity
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
 import HwOS.kernel.thread.StepRef
-import HwOS.kernel.thread.step.EdgeAction.{JumpAction, ReturnAction}
-import HwOS.kernel.thread.step.SystemEffect.{HijackEffect, JumpEffect, WaitEffect}
+import HwOS.kernel.thread.step.EdgeAction.{HijackMeta, JumpAction, JumpMeta, ReturnAction, ReturnMeta, WaitMeta}
 
 private[kernel] object ThreadRuntimeLogic {
   def preAnalyzeProgram(irState: ThreadIR.IRState): Unit = {
@@ -80,8 +79,9 @@ private[kernel] object ThreadRuntimeLogic {
     if (PreLoweringAnalysis.isActive) {
       if (EdgePatchAnalysis.isActive) {
         EdgePatchAnalysis.recordJump(target)
+      } else {
+        PreLoweringAnalysis.record(JumpMeta(target))
       }
-      PreLoweringAnalysis.record(JumpEffect(target))
       return
     }
     val targetIndex = ThreadLayout.resolveStepRef(irState, layoutState, target)
@@ -100,9 +100,15 @@ private[kernel] object ThreadRuntimeLogic {
       cond: Bool,
   ): Unit = {
     val pushPassGuard = cond.litOption.isEmpty
+    val keepLoweringGuards =
+      layoutState.currentLoweringStep >= 0 &&
+        irState.program.steps(layoutState.currentLoweringStep).edgeActions.exists {
+          case ReturnAction(_, _) | JumpAction(_, _) => true
+          case _ => false
+        }
 
     if (PreLoweringAnalysis.isActive) {
-      PreLoweringAnalysis.record(WaitEffect)
+      PreLoweringAnalysis.record(WaitMeta)
       if (pushPassGuard) {
         PreLoweringAnalysis.pushEdgeGuard(cond)
       }
@@ -112,14 +118,13 @@ private[kernel] object ThreadRuntimeLogic {
       throw new Exception(s"[Thread] waitCondition() must be used while lowering a Step in '${irState.programName}'.")
     }
     val entryAddr = irState.program.steps(layoutState.currentEntryStep).allocatedAddress
-    val stableCond = WireDefault(cond)
     wrapGuards(layoutState.currentEdgeGuards) {
-      when(!stableCond) {
+      when(!cond) {
         runtime.cursor.reg := entryAddr.U(runtime.cursor.reg.getWidth.W)
       }
     }
-    if (pushPassGuard) {
-      layoutState.currentEdgeGuards = stableCond :: layoutState.currentEdgeGuards
+    if (pushPassGuard && keepLoweringGuards) {
+      layoutState.currentEdgeGuards = cond :: layoutState.currentEdgeGuards
     }
   }
 
@@ -130,7 +135,7 @@ private[kernel] object ThreadRuntimeLogic {
       target: StepRef,
   ): Unit = {
     if (PreLoweringAnalysis.isActive) {
-      PreLoweringAnalysis.record(HijackEffect(target))
+      PreLoweringAnalysis.record(HijackMeta(target))
       return
     }
     val victimIndex = ThreadLayout.resolveStepRef(irState, layoutState, target)
@@ -146,9 +151,7 @@ private[kernel] object ThreadRuntimeLogic {
       .map(nextIdx => runtime.cursor.segment.addressOf(steps(nextIdx).name).U(runtime.cursor.reg.getWidth.W))
       .getOrElse(runtime.cursor.entryAddress)
     runtime.cursor.reg := nextPc
-    ThreadLayout.lowerStepAt(irState, layoutState, victimIndex, {
-      emitRecordedEdgeActions(irState, layoutState, runtime, victimIndex)
-    })
+    ThreadLayout.lowerStepAt(irState, layoutState, victimIndex)
   }
 
   def lowerRuntime(
@@ -173,9 +176,7 @@ private[kernel] object ThreadRuntimeLogic {
             runtime.cursor.reg === step.allocatedAddress.U(runtime.cursor.reg.getWidth.W),
         ) {
           runtime.cursor.reg := nextPc
-          ThreadLayout.lowerStepAt(irState, layoutState, index, {
-            emitRecordedEdgeActions(irState, layoutState, runtime, index)
-          })
+          ThreadLayout.lowerStepAt(irState, layoutState, index)
         }
       }
     }
@@ -198,7 +199,7 @@ private[kernel] object ThreadRuntimeLogic {
             s"Tried to patch '${targetStep.name}' while analyzing '${current.name}'.",
         )
       }
-      EdgePatchAnalysis.capture(current, guardDepth = PreLoweringAnalysis.currentEdgeGuards.length) {
+      EdgePatchAnalysis.capture(current, PreLoweringAnalysis.currentEdgeGuards.length) {
         block
       }
       return
@@ -215,45 +216,11 @@ private[kernel] object ThreadRuntimeLogic {
       throw new Exception(
         s"[HwOS] StepRef.edge.add(...) in v1 can only patch the current step. " +
           s"Tried to patch '$targetName' while lowering '$currentName'.",
-      )
+        )
     }
 
-    ()
-  }
-
-  def emitRecordedEdgeActions(
-      irState: ThreadIR.IRState,
-      layoutState: ThreadLayout.LayoutState,
-      runtime: RuntimeContext,
-      stepIndex: Int,
-  ): Unit = {
-    val step = irState.program.steps(stepIndex)
-    for (action <- step.edgeActions) {
-      val guards = layoutState.currentEdgeGuards.take(action.guardDepth)
-      wrapGuards(guards) {
-        action match {
-          case ReturnAction(_, Some(target)) =>
-            val targetPc = layoutState.jumpTargets.getOrElse(
-              target,
-              throw new Exception(
-                s"[HwOS] Unknown return target '$target' while lowering step '${step.name}' in '${irState.programName}'.",
-              ),
-            )
-            runtime.cursor.reg := targetPc
-          case ReturnAction(_, None) =>
-            exit(runtime)
-          case JumpAction(_, target) =>
-            val targetIndex = ThreadLayout.resolveStepRef(irState, layoutState, target)
-            val targetStep = irState.program.steps(targetIndex)
-            val targetPc = layoutState.jumpTargets.getOrElse(
-              targetStep.name,
-              throw new Exception(
-                s"[HwOS] Unknown jump target '${targetStep.name}' while lowering step '${step.name}' in '${irState.programName}'.",
-              ),
-            )
-            runtime.cursor.reg := targetPc
-        }
-      }
+    wrapGuards(layoutState.currentEdgeGuards) {
+      block
     }
   }
 

@@ -20,9 +20,9 @@ private[kernel] object PreLoweringAnalysis {
       throw new Exception("[HwOS] No active pre-lowering step analysis record."),
     )
 
-  def record(effect: SystemEffect): Unit = {
+  def record(effect: EdgeAction): Unit = {
     val record = currentRecord
-    record.effects += effect
+    record.edgeActions += effect
   }
 
   def pushEdgeGuard(cond: Bool): Unit = {
@@ -33,6 +33,7 @@ private[kernel] object PreLoweringAnalysis {
 
   def withScopedEdgeGuards[T](block: => T): T = {
     val saved = edgeGuardStack.get()
+    edgeGuardStack.set(Nil)
     try block
     finally {
       edgeGuardStack.set(saved)
@@ -50,7 +51,6 @@ private[kernel] object PreLoweringAnalysis {
     val idsBefore = ids.length
     val portsBefore = modulePortsSize(module)
 
-    record.effects.clear()
     record.edgeActions.clear()
     activeRecord.set(Some(record))
     edgeGuardStack.set(Nil)

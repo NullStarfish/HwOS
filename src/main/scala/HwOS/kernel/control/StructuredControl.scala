@@ -37,8 +37,6 @@ object StructuredControl {
     private def condStepName(index: Int): String =
       if (index == 0) s"${base}_Cond" else s"${base}_${branches(index).label}_Cond"
 
-    private def enterStepName(index: Int): String = s"${base}_${branches(index).label}_Enter"
-
     private def exitStepName(index: Int): String = s"${base}_${branches(index).label}_Exit"
 
     private def lower(elseBody: Option[() => Unit]): Unit = {
@@ -49,15 +47,9 @@ object StructuredControl {
           else s"${base}_End"
 
         thread.Step(condStepName(index)) {
-          when(branch.cond()) {
-            thread.jump(thread.stepRef(enterStepName(index)))
-          }.otherwise {
+          when(!branch.cond()) {
             thread.jump(thread.stepRef(nextFailTarget))
           }
-        }
-
-        thread.Step(enterStepName(index)) {
-          thread.hijack(thread.Next)
         }
 
         branch.body()
@@ -107,15 +99,9 @@ object StructuredControl {
     val loop = new LoopControl(thread, breakTarget = s"${base}_End", continueTarget = s"${base}_Cond")
 
     thread.Step(s"${base}_Cond") {
-      when(cond) {
-        thread.jump(thread.stepRef(s"${base}_BodyEnter"))
-      }.otherwise {
+      when(!cond) {
         thread.jump(thread.stepRef(s"${base}_End"))
       }
-    }
-
-    thread.Step(s"${base}_BodyEnter") {
-      thread.hijack(thread.Next)
     }
 
     body(loop)
@@ -145,15 +131,9 @@ object StructuredControl {
     }
 
     thread.Step(s"${base}_Cond") {
-      when(idx < endExclusive.U(width.W)) {
-        thread.jump(thread.stepRef(s"${base}_BodyEnter"))
-      }.otherwise {
+      when(!(idx < endExclusive.U(width.W))) {
         thread.jump(thread.stepRef(s"${base}_End"))
       }
-    }
-
-    thread.Step(s"${base}_BodyEnter") {
-      thread.hijack(thread.Next)
     }
 
     body(idx, loop)

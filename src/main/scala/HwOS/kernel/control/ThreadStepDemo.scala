@@ -4,6 +4,7 @@ import chisel3._
 import HwOS.kernel.context.HwContextEntity
 import HwOS.kernel.system.{Kernel, RuntimeContext}
 import HwOS.kernel.thread.{StepRef}
+import HwOS.kernel.thread.step.EdgeAction.{HijackMeta, JumpAction, JumpMeta, ReturnAction, ReturnMeta, WaitMeta}
 import HwOS.kernel.thread.step.{PreLoweringAnalysis, ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 object ThreadStepDemo {
@@ -26,7 +27,7 @@ object ThreadStepDemo {
     def hijack(target: StepRef): HijackAction =
       ThreadIR.defineHijack(irState) {
         if (PreLoweringAnalysis.isActive) {
-          PreLoweringAnalysis.record(HwOS.kernel.thread.step.SystemEffect.HijackEffect(target))
+          PreLoweringAnalysis.record(HijackMeta(target))
         } else {
           ThreadLayout.lowerStepAt(irState, layoutState, ThreadLayout.resolveStepRef(irState, layoutState, target))
         }
@@ -42,7 +43,7 @@ object ThreadStepDemo {
     // Transitional demo convenience wrapper. The main thread API is StepRef-first.
     def jump(targetName: String): Unit = jump(stepRef(targetName))
 
-    def waitCondition(cond: Bool): Unit = {
+    def waitCondition(cond: => Bool): Unit = {
       ThreadRuntimeLogic.emitWaitCondition(irState, layoutState, runtime, cond)
     }
 
@@ -77,12 +78,12 @@ object ThreadStepDemo {
       irState.program.steps
         .find(_.name == stepName)
         .toSeq
-        .flatMap(_.effects)
+        .flatMap(_.edgeActions)
         .map {
-          case HwOS.kernel.thread.step.SystemEffect.ReturnEffect    => "return"
-          case HwOS.kernel.thread.step.SystemEffect.JumpEffect(_)   => "jump"
-          case HwOS.kernel.thread.step.SystemEffect.HijackEffect(_) => "hijack"
-          case HwOS.kernel.thread.step.SystemEffect.WaitEffect      => "wait"
+          case ReturnMeta | ReturnAction(_, _) => "return"
+          case JumpMeta(_) | JumpAction(_, _) => "jump"
+          case HijackMeta(_) => "hijack"
+          case WaitMeta => "wait"
         }
 
     def runtime: RuntimeContext =

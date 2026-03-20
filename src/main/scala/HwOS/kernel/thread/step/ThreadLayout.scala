@@ -4,7 +4,7 @@ import chisel3._
 import scala.collection.mutable
 import HwOS.kernel.system.{RuntimeContext, VirtualStepRecord}
 import HwOS.kernel.thread.StepRef
-import HwOS.kernel.thread.step.SystemEffect.{HijackEffect, JumpEffect, ReturnEffect}
+import HwOS.kernel.thread.step.EdgeAction.{HijackMeta, JumpAction, JumpMeta, ReturnAction, ReturnMeta, WaitMeta}
 
 private[kernel] object ThreadLayout {
   final case class StepLayout(name: String, address: Int, standalone: Boolean)
@@ -113,9 +113,9 @@ private[kernel] object ThreadLayout {
       val saveLowering = layoutState.currentLoweringStep
       layoutState.currentLoweringStep = index
       try {
-        for (effect <- step.effects) {
+        for (effect <- step.edgeActions) {
           effect match {
-            case HijackEffect(target) =>
+            case HijackMeta(target) =>
               layoutState.suppressedStandalone += resolveStepRef(irState, layoutState, target)
             case _ =>
           }
@@ -135,7 +135,10 @@ private[kernel] object ThreadLayout {
     val plan = LayoutPlan(
       suppressedStandalone = layoutState.suppressedStandalone.toSet,
       standaloneIndices = standalone,
-      hasReturningStep = irState.program.steps.exists(_.effects.contains(ReturnEffect)),
+      hasReturningStep = irState.program.steps.exists(_.edgeActions.exists {
+        case ReturnMeta | ReturnAction(_, _) => true
+        case _ => false
+      }),
     )
     validateJumpTargets(irState, plan)
     plan
@@ -168,10 +171,14 @@ private[kernel] object ThreadLayout {
       val savedLowering = layoutStateScratch.currentLoweringStep
       layoutStateScratch.currentLoweringStep = stepIndex
       try {
-        for (effect <- step.effects) {
+        for (effect <- step.edgeActions) {
           effect match {
-            case JumpEffect(target) =>
+            case JumpMeta(target) =>
               validateJumpTargetRef(irState, layoutStateScratch, plan, step, target)
+            case JumpAction(_, target) =>
+              validateJumpTargetRef(irState, layoutStateScratch, plan, step, target)
+            case WaitMeta =>
+            case ReturnMeta | ReturnAction(_, _) | HijackMeta(_) =>
             case _ =>
           }
         }

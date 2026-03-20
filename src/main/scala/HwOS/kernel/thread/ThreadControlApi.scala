@@ -25,7 +25,7 @@ trait ThreadControlApi {
   def jump(target: StepRef): Unit
   // Transitional wrapper while high-level DSLs finish converging on StepRef-first call sites.
   def jump(targetName: String): Unit = jump(stepRef(targetName))
-  def waitCondition(cond: Bool): Unit
+  def waitCondition(cond: => Bool): Unit
   def waitAndAct(cond: Bool)(block: => Unit): Unit
   def Global(block: => Unit): Unit
   def entry(block: => Unit): Unit

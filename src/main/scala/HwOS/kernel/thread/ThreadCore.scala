@@ -3,7 +3,7 @@ package HwOS.kernel.thread
 import chisel3._
 import HwOS.kernel.context.{ContextScope, ThreadCtx}
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
-import HwOS.kernel.thread.step.SystemEffect
+import HwOS.kernel.thread.step.EdgeAction.{HijackMeta, JumpAction, JumpMeta, ReturnAction, ReturnMeta, WaitMeta}
 import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 trait ThreadCore
@@ -61,24 +61,31 @@ trait ThreadCore
         step.loweredStandalone,
         step.threadCallStack,
         step.invokedCalls,
-        step.effects.map {
-          case SystemEffect.ReturnEffect   => "return"
-          case SystemEffect.JumpEffect(_)  => "jump"
-          case SystemEffect.HijackEffect(_) => "hijack"
-          case SystemEffect.WaitEffect     => "wait"
-        }.toSeq,
+        edgeActionNames(step.edgeActions.toSeq).toSeq,
       )
     }
 
   override def debugStepEffects: Map[String, Seq[String]] =
     irStateOpt
-      .map(_.program.steps.map(step => step.name -> step.effects.map {
-        case SystemEffect.ReturnEffect    => "return"
-        case SystemEffect.JumpEffect(_)   => "jump"
-        case SystemEffect.HijackEffect(_) => "hijack"
-        case SystemEffect.WaitEffect      => "wait"
-      }.toSeq).toMap)
+      .map(_.program.steps.map(step => step.name -> edgeActionNames(step.edgeActions.toSeq).toSeq).toMap)
       .getOrElse(Map.empty)
+
+  private def edgeActionNames(actions: Seq[HwOS.kernel.thread.step.EdgeAction]): Seq[String] =
+    actions.flatMap {
+      case ReturnMeta | ReturnAction(_, _) => Seq("return")
+      case JumpMeta(_) | JumpAction(_, _) => Seq("jump")
+      case HijackMeta(_) => Seq("hijack")
+      case WaitMeta => Seq("wait")
+    }
+
+  private[kernel] def withScopedEdgeGuards[T](block: => T): T = {
+    val saved = layoutState.currentEdgeGuards
+    layoutState.currentEdgeGuards = Nil
+    try block
+    finally {
+      layoutState.currentEdgeGuards = saved
+    }
+  }
 
   override def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
     layoutState.currentDebugRecord.foreach(_.invokedCalls += snapshot)
@@ -122,14 +129,6 @@ trait ThreadCore
 
   private[kernel] def recordEdgePatch(target: StepRef)(block: => Unit): Unit = {
     ThreadRuntimeLogic.recordEdgePatch(irState, layoutState, target, block)
-  }
-
-  private[kernel] def withScopedEdgeGuards[T](block: => T): T = {
-    val saved = layoutState.currentEdgeGuards
-    try block
-    finally {
-      layoutState.currentEdgeGuards = saved
-    }
   }
 
   override def entry(block: => Unit): Unit = {
@@ -179,7 +178,7 @@ trait ThreadCore
     maybePrintCapabilitySummary()
   }
 
-  override def waitCondition(cond: Bool): Unit = {
+  override def waitCondition(cond: => Bool): Unit = {
     if (ContextScope.getCurrentThread() != this) {
       throw new Exception("waitCondition outside entry")
     }
