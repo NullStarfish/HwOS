@@ -114,17 +114,31 @@ object SysCall {
 
   /**
    * 从当前 thread-function 的静态调用帧返回到预绑定的 continuation。
+   * 在 step body 内会直接作用于当前 thread；如果在 thread-entry 顶层调用，
+   * 则会自动补一个尾部 return step。
    */
-  def Return(): HwInline[Unit] = HwInline.thread("SysCall return") { t =>
-    CallStack.currentReturnTarget match {
-      case Some(target) =>
-        t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), target)) {
-          t.jump(target)
+  def Return(): Unit = {
+    ContextScope.current match {
+      case AtomicCtx(t: ThreadDebugApi) =>
+        CallStack.currentReturnTarget match {
+          case Some(target) =>
+            t.jump(target)
+          case None =>
+            t.runtimeExit()
         }
-      case None =>
-        t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), "ThreadExit")) {
-          Call(exit())
+      case ThreadCtx(t) =>
+        CallStack.currentReturnTarget match {
+          case Some(target) =>
+            t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), target)) {
+              t.jump(target)
+            }
+          case None =>
+            t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), "ThreadExit")) {
+              t.runtimeExit()
+            }
         }
+      case _ =>
+        throw new Exception("[HwOS] SysCall.Return() can only be used inside ThreadCtx or AtomicCtx.")
     }
   }
 

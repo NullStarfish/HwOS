@@ -37,7 +37,7 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
         SysCall.Call(lease.Release())
         SysCall.Call(wg.Done(wgId))
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
 
     // 分配 ID 并注入逻辑
@@ -55,7 +55,7 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
       }
       main.Step("Finish") {
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

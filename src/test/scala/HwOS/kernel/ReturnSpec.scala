@@ -16,7 +16,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     t.Step("InnerWrite") {
       out  :=  7.U
     }
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
     t.Step("InnerDead") {
       out  :=  99.U
     }
@@ -27,7 +27,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     t.Step("InnerMostWrite") {
       out  :=  10.U
     }
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
     t.Step("InnerMostDead") {
       out  :=  77.U
     }
@@ -71,7 +71,7 @@ class ReturnProcess(localName: String)(implicit kernel: Kernel) extends HwProces
     worker.entry {
       SysCall.Call(outer)
       SysCall.Call(outerNested)
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

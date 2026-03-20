@@ -48,7 +48,7 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
       out  :=  localTmp
     }
 
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
     ()
   }
 
@@ -70,7 +70,7 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
         out  :=  out + 10.U
       }
 
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
 
     controller.entry {
@@ -96,7 +96,7 @@ class HwFunctionKillProcess(localName: String)(implicit kernel: Kernel) extends 
         }
       }
       controller.Step("Finish") {}
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

@@ -71,7 +71,7 @@ class AddressTableExportSpec extends AnyFlatSpec {
           export("exported.shared", shared, ExportCapability.Read)
           worker.entry {
             worker.Step("Init") {}
-            SysCall.Call(SysCall.Return())
+            SysCall.Return()
           }
           observer.run {
             observer.declare[UInt]("exported.shared", ExportCapability.Read)

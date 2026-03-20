@@ -19,7 +19,7 @@ class ThreadResetProcess(localName: String)(implicit kernel: Kernel) extends HwP
       worker.Step("Park") {
         worker.waitCondition(false.B)
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

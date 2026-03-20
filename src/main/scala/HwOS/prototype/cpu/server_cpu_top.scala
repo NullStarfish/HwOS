@@ -91,7 +91,7 @@ class ServerDecodeWrapperModule(
             SysCall.Call(decode.RequestDecode(clientId, instArg))
           }
           thread.Step(s"Retire_$clientId") {}
-          SysCall.Call(SysCall.Return())
+          SysCall.Return()
         }
       }
 

@@ -33,7 +33,7 @@ class SemaphoreAbortTestProcess(localName: String)(implicit kernel: Kernel) exte
       victim.Step("NeverReachesHere") {
         SysCall.Call(lease.Release())
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
 
     contextGate.registerReclaimEntry(victim, victim.active) { agent =>
@@ -50,7 +50,7 @@ class SemaphoreAbortTestProcess(localName: String)(implicit kernel: Kernel) exte
         observerSuccess  :=  true.B
         SysCall.Call(lease.Release())
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
 
     main.entry {
@@ -71,7 +71,7 @@ class SemaphoreAbortTestProcess(localName: String)(implicit kernel: Kernel) exte
       }
       main.Step("Finish") {
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

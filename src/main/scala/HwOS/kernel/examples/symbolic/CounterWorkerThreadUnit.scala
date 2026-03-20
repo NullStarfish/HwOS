@@ -29,7 +29,7 @@ object CounterWorkerThreadUnit extends SymbolicThreadUnit {
       }
 
       worker.Step("Finish") {}
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

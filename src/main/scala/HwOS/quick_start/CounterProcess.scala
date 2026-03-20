@@ -41,7 +41,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
       mainThread.Step("Finish") {
         isDone  :=  true.B
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 
@@ -57,7 +57,7 @@ class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProce
       }
     }
     t.Step("Done") {}
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
     ()
   }
 }

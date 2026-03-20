@@ -22,7 +22,7 @@ class JumpProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
       }
       worker.Step("Finish") {
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

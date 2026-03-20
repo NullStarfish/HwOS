@@ -35,7 +35,7 @@ final class ServerFetchProcess(
           SysCall.Call(decode.RequestDecode(slot.slotId, slot.instArg))
         }
         slot.thread.Step(s"Retire_${slot.slotId}") {}
-        SysCall.Call(SysCall.Return())
+        SysCall.Return()
       }
     }
 

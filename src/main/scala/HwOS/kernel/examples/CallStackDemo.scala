@@ -63,7 +63,7 @@ class CallStackDemoProcess(localName: String)(implicit kernel: Kernel) extends H
       
       main.Step("Finish") {
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

@@ -26,7 +26,7 @@ class UnifiedCodeTableProcess(localName: String)(implicit kernel: Kernel) extend
       }
       worker.Step("Finish") {
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

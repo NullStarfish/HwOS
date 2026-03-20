@@ -16,7 +16,7 @@ class UnifiedThreadKernelProcess(localName: String)(implicit kernel: Kernel) ext
       }
       worker.Step("Finish") {
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

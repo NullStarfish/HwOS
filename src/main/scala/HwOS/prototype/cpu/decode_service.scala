@@ -39,7 +39,7 @@ private object DecodePathSegments {
         result := SysCall.Call(arith.RequestExecute(serverId, decodedSrc, imm))
       }
 
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
       ()
     }
     ()
@@ -61,7 +61,7 @@ private object DecodePathSegments {
     tx.Step(s"LoadExec_$serverId") {
       result := SysCall.Call(load.RequestLoad(serverId, imm))
     }
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
     ()
   }
 
@@ -93,7 +93,7 @@ private object DecodePathSegments {
     tx.Step(s"LoadAddArithExec_$serverId") {
       result := SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc))
     }
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
   }
 
 }
@@ -200,8 +200,9 @@ final class ServerDecodeProcess(
           val writePort = SysCall.Call(regFile.RequestWritePort(serverId))
           SysCall.Call(writePort.WritebackAndClear(rd, slot.result))
         }
-        slot.thread.Step(threadExitLabel) {}
-        SysCall.Call(SysCall.Return())
+        slot.thread.Step(threadExitLabel) {
+          SysCall.Return()
+        }
       }
     }
 

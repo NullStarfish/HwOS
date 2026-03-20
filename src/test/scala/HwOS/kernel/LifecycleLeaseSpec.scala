@@ -20,7 +20,7 @@ class LifecycleLeaseProcess(localName: String)(implicit kernel: Kernel) extends 
       }
       worker.Step("Never") {
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
 
     controller.entry {
@@ -42,7 +42,7 @@ class LifecycleLeaseProcess(localName: String)(implicit kernel: Kernel) extends 
       controller.Step("Gap2") {}
       controller.Step("Finish") {
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

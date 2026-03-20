@@ -19,7 +19,7 @@ class ExportDeclareDemoProcess(localName: String)(implicit kernel: Kernel) exten
         counter.write := (counter.read + 1.U).asUInt
       }
       worker.Step("Finish") {}
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

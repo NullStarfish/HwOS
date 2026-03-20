@@ -97,7 +97,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
           worker.Step("ReturnArm") {
             returnOut  :=  5.U
           }
-          SysCall.Call(SysCall.Return())
+          SysCall.Return()
           worker.Step("ReturnDead") {
             returnOut  :=  99.U
           }
@@ -105,7 +105,7 @@ class StructuredControlProcess(localName: String)(implicit kernel: Kernel) exten
         .End()
 
       worker.Step("Finish") {}
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

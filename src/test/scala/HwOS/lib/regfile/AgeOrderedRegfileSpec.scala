@@ -60,7 +60,7 @@ class AgeOrderedRegfileModule extends Module {
 
         oldWriter.Step("ExitOld") {
         }
-        SysCall.Call(SysCall.Return())
+        SysCall.Return()
       }
 
       youngWriter.entry {
@@ -79,7 +79,7 @@ class AgeOrderedRegfileModule extends Module {
 
         youngWriter.Step("ExitYoung") {
         }
-        SysCall.Call(SysCall.Return())
+        SysCall.Return()
       }
 
       reader.entry {
@@ -100,7 +100,7 @@ class AgeOrderedRegfileModule extends Module {
 
         reader.Step("ExitReader") {
         }
-        SysCall.Call(SysCall.Return())
+        SysCall.Return()
       }
 
       starter.run {

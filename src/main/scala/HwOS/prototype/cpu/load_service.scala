@@ -60,7 +60,7 @@ final class LoadServiceProcess(val maxClients: Int, val ports: Int, val initData
           slot.result := mem(slot.addr(log2Ceil(memDepth) - 1, 0))
         }
         slot.thread.Step(s"Finish_$serverId") {}
-        SysCall.Call(SysCall.Return())
+        SysCall.Return()
       }
     }
 

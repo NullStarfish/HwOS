@@ -58,7 +58,7 @@ object ModuleWrapperExample {
           SysCall.Call(adder.Invoke(lhsReg, rhsReg, resultReg))
           worker.Step("Finish") {
           }
-          SysCall.Call(SysCall.Return())
+          SysCall.Return()
         }
 
         daemon.run {

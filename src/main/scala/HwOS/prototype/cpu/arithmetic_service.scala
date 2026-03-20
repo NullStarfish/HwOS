@@ -49,7 +49,7 @@ final class ArithmeticServiceProcess(val maxClients: Int, val ports: Int, localN
           slot.result := slot.lhs + slot.rhs
         }
         slot.thread.Step(s"Finish_$serverId") {}
-        SysCall.Call(SysCall.Return())
+        SysCall.Return()
       }
     }
 

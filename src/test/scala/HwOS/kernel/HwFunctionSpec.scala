@@ -20,7 +20,7 @@ class HwFunctionProcess(localName: String)(implicit kernel: Kernel) extends HwPr
       out  :=  localTmp
       callCount  :=  callCount + 1.U
     }
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
     ()
   }
 
@@ -44,7 +44,7 @@ class HwFunctionProcess(localName: String)(implicit kernel: Kernel) extends HwPr
         out  :=  out + 20.U
       }
 
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

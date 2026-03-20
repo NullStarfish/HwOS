@@ -13,7 +13,7 @@ class HwFunctionStructureProcess(localName: String)(implicit kernel: Kernel) ext
     t.Step("Write") {
       out := out + 1.U
     }
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
     ()
   }
 
@@ -23,7 +23,7 @@ class HwFunctionStructureProcess(localName: String)(implicit kernel: Kernel) ext
       worker.Step("AfterCall") {
         out := out + 10.U
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }

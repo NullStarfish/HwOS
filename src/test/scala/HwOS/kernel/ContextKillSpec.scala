@@ -20,7 +20,7 @@ class ContextKillProcess(localName: String)(implicit kernel: Kernel) extends HwP
       worker.Step("Hold") {
         worker.waitCondition(false.B)
       }
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
 
     contextGate.registerReclaimEntry(worker, worker.active) { agent =>
@@ -35,7 +35,7 @@ class ContextKillProcess(localName: String)(implicit kernel: Kernel) extends HwP
         OSReaper.kill(contextGate, controller)
       }
       controller.Step("Finish") {}
-      SysCall.Call(SysCall.Return())
+      SysCall.Return()
     }
   }
 }
