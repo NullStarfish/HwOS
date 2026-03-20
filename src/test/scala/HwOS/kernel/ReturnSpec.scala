@@ -153,4 +153,27 @@ class ReturnSpec extends AnyFlatSpec {
 
     assert(ex.getMessage.contains("illegal inside Inline"))
   }
+
+  it should "mark returning-step information in pre-analysis before lowering runs" in {
+    class ReturnEffectSummaryModule extends Module {
+      implicit val kernel: Kernel = new Kernel()
+
+      object Init extends HwProcess("Init") {
+        override def entry(): Unit = {
+          val prog = new HwOS.kernel.control.ThreadStepDemo.Program("ReturnSummary")
+          prog.Step("Arm") {
+            SysCall.Return()
+          }
+
+          prog.preAnalyzeOnly()
+          assert(prog.stepEffects("Arm").contains("return"))
+          assert(prog.hasReturningStep)
+        }
+      }
+
+      Init.build()
+    }
+
+    _root_.circt.stage.ChiselStage.emitCHIRRTL(new ReturnEffectSummaryModule)
+  }
 }

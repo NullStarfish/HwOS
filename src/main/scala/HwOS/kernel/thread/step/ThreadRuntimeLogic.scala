@@ -4,8 +4,25 @@ import chisel3._
 import HwOS.kernel.context.HwContextEntity
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
 import HwOS.kernel.thread.StepRef
+import HwOS.kernel.thread.step.SystemEffect.{HijackEffect, JumpEffect, WaitEffect}
 
 private[kernel] object ThreadRuntimeLogic {
+  def preAnalyzeProgram(irState: ThreadIR.IRState): Unit = {
+    for (step <- irState.program.steps) {
+      PreLoweringAnalysis.analyzeStep(step) {
+        step.block()
+      }
+    }
+  }
+
+  def analyzeControl(
+      irState: ThreadIR.IRState,
+      layoutState: ThreadLayout.LayoutState,
+  ): ThreadLayout.LayoutPlan = {
+    preAnalyzeProgram(irState)
+    ThreadLayout.buildPlan(irState, layoutState)
+  }
+
   def isRunning(runtime: RuntimeContext): Bool =
     runtime.stateReg === RuntimeLifecycle.Running.U(runtime.stateReg.getWidth.W)
 
@@ -26,10 +43,11 @@ private[kernel] object ThreadRuntimeLogic {
     runtime.stateReg := RuntimeLifecycle.Idle.U(runtime.stateReg.getWidth.W)
   }
 
-  def allocateRuntime(
+  def materializeRuntime(
       owner: HwContextEntity,
       irState: ThreadIR.IRState,
       layoutState: ThreadLayout.LayoutState,
+      plan: ThreadLayout.LayoutPlan,
       initialState: Int,
   ): RuntimeContext = {
     if (layoutState.runtimeContext.isDefined) {
@@ -39,18 +57,7 @@ private[kernel] object ThreadRuntimeLogic {
       throw new Exception(s"[Thread] Program '${irState.programName}' has no steps.")
     }
 
-    layoutState.suppressedStandalone.clear()
-    for (target <- irState.hijackTargets) {
-      target match {
-        case StepRef.NamedStepRef(_) =>
-          layoutState.suppressedStandalone += ThreadLayout.resolveStepRef(irState, layoutState, target)
-        case StepRef.NextStepRef =>
-      }
-    }
-
-    val standaloneLabels = ThreadLayout
-      .standaloneIndices(irState, layoutState)
-      .map(idx => irState.program.steps(idx).name)
+    val standaloneLabels = plan.standaloneIndices.map(idx => irState.program.steps(idx).name)
     val segment = owner.kernel.addressSpace.reserveCodeSegment(irState.programName, standaloneLabels)
     val runtime = owner.kernel.addressSpace.allocateRuntimeContext(
       owner = owner,
@@ -59,32 +66,39 @@ private[kernel] object ThreadRuntimeLogic {
       initialState = initialState,
     )
     layoutState.runtimeContext = Some(runtime)
-    ThreadLayout.assignStandaloneLayout(irState, layoutState, runtime)
+    ThreadLayout.materializeLayout(irState, layoutState, plan, runtime)
     runtime
   }
 
   def emitJump(
       irState: ThreadIR.IRState,
       layoutState: ThreadLayout.LayoutState,
-      runtime: RuntimeContext,
+      runtime: => RuntimeContext,
       target: StepRef,
   ): Unit = {
+    if (PreLoweringAnalysis.isActive) {
+      PreLoweringAnalysis.record(JumpEffect(target))
+      return
+    }
     val targetIndex = ThreadLayout.resolveStepRef(irState, layoutState, target)
     val targetStep = irState.program.steps(targetIndex)
     val targetPc = layoutState.jumpTargets.getOrElse(
       targetStep.name,
       throw new Exception(s"[Thread] Unknown jump target '${targetStep.name}' in program '${irState.programName}'."),
     )
-    irState.pendingJumpTargetIndices += targetIndex
     runtime.cursor.reg := targetPc
   }
 
   def emitWaitCondition(
       irState: ThreadIR.IRState,
       layoutState: ThreadLayout.LayoutState,
-      runtime: RuntimeContext,
+      runtime: => RuntimeContext,
       cond: Bool,
   ): Unit = {
+    if (PreLoweringAnalysis.isActive) {
+      PreLoweringAnalysis.record(WaitEffect)
+      return
+    }
     if (layoutState.currentEntryStep < 0) {
       throw new Exception(s"[Thread] waitCondition() must be used while lowering a Step in '${irState.programName}'.")
     }
@@ -97,9 +111,13 @@ private[kernel] object ThreadRuntimeLogic {
   def emitHijack(
       irState: ThreadIR.IRState,
       layoutState: ThreadLayout.LayoutState,
-      runtime: RuntimeContext,
+      runtime: => RuntimeContext,
       target: StepRef,
   ): Unit = {
+    if (PreLoweringAnalysis.isActive) {
+      PreLoweringAnalysis.record(HijackEffect(target))
+      return
+    }
     val victimIndex = ThreadLayout.resolveStepRef(irState, layoutState, target)
     val steps = irState.program.steps
     if (layoutState.currentLoweringStep < 0 || victimIndex >= steps.length) {
@@ -116,13 +134,14 @@ private[kernel] object ThreadRuntimeLogic {
     ThreadLayout.lowerStepAt(irState, layoutState, victimIndex)
   }
 
-  def lowerProgram(
+  def lowerRuntime(
       irState: ThreadIR.IRState,
       layoutState: ThreadLayout.LayoutState,
+      plan: ThreadLayout.LayoutPlan,
       runtime: RuntimeContext,
   ): Unit = {
     val steps = irState.program.steps
-    val standalone = ThreadLayout.standaloneIndices(irState, layoutState)
+    val standalone = plan.standaloneIndices
 
     def lowerMainBody(): Unit = {
       for ((index, pos) <- standalone.zipWithIndex) {
@@ -143,4 +162,5 @@ private[kernel] object ThreadRuntimeLogic {
     }
     lowerMainBody()
   }
+
 }

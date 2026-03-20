@@ -4,7 +4,6 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.system.VirtualProgram
-import HwOS.kernel.thread.StepRef
 
 private[kernel] object ThreadIR {
   final class HijackAction(private val emitThunk: () => Unit) {
@@ -15,8 +14,6 @@ private[kernel] object ThreadIR {
       val programName: String,
       val program: VirtualProgram,
   ) {
-    val hijackTargets = ArrayBuffer[StepRef]()
-    val pendingJumpTargetIndices = ArrayBuffer[Int]()
     val globals = ArrayBuffer[() => Unit]()
   }
 
@@ -28,8 +25,7 @@ private[kernel] object ThreadIR {
     irState.program.appendStep(stepName, () => block)
   }
 
-  def defineHijack(irState: IRState, target: StepRef)(emitThunk: => Unit): HijackAction = {
-    irState.hijackTargets += target
+  def defineHijack(irState: IRState)(emitThunk: => Unit): HijackAction = {
     new HijackAction(() => emitThunk)
   }
 

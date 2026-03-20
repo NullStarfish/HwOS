@@ -6,4 +6,4 @@ Init/PpClient/ProducerInstr_thread 4 WB_Writeback 0 None 0 None
 Init/PpClient/ProducerInstr_thread 5 Retire 0 None 0 None
 Init/PpClient/ProducerInstr_thread 6 Anon_Return_to_ThreadExit 0 None 0 None
 Init/PpClient/ConsumerInstr_thread 7 WaitIssue 0 None 0 None
-Init/PpClient/ConsumerInstr_thread 10 Anon_Return_to_ThreadExit 0 None 0 None
+Init/PpClient/ConsumerInstr_thread 8 Anon_Return_to_ThreadExit 0 None 0 None

@@ -4,9 +4,15 @@ import chisel3._
 import scala.collection.mutable
 import HwOS.kernel.system.{RuntimeContext, VirtualStepRecord}
 import HwOS.kernel.thread.StepRef
+import HwOS.kernel.thread.step.SystemEffect.{HijackEffect, JumpEffect, ReturnEffect}
 
 private[kernel] object ThreadLayout {
   final case class StepLayout(name: String, address: Int, standalone: Boolean)
+  final case class LayoutPlan(
+      suppressedStandalone: Set[Int],
+      standaloneIndices: Vector[Int],
+      hasReturningStep: Boolean,
+  )
 
   final class LayoutState {
     var runtimeContext: Option[RuntimeContext] = None
@@ -71,7 +77,7 @@ private[kernel] object ThreadLayout {
       stepName: String,
   ): Unit = lowerStepAt(irState, layoutState, resolveStepIndex(irState, stepName))
 
-  def standaloneIndices(irState: ThreadIR.IRState, layoutState: LayoutState): Vector[Int] = {
+  private def standaloneIndices(irState: ThreadIR.IRState, layoutState: LayoutState): Vector[Int] = {
     irState.program.steps.indices.filterNot(layoutState.suppressedStandalone.contains).toVector
   }
 
@@ -92,13 +98,52 @@ private[kernel] object ThreadLayout {
     irState.program.steps(index).loweredStandalone = false
   }
 
-  def assignStandaloneLayout(
+  private def planSuppressedStandalone(
       irState: ThreadIR.IRState,
       layoutState: LayoutState,
+  ): Unit = {
+    layoutState.suppressedStandalone.clear()
+    for ((step, index) <- irState.program.steps.zipWithIndex) {
+      val saveLowering = layoutState.currentLoweringStep
+      layoutState.currentLoweringStep = index
+      try {
+        for (effect <- step.effects) {
+          effect match {
+            case HijackEffect(target) =>
+              layoutState.suppressedStandalone += resolveStepRef(irState, layoutState, target)
+            case _ =>
+          }
+        }
+      } finally {
+        layoutState.currentLoweringStep = saveLowering
+      }
+    }
+  }
+
+  def buildPlan(
+      irState: ThreadIR.IRState,
+      layoutState: LayoutState,
+  ): LayoutPlan = {
+    planSuppressedStandalone(irState, layoutState)
+    val standalone = standaloneIndices(irState, layoutState)
+    val plan = LayoutPlan(
+      suppressedStandalone = layoutState.suppressedStandalone.toSet,
+      standaloneIndices = standalone,
+      hasReturningStep = irState.program.steps.exists(_.effects.contains(ReturnEffect)),
+    )
+    validateJumpTargets(irState, plan)
+    plan
+  }
+
+  def materializeLayout(
+      irState: ThreadIR.IRState,
+      layoutState: LayoutState,
+      plan: LayoutPlan,
       runtime: RuntimeContext,
   ): Unit = {
-    val standalone = standaloneIndices(irState, layoutState)
-    layoutState.jumpTargets = standalone.iterator.map { index =>
+    layoutState.suppressedStandalone.clear()
+    layoutState.suppressedStandalone ++= plan.suppressedStandalone
+    layoutState.jumpTargets = plan.standaloneIndices.iterator.map { index =>
       val step = irState.program.steps(index)
       val addr = runtime.cursor.segment.addressOf(step.name)
       step.allocatedAddress = addr
@@ -106,23 +151,48 @@ private[kernel] object ThreadLayout {
       step.name -> runtime.cursor.addressOf(step.name)
     }.toMap
 
-    for ((step, index) <- irState.program.steps.zipWithIndex if layoutState.suppressedStandalone.contains(index)) {
+    for ((step, index) <- irState.program.steps.zipWithIndex if plan.suppressedStandalone.contains(index)) {
       step.loweredStandalone = false
       step.allocatedAddress = -1
     }
   }
 
-  def validateJumpTargets(irState: ThreadIR.IRState): Unit = {
-    for (targetIndex <- irState.pendingJumpTargetIndices) {
-      if (targetIndex < 0 || targetIndex >= irState.program.steps.length) {
-        throw new Exception(s"[Thread] Invalid jump target index '$targetIndex' in program '${irState.programName}'.")
+  private def validateJumpTargets(irState: ThreadIR.IRState, plan: LayoutPlan): Unit = {
+    for ((step, stepIndex) <- irState.program.steps.zipWithIndex) {
+      val savedLowering = layoutStateScratch.currentLoweringStep
+      layoutStateScratch.currentLoweringStep = stepIndex
+      try {
+        for (effect <- step.effects) {
+          effect match {
+            case JumpEffect(target) =>
+              validateJumpTargetRef(irState, layoutStateScratch, plan, step, target)
+            case _ =>
+          }
+        }
+      } finally {
+        layoutStateScratch.currentLoweringStep = savedLowering
       }
-      val targetStep = irState.program.steps(targetIndex)
-      if (!targetStep.loweredStandalone || targetStep.allocatedAddress < 0) {
-        throw new Exception(
-          s"[Thread] jump target '${targetStep.name}' in program '${irState.programName}' has no standalone code slot.",
-        )
-      }
+    }
+  }
+
+  private val layoutStateScratch = new LayoutState()
+
+  private def validateJumpTargetRef(
+      irState: ThreadIR.IRState,
+      layoutState: LayoutState,
+      plan: LayoutPlan,
+      sourceStep: VirtualStepRecord,
+      target: StepRef,
+  ): Unit = {
+    val targetIndex = ThreadLayout.resolveStepRef(irState, layoutState, target)
+    if (targetIndex < 0 || targetIndex >= irState.program.steps.length) {
+      throw new Exception(s"[Thread] Invalid jump target index '$targetIndex' in program '${irState.programName}'.")
+    }
+    val targetStep = irState.program.steps(targetIndex)
+    if (!plan.standaloneIndices.contains(targetIndex)) {
+      throw new Exception(
+        s"[Thread] jump target '${targetStep.name}' referenced from '${sourceStep.name}' in program '${irState.programName}' has no standalone code slot.",
+      )
     }
   }
 }

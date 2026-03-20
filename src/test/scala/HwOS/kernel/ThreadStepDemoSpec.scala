@@ -19,6 +19,7 @@ class ThreadStepDemoModule extends Module {
     val bindingCount = Output(UInt(8.W))
     val runtimeStateBindingOk = Output(Bool())
     val cursorBindingOk = Output(Bool())
+    val step1HijackDetected = Output(Bool())
   })
 
   io.mark := DontCare
@@ -32,6 +33,7 @@ class ThreadStepDemoModule extends Module {
   io.bindingCount := DontCare
   io.runtimeStateBindingOk := DontCare
   io.cursorBindingOk := DontCare
+  io.step1HijackDetected := DontCare
 
   implicit val kernel: Kernel = new Kernel()
 
@@ -69,6 +71,7 @@ class ThreadStepDemoModule extends Module {
       io.bindingCount := kernel.addressSpace.bindingTableEntries.length.U
       io.runtimeStateBindingOk := (runtime.binding.runtimeStateObject eq runtimeStateObject).B
       io.cursorBindingOk := (runtime.binding.cursorObject eq runtime.cursor.addressObject).B
+      io.step1HijackDetected := prog.stepEffects("step1").contains("hijack").B
     }
   }
 
@@ -83,6 +86,8 @@ class ThreadStepDemoWaitModule extends Module {
     val active = Output(Bool())
     val step1Addr = Output(UInt(8.W))
     val step2Standalone = Output(Bool())
+    val step1HijackDetected = Output(Bool())
+    val step2WaitDetected = Output(Bool())
   })
 
   io.mark := DontCare
@@ -90,6 +95,8 @@ class ThreadStepDemoWaitModule extends Module {
   io.active := DontCare
   io.step1Addr := DontCare
   io.step2Standalone := DontCare
+  io.step1HijackDetected := DontCare
+  io.step2WaitDetected := DontCare
 
   implicit val kernel: Kernel = new Kernel()
 
@@ -121,6 +128,8 @@ class ThreadStepDemoWaitModule extends Module {
       io.active := runtime.stateReg === RuntimeLifecycle.Running.U(runtime.stateReg.getWidth.W)
       io.step1Addr := step1.address.U
       io.step2Standalone := step2.standalone.B
+      io.step1HijackDetected := prog.stepEffects("step1").contains("hijack").B
+      io.step2WaitDetected := prog.stepEffects("step2").contains("wait").B
     }
   }
 
@@ -128,6 +137,34 @@ class ThreadStepDemoWaitModule extends Module {
 }
 
 class ThreadStepDemoSpec extends AnyFlatSpec {
+  "ThreadStepDemo.Program" should "derive hijack suppression directly from pre-analyzed step effects" in {
+    class ThreadStepDemoPlanningModule extends Module {
+      implicit val kernel: Kernel = new Kernel()
+
+      object Init extends HwProcess("Init") {
+        override def entry(): Unit = {
+          val prog = new ThreadStepDemo.Program("PlanningDemo")
+          val action = prog.hijack("step2")
+
+          prog.Step("step1") {
+            action()
+          }
+
+          prog.Step("step2") {}
+          prog.Step("step3") {}
+
+          prog.preAnalyzeOnly()
+          assert(prog.stepEffects("step1").contains("hijack"))
+          assert(prog.plannedStandaloneLabels == Seq("step1", "step3"))
+        }
+      }
+
+      Init.build()
+    }
+
+    _root_.circt.stage.ChiselStage.emitCHIRRTL(new ThreadStepDemoPlanningModule)
+  }
+
   "ThreadStepDemo" should "let hijack(label) return an action that inlines the target step body and removes its standalone slot" in {
     simulate(new ThreadStepDemoModule) { c =>
       c.reset.poke(true.B)
@@ -141,6 +178,7 @@ class ThreadStepDemoSpec extends AnyFlatSpec {
       c.io.bindingCount.expect(1.U)
       c.io.runtimeStateBindingOk.expect(true.B)
       c.io.cursorBindingOk.expect(true.B)
+      c.io.step1HijackDetected.expect(true.B)
 
       c.clock.step()
       c.io.mark.expect(2.U)
@@ -157,6 +195,8 @@ class ThreadStepDemoSpec extends AnyFlatSpec {
 
       c.io.step2Standalone.expect(false.B)
       c.io.active.expect(true.B)
+      c.io.step1HijackDetected.expect(true.B)
+      c.io.step2WaitDetected.expect(true.B)
 
       c.clock.step()
       c.io.mark.expect(1.U)

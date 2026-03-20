@@ -1,11 +1,12 @@
 package HwOS.kernel.system
 
 import chisel3._
-import scala.util.Try // 引入 Try
 import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.debug.{CallStack, ContinuationNaming}
 import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
+import HwOS.kernel.thread.step.{PreLoweringAnalysis, SystemEffect}
+import HwOS.kernel.thread.step.ThreadRuntimeLogic
 
 object SysCall {
   private sealed trait InlineCallMode
@@ -143,6 +144,11 @@ object SysCall {
             s"Use SysCall.Inline(...) only for natural-fallthrough segments.",
         )
       case _ =>
+    }
+
+    if (PreLoweringAnalysis.isActive) {
+      PreLoweringAnalysis.record(SystemEffect.ReturnEffect)
+      return
     }
 
     ContextScope.current match {

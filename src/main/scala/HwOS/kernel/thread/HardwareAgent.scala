@@ -48,6 +48,8 @@ abstract class HardwareThread(
   def importService[T <: HwProcess: ClassTag](serviceName: String): T =
     owner.importService[T](serviceName)
 
+  def debugStepEffects: Map[String, Seq[String]] = Map.empty
+
   private[kernel] def runtimeStart(): Unit
   private[kernel] def runtimeExit(): Unit
   def reset(): Unit

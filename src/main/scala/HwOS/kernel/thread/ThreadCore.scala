@@ -3,6 +3,7 @@ package HwOS.kernel.thread
 import chisel3._
 import HwOS.kernel.context.{ContextScope, ThreadCtx}
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
+import HwOS.kernel.thread.step.SystemEffect
 import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 trait ThreadCore
@@ -39,6 +40,9 @@ trait ThreadCore
 
   override private[kernel] def runtimeExit(): Unit = {
     hasExitPath = true
+    if (HwOS.kernel.thread.step.PreLoweringAnalysis.isActive) {
+      return
+    }
     ThreadRuntimeLogic.exit(runtime)
   }
 
@@ -57,8 +61,24 @@ trait ThreadCore
         step.loweredStandalone,
         step.threadCallStack,
         step.invokedCalls,
+        step.effects.map {
+          case SystemEffect.ReturnEffect   => "return"
+          case SystemEffect.JumpEffect(_)  => "jump"
+          case SystemEffect.HijackEffect(_) => "hijack"
+          case SystemEffect.WaitEffect     => "wait"
+        }.toSeq,
       )
     }
+
+  override def debugStepEffects: Map[String, Seq[String]] =
+    irStateOpt
+      .map(_.program.steps.map(step => step.name -> step.effects.map {
+        case SystemEffect.ReturnEffect    => "return"
+        case SystemEffect.JumpEffect(_)   => "jump"
+        case SystemEffect.HijackEffect(_) => "hijack"
+        case SystemEffect.WaitEffect      => "wait"
+      }.toSeq).toMap)
+      .getOrElse(Map.empty)
 
   override def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
     layoutState.currentDebugRecord.foreach(_.invokedCalls += snapshot)
@@ -98,20 +118,22 @@ trait ThreadCore
     ContextScope.withContext(ThreadCtx(this)) { block }
     ThreadIR.runGlobals(irState)
     if (irState.program.steps.isEmpty) { return }
+    val layoutPlan = ThreadRuntimeLogic.analyzeControl(irState, layoutState)
 
-    val allocatedRuntime = ThreadRuntimeLogic.allocateRuntime(
+    val allocatedRuntime = ThreadRuntimeLogic.materializeRuntime(
       owner = this,
       irState = irState,
       layoutState = layoutState,
+      plan = layoutPlan,
       initialState = RuntimeLifecycle.Idle,
     )
     runtimeContext = Some(allocatedRuntime)
-    ThreadRuntimeLogic.lowerProgram(
+    ThreadRuntimeLogic.lowerRuntime(
       irState = irState,
       layoutState = layoutState,
+      plan = layoutPlan,
       runtime = allocatedRuntime,
     )
-    ThreadLayout.validateJumpTargets(irState)
 
     if (debugEnable) {
       val wasActive = RegNext(active)

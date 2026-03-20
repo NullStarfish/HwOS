@@ -160,10 +160,6 @@ object StructuredControl {
 
     thread.Step(s"${base}_Inc") {
       idx  :=  idx + 1.U
-      thread.hijack(thread.Next)
-    }
-
-    thread.Step(s"${base}_BackEdge") {
       thread.jump(thread.stepRef(s"${base}_Cond"))
     }
 

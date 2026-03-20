@@ -8,6 +8,7 @@ final class DebugStepRecord(
     val isStandalone: Boolean,
     val threadCallStack: Seq[String],
     val invokedCalls: ArrayBuffer[Seq[String]],
+    val effectKinds: Seq[String] = Seq.empty,
 )
 
 private[kernel] trait ThreadDebugApi {

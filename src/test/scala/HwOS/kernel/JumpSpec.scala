@@ -76,4 +76,35 @@ class JumpSpec extends AnyFlatSpec {
       c.io.out.expect(2.U)
     }
   }
+
+  it should "reject jumps to targets that lose their standalone slot via hijack pre-analysis" in {
+    val ex = intercept[Exception] {
+      class InvalidJumpAfterHijackModule extends Module {
+        implicit val kernel: Kernel = new Kernel()
+
+        object Init extends HwProcess("Init") {
+          val worker = createThread("Worker")
+
+          override def entry(): Unit = {
+            worker.entry {
+              worker.Step("Dispatch") {
+                worker.hijack(worker.stepRef("Victim"))
+              }
+              worker.Step("Victim") {}
+              worker.Step("LateJump") {
+                worker.jump(worker.stepRef("Victim"))
+              }
+              SysCall.Return()
+            }
+          }
+        }
+
+        Init.build()
+      }
+
+      _root_.circt.stage.ChiselStage.emitCHIRRTL(new InvalidJumpAfterHijackModule)
+    }
+
+    assert(ex.getMessage.contains("has no standalone code slot"))
+  }
 }
