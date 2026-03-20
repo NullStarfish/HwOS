@@ -1,12 +1,16 @@
 package HwOS.kernel.thread.step
 
-import chisel3.{Module => ChiselModule, RawModule}
+import chisel3.{Bool, Module => ChiselModule, RawModule}
 import chisel3.experimental.UnlocatableSourceInfo
 import HwOS.kernel.system.VirtualStepRecord
 
 private[kernel] object PreLoweringAnalysis {
   private val activeRecord = new ThreadLocal[Option[VirtualStepRecord]] {
     override def initialValue(): Option[VirtualStepRecord] = None
+  }
+
+  private val edgeGuardStack = new ThreadLocal[List[Bool]] {
+    override def initialValue(): List[Bool] = Nil
   }
 
   def isActive: Boolean = activeRecord.get().nonEmpty
@@ -21,8 +25,23 @@ private[kernel] object PreLoweringAnalysis {
     record.effects += effect
   }
 
+  def pushEdgeGuard(cond: Bool): Unit = {
+    edgeGuardStack.set(cond :: edgeGuardStack.get())
+  }
+
+  def currentEdgeGuards: List[Bool] = edgeGuardStack.get()
+
+  def withScopedEdgeGuards[T](block: => T): T = {
+    val saved = edgeGuardStack.get()
+    try block
+    finally {
+      edgeGuardStack.set(saved)
+    }
+  }
+
   def analyzeStep(record: VirtualStepRecord)(block: => Unit): Unit = {
     val saveRecord = activeRecord.get()
+    val saveGuards = edgeGuardStack.get()
     val module = ChiselModule.currentModule.getOrElse(
       throw new Exception("[HwOS] Pre-lowering analysis requires an active Chisel module context."),
     ).asInstanceOf[RawModule]
@@ -32,7 +51,9 @@ private[kernel] object PreLoweringAnalysis {
     val portsBefore = modulePortsSize(module)
 
     record.effects.clear()
+    record.edgeActions.clear()
     activeRecord.set(Some(record))
+    edgeGuardStack.set(Nil)
     try {
       withTempRegion(module, tempRegion) { block }
     } finally {
@@ -46,6 +67,7 @@ private[kernel] object PreLoweringAnalysis {
             s"Step bodies must not create IO during dry-run analysis.",
         )
       }
+      edgeGuardStack.set(saveGuards)
       activeRecord.set(saveRecord)
     }
   }

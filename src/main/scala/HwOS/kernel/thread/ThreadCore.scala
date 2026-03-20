@@ -86,6 +86,18 @@ trait ThreadCore
 
   override val Next: StepRef = StepRef.NextStepRef
 
+  override def Prev: StepRef = {
+    if (HwOS.kernel.thread.step.PreLoweringAnalysis.isActive) {
+      StepRef.NamedStepRef(HwOS.kernel.thread.step.PreLoweringAnalysis.currentRecord.name)
+    } else if (layoutState.currentLoweringStep >= 0) {
+      StepRef.NamedStepRef(irState.program.steps(layoutState.currentLoweringStep).name)
+    } else if (irState.program.steps.nonEmpty) {
+      StepRef.NamedStepRef(irState.program.steps.last.name)
+    } else {
+      throw new Exception(s"[HwOS] Prev is unavailable before any Step is defined in thread '$name'.")
+    }
+  }
+
   override def hijack(target: StepRef): Unit = {
     if (ContextScope.getCurrentThread() != this) {
       throw new Exception("Cannot hijack another thread!")
@@ -106,6 +118,18 @@ trait ThreadCore
       throw new Exception("Cannot jump another thread!")
     }
     ThreadRuntimeLogic.emitJump(irState, layoutState, runtime, target)
+  }
+
+  private[kernel] def recordEdgePatch(target: StepRef)(block: => Unit): Unit = {
+    ThreadRuntimeLogic.recordEdgePatch(irState, layoutState, target, block)
+  }
+
+  private[kernel] def withScopedEdgeGuards[T](block: => T): T = {
+    val saved = layoutState.currentEdgeGuards
+    try block
+    finally {
+      layoutState.currentEdgeGuards = saved
+    }
   }
 
   override def entry(block: => Unit): Unit = {
@@ -166,9 +190,8 @@ trait ThreadCore
     if (ContextScope.getCurrentThread() != this) {
       throw new Exception("waitCondition outside entry")
     }
-    when(!cond) {
-      ThreadRuntimeLogic.emitWaitCondition(irState, layoutState, runtime, false.B)
-    }.otherwise {
+    waitCondition(cond)
+    when(cond) {
       block
     }
   }

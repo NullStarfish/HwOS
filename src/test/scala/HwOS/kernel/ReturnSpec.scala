@@ -109,6 +109,56 @@ class ReturnModule extends Module {
   Init.build()
 }
 
+class EdgePatchedReturnModule extends Module {
+  val io = IO(new Bundle {
+    val allow = Input(Bool())
+    val out = Output(UInt(8.W))
+    val done = Output(Bool())
+    val pc = Output(UInt(8.W))
+  })
+
+  io.out := DontCare
+  io.done := DontCare
+  io.pc := DontCare
+
+  implicit val kernel: Kernel = new Kernel()
+
+  object Init extends HwProcess("Init") {
+    val worker = createThread("Worker")
+    val outReg = RegInit(0.U(8.W))
+
+    override def entry(): Unit = {
+      worker.entry {
+        worker.Step("WaitThenReturn") {
+          outReg := 1.U
+          worker.waitCondition(io.allow)
+          worker.Prev.edge.add {
+            SysCall.Return()
+          }
+          when(io.allow) {
+            outReg := 2.U
+          }
+        }
+        worker.Step("Dead") {
+          outReg := 9.U
+        }
+      }
+
+      val daemon = createLogic("Daemon")
+      daemon.run {
+        when(!worker.active && !worker.done) {
+          SysCall.Inline(SysCall.start(worker))
+        }
+        io.out := outReg
+        io.done := worker.done
+        io.pc := worker.pc
+      }
+    }
+  }
+
+  Init.build()
+}
+
 class ReturnSpec extends AnyFlatSpec {
   "SysCall.Return" should "jump to the explicit caller continuation when Call binds a return target" in {
     simulate(new ReturnModule) { c =>
@@ -175,5 +225,24 @@ class ReturnSpec extends AnyFlatSpec {
     }
 
     _root_.circt.stage.ChiselStage.emitCHIRRTL(new ReturnEffectSummaryModule)
+  }
+
+  it should "allow Prev.edge.add(Return()) to patch the pass edge created after waitCondition" in {
+    simulate(new EdgePatchedReturnModule) { c =>
+      c.reset.poke(true.B)
+      c.io.allow.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      c.clock.step()
+      c.clock.step()
+      c.io.out.expect(1.U)
+      c.io.done.expect(false.B)
+
+      c.io.allow.poke(true.B)
+      c.clock.step()
+      c.io.out.expect(2.U)
+      c.io.done.expect(true.B)
+    }
   }
 }

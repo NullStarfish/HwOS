@@ -5,7 +5,7 @@ import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.debug.{CallStack, ContinuationNaming}
 import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
-import HwOS.kernel.thread.step.{PreLoweringAnalysis, SystemEffect}
+import HwOS.kernel.thread.step.{EdgeGuardContext, EdgePatchAnalysis, PreLoweringAnalysis, SystemEffect}
 import HwOS.kernel.thread.step.ThreadRuntimeLogic
 
 object SysCall {
@@ -35,11 +35,13 @@ object SysCall {
    * 目标线程在此过程中直接获取生成的逻辑所属权。
    */
   def Inline[T](func: HwInline[T]): T = {
-    pushInvokeMode(InlineMode)
-    try {
-      func.emit(ContextScope.getCurrentAgent())
-    } finally {
-      popInvokeMode()
+    EdgeGuardContext.withInlineBoundary {
+      pushInvokeMode(InlineMode)
+      try {
+        func.emit(ContextScope.getCurrentAgent())
+      } finally {
+        popInvokeMode()
+      }
     }
   }
 
@@ -147,6 +149,9 @@ object SysCall {
     }
 
     if (PreLoweringAnalysis.isActive) {
+      if (EdgePatchAnalysis.isActive) {
+        EdgePatchAnalysis.recordReturn(CallStack.currentReturnTarget)
+      }
       PreLoweringAnalysis.record(SystemEffect.ReturnEffect)
       return
     }

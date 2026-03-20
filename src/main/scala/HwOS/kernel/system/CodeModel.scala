@@ -2,6 +2,7 @@ package HwOS.kernel.system
 
 import chisel3._
 import scala.collection.mutable.ArrayBuffer
+import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.SystemEffect
 
 final class GlobalCodeSegment(
@@ -32,6 +33,7 @@ final class VirtualStepRecord(
   var allocatedAddress: Int = -1
   var loweredStandalone: Boolean = true
   val effects: ArrayBuffer[SystemEffect] = ArrayBuffer.empty[SystemEffect]
+  val edgeActions: ArrayBuffer[EdgeAction] = ArrayBuffer.empty[EdgeAction]
 }
 
 final class VirtualProgram(val ownerName: String) {

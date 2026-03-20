@@ -2,7 +2,9 @@ package HwOS.kernel.thread
 
 import chisel3._
 
-sealed trait StepRef
+sealed trait StepRef {
+  def edge: StepEdge = StepEdge(this)
+}
 
 object StepRef {
   final case class NamedStepRef(name: String) extends StepRef
@@ -13,6 +15,7 @@ trait ThreadControlApi {
   // 抽象控制游标。它表示当前状态切片位置，不承诺具体后端必须用物理 PC 实现。
   def pc: UInt
   def Next: StepRef
+  def Prev: StepRef
   def stepRef(name: String): StepRef = StepRef.NamedStepRef(name)
 
   // Step 是最小状态切片。它是 bottom-up 的时序语义，不是更高层 block DSL。

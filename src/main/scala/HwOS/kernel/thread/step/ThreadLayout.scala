@@ -20,6 +20,7 @@ private[kernel] object ThreadLayout {
     var currentLoweringStep: Int = -1
     var currentEntryStep: Int = -1
     var currentDebugRecord: Option[VirtualStepRecord] = None
+    var currentEdgeGuards: List[Bool] = Nil
     val suppressedStandalone = mutable.Set[Int]()
   }
 
@@ -55,17 +56,22 @@ private[kernel] object ThreadLayout {
       irState: ThreadIR.IRState,
       layoutState: LayoutState,
       index: Int,
+      afterBody: => Unit = (),
   ): Unit = {
     val saveLowering = layoutState.currentLoweringStep
     val saveEntry = layoutState.currentEntryStep
     val saveRecord = layoutState.currentDebugRecord
+    val saveGuards = layoutState.currentEdgeGuards
 
     if (layoutState.currentEntryStep < 0) {
       layoutState.currentEntryStep = index
     }
     layoutState.currentLoweringStep = index
     layoutState.currentDebugRecord = Some(irState.program.steps(index))
+    layoutState.currentEdgeGuards = Nil
     irState.program.steps(index).block()
+    afterBody
+    layoutState.currentEdgeGuards = saveGuards
     layoutState.currentDebugRecord = saveRecord
     layoutState.currentLoweringStep = saveLowering
     layoutState.currentEntryStep = saveEntry
