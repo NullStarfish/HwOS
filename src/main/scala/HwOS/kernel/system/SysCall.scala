@@ -5,7 +5,7 @@ import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.debug.{CallStack, ContinuationNaming}
 import HwOS.kernel.function.{HwFunction, HwInline}
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
-import HwOS.kernel.thread.step.EdgeAction.ReturnMeta
+import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.{EdgeGuardContext, EdgePatchAnalysis, PreLoweringAnalysis}
 import HwOS.kernel.thread.step.ThreadRuntimeLogic
 
@@ -149,12 +149,13 @@ object SysCall {
       case _ =>
     }
 
+    if (EdgePatchAnalysis.isActive) {
+      EdgePatchAnalysis.recordReturn(CallStack.currentReturnTarget)
+      return
+    }
+
     if (PreLoweringAnalysis.isActive) {
-      if (EdgePatchAnalysis.isActive) {
-        EdgePatchAnalysis.recordReturn(CallStack.currentReturnTarget)
-      } else {
-        PreLoweringAnalysis.record(ReturnMeta)
-      }
+      PreLoweringAnalysis.record(EdgeAction.Return())
       return
     }
 

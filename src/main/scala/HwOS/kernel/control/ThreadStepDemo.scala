@@ -4,7 +4,7 @@ import chisel3._
 import HwOS.kernel.context.HwContextEntity
 import HwOS.kernel.system.{Kernel, RuntimeContext}
 import HwOS.kernel.thread.{StepRef}
-import HwOS.kernel.thread.step.EdgeAction.{HijackMeta, JumpAction, JumpMeta, ReturnAction, ReturnMeta, WaitMeta}
+import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.{PreLoweringAnalysis, ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 object ThreadStepDemo {
@@ -27,7 +27,7 @@ object ThreadStepDemo {
     def hijack(target: StepRef): HijackAction =
       ThreadIR.defineHijack(irState) {
         if (PreLoweringAnalysis.isActive) {
-          PreLoweringAnalysis.record(HijackMeta(target))
+          PreLoweringAnalysis.record(EdgeAction.Hijack(target))
         } else {
           ThreadLayout.lowerStepAt(irState, layoutState, ThreadLayout.resolveStepRef(irState, layoutState, target))
         }
@@ -79,12 +79,7 @@ object ThreadStepDemo {
         .find(_.name == stepName)
         .toSeq
         .flatMap(_.edgeActions)
-        .map {
-          case ReturnMeta | ReturnAction(_, _) => "return"
-          case JumpMeta(_) | JumpAction(_, _) => "jump"
-          case HijackMeta(_) => "hijack"
-          case WaitMeta => "wait"
-        }
+        .map(_.kindName)
 
     def runtime: RuntimeContext =
       layoutState.runtimeContext.getOrElse(throw new Exception(s"[ThreadStepDemo] Program '$name' has not been built yet."))

@@ -40,6 +40,7 @@ object StructuredControl {
     private def exitStepName(index: Int): String = s"${base}_${branches(index).label}_Exit"
 
     private def lower(elseBody: Option[() => Unit]): Unit = {
+      val endRef = thread.stepRef(s"${base}_End")
       for ((branch, index) <- branches.zipWithIndex) {
         val nextFailTarget =
           if (index + 1 < branches.length) condStepName(index + 1)
@@ -52,10 +53,18 @@ object StructuredControl {
           }
         }
 
+        val beforeBody = thread.Prev
         branch.body()
+        val afterBody = thread.Prev
 
-        thread.Step(exitStepName(index)) {
-          thread.jump(thread.stepRef(s"${base}_End"))
+        if (afterBody != beforeBody) {
+          afterBody.edge.add {
+            thread.jump(endRef)
+          }
+        } else {
+          thread.Step(exitStepName(index)) {
+            thread.jump(endRef)
+          }
         }
       }
 
@@ -64,10 +73,18 @@ object StructuredControl {
           thread.hijack(thread.Next)
         }
 
+        val beforeBody = thread.Prev
         body()
+        val afterBody = thread.Prev
 
-        thread.Step(s"${base}_ElseExit") {
-          thread.jump(thread.stepRef(s"${base}_End"))
+        if (afterBody != beforeBody) {
+          afterBody.edge.add {
+            thread.jump(endRef)
+          }
+        } else {
+          thread.Step(s"${base}_ElseExit") {
+            thread.jump(endRef)
+          }
         }
       }
 
@@ -97,6 +114,7 @@ object StructuredControl {
   def While(thread: HardwareThread, prefix: String, cond: => Bool)(body: LoopControl => Unit): Unit = {
     val base = freshBase(thread, prefix)
     val loop = new LoopControl(thread, breakTarget = s"${base}_End", continueTarget = s"${base}_Cond")
+    val condRef = thread.stepRef(s"${base}_Cond")
 
     thread.Step(s"${base}_Cond") {
       when(!cond) {
@@ -104,10 +122,18 @@ object StructuredControl {
       }
     }
 
+    val beforeBody = thread.Prev
     body(loop)
+    val afterBody = thread.Prev
 
-    thread.Step(s"${base}_BodyExit") {
-      thread.jump(thread.stepRef(s"${base}_Cond"))
+    if (afterBody != beforeBody) {
+      afterBody.edge.add {
+        thread.jump(condRef)
+      }
+    } else {
+      thread.Step(s"${base}_BodyExit") {
+        thread.jump(condRef)
+      }
     }
 
     thread.Step(s"${base}_End") {}

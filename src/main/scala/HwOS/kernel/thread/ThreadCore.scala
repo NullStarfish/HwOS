@@ -3,7 +3,7 @@ package HwOS.kernel.thread
 import chisel3._
 import HwOS.kernel.context.{ContextScope, ThreadCtx}
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
-import HwOS.kernel.thread.step.EdgeAction.{HijackMeta, JumpAction, JumpMeta, ReturnAction, ReturnMeta, WaitMeta}
+import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 trait ThreadCore
@@ -70,22 +70,8 @@ trait ThreadCore
       .map(_.program.steps.map(step => step.name -> edgeActionNames(step.edgeActions.toSeq).toSeq).toMap)
       .getOrElse(Map.empty)
 
-  private def edgeActionNames(actions: Seq[HwOS.kernel.thread.step.EdgeAction]): Seq[String] =
-    actions.flatMap {
-      case ReturnMeta | ReturnAction(_, _) => Seq("return")
-      case JumpMeta(_) | JumpAction(_, _) => Seq("jump")
-      case HijackMeta(_) => Seq("hijack")
-      case WaitMeta => Seq("wait")
-    }
-
-  private[kernel] def withScopedEdgeGuards[T](block: => T): T = {
-    val saved = layoutState.currentEdgeGuards
-    layoutState.currentEdgeGuards = Nil
-    try block
-    finally {
-      layoutState.currentEdgeGuards = saved
-    }
-  }
+  private def edgeActionNames(actions: Seq[EdgeAction]): Seq[String] =
+    actions.map(_.kindName)
 
   override def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
     layoutState.currentDebugRecord.foreach(_.invokedCalls += snapshot)

@@ -32,12 +32,12 @@ private[kernel] object EdgePatchAnalysis {
 
   def recordReturn(returnTarget: Option[String]): Unit = {
     val patch = current
-    patch.record.edgeActions += EdgeAction.ReturnAction(patch.guardDepth, returnTarget)
+    patch.record.edgeActions += EdgeAction.Return(patch.guardDepth, returnTarget, emitInLowering = true)
   }
 
   def recordJump(target: StepRef): Unit = {
     val patch = current
-    patch.record.edgeActions += EdgeAction.JumpAction(patch.guardDepth, target)
+    patch.record.edgeActions += EdgeAction.Jump(patch.guardDepth, target, emitInLowering = true)
   }
 
   private def current: ActivePatch =

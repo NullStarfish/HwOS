@@ -31,6 +31,7 @@ final class VirtualStepRecord(
 ) {
   var allocatedAddress: Int = -1
   var loweredStandalone: Boolean = true
+  val staticEdgeActions: ArrayBuffer[EdgeAction] = ArrayBuffer.empty[EdgeAction]
   val edgeActions: ArrayBuffer[EdgeAction] = ArrayBuffer.empty[EdgeAction]
 }
 

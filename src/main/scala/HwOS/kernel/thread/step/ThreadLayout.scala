@@ -4,7 +4,7 @@ import chisel3._
 import scala.collection.mutable
 import HwOS.kernel.system.{RuntimeContext, VirtualStepRecord}
 import HwOS.kernel.thread.StepRef
-import HwOS.kernel.thread.step.EdgeAction.{HijackMeta, JumpAction, JumpMeta, ReturnAction, ReturnMeta, WaitMeta}
+import HwOS.kernel.thread.step.EdgeAction
 
 private[kernel] object ThreadLayout {
   final case class StepLayout(name: String, address: Int, standalone: Boolean)
@@ -114,10 +114,8 @@ private[kernel] object ThreadLayout {
       layoutState.currentLoweringStep = index
       try {
         for (effect <- step.edgeActions) {
-          effect match {
-            case HijackMeta(target) =>
-              layoutState.suppressedStandalone += resolveStepRef(irState, layoutState, target)
-            case _ =>
+          effect.hijackTarget.foreach { target =>
+            layoutState.suppressedStandalone += resolveStepRef(irState, layoutState, target)
           }
         }
       } finally {
@@ -135,10 +133,7 @@ private[kernel] object ThreadLayout {
     val plan = LayoutPlan(
       suppressedStandalone = layoutState.suppressedStandalone.toSet,
       standaloneIndices = standalone,
-      hasReturningStep = irState.program.steps.exists(_.edgeActions.exists {
-        case ReturnMeta | ReturnAction(_, _) => true
-        case _ => false
-      }),
+      hasReturningStep = irState.program.steps.exists(_.edgeActions.exists(_.isReturning)),
     )
     validateJumpTargets(irState, plan)
     plan
@@ -172,14 +167,8 @@ private[kernel] object ThreadLayout {
       layoutStateScratch.currentLoweringStep = stepIndex
       try {
         for (effect <- step.edgeActions) {
-          effect match {
-            case JumpMeta(target) =>
-              validateJumpTargetRef(irState, layoutStateScratch, plan, step, target)
-            case JumpAction(_, target) =>
-              validateJumpTargetRef(irState, layoutStateScratch, plan, step, target)
-            case WaitMeta =>
-            case ReturnMeta | ReturnAction(_, _) | HijackMeta(_) =>
-            case _ =>
+          effect.jumpTarget.foreach { target =>
+            validateJumpTargetRef(irState, layoutStateScratch, plan, step, target)
           }
         }
       } finally {

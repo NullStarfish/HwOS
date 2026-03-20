@@ -51,7 +51,9 @@ private[kernel] object PreLoweringAnalysis {
     val idsBefore = ids.length
     val portsBefore = modulePortsSize(module)
 
+    val staticActions = record.staticEdgeActions.toVector
     record.edgeActions.clear()
+    record.edgeActions ++= staticActions
     activeRecord.set(Some(record))
     edgeGuardStack.set(Nil)
     try {
