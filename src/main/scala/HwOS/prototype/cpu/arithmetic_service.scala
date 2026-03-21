@@ -8,7 +8,7 @@ import chisel3.util._
 
 final class ArithmeticServiceProcess(val maxClients: Int, val ports: Int, localName: String)(implicit kernel: Kernel)
     extends HwProcess(localName) {
-  private case class ExecuteReq(pending: Bool, completed: Bool, lhs: UInt, rhs: UInt, result: UInt)
+  private case class ExecuteReq(pending: Bool, inFlight: Bool, completed: Bool, lhs: UInt, rhs: UInt, result: UInt)
   private case class ServerSlot(
       thread: HwOS.kernel.thread.HardwareThread,
       lhs: UInt,
@@ -21,6 +21,7 @@ final class ArithmeticServiceProcess(val maxClients: Int, val ports: Int, localN
   private val requests = Array.tabulate(maxClients max 1) { _ =>
     ExecuteReq(
       pending = RegInit(false.B),
+      inFlight = RegInit(false.B),
       completed = RegInit(false.B),
       lhs = RegInit(0.U(32.W)),
       rhs = RegInit(0.U(32.W)),
@@ -91,16 +92,18 @@ final class ArithmeticServiceProcess(val maxClients: Int, val ports: Int, localN
 
   def RequestExecute(clientId: Int, lhs: UInt, rhs: UInt): HwInline[UInt] = HwInline.atomic(s"${name}_RequestExecute_$clientId") { t =>
     val req = requests(clientId)
-    t.waitCondition(!req.pending)
-    when(!req.pending) {
+    t.waitCondition(!req.inFlight)
+    when(!req.inFlight) {
       req.lhs := lhs
       req.rhs := rhs
       req.completed := false.B
       req.pending := true.B
+      req.inFlight := true.B
     }
     t.waitCondition(req.completed)
     when(req.completed) {
       req.completed := false.B
+      req.inFlight := false.B
       SysCall.Return()
     }
     req.result

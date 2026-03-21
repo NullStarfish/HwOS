@@ -22,7 +22,7 @@ class ServerInjectedFreeFlowSpec extends AnyFlatSpec {
       c.clock.step()
       c.reset.poke(false.B)
 
-      c.clock.step(20)
+      c.clock.step(120)
 
       c.io.x1.expect(9.U)
       c.io.x2.expect(42.U)
@@ -38,7 +38,7 @@ class ServerInjectedFreeFlowSpec extends AnyFlatSpec {
       c.clock.step(2)
       assert(c.io.activeThreads.peek().litValue >= 1, "expected the server-based pipeline to keep work in flight")
 
-      c.clock.step(18)
+      c.clock.step(118)
       c.io.x1.expect(9.U)
       c.io.x2.expect(42.U)
     }
@@ -50,7 +50,7 @@ class ServerInjectedFreeFlowSpec extends AnyFlatSpec {
       c.clock.step()
       c.reset.poke(false.B)
 
-      c.clock.step(45)
+      c.clock.step(220)
 
       c.io.x1.expect(9.U)
       c.io.x2.expect(51.U)

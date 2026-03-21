@@ -17,7 +17,7 @@ private object DecodePathSegments {
       imm: UInt,
       decodedSrc: UInt,
   ): HwInline[UInt] = HwInline.thread(s"AddiPath_$serverId") { tx =>
-    def withReservedWrite(writePort: ScoreboardRegfileProcess#RegWritePort, targetRd: UInt, entryLabel: String)(
+    def withReservedWrite(writePort: AgeOrderedScoreboardRegfileProcess#OrderedRegWritePort, targetRd: UInt, entryLabel: String)(
         body: => UInt
     ): UInt = {
       tx.Step(entryLabel) {
@@ -26,7 +26,7 @@ private object DecodePathSegments {
       body
     }
 
-    val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
+    val regFile = tx.importService[AgeOrderedScoreboardRegfileProcess]("RegFile")
     val arith = tx.importService[ArithmeticServiceProcess]("Arithmetic")
     val pathResult = arith.ResultRef(serverId)
     val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
@@ -36,12 +36,7 @@ private object DecodePathSegments {
         decodedSrc := SysCall.Inline(regFile.Read(rs1))
       }
       tx.Step(s"ArithExec_$serverId") {
-        SysCall.Call(arith.RequestExecute(serverId, decodedSrc, imm), s"AddiReturn_$serverId")
-      }
-      tx.Step(s"AddiReturn_$serverId") {
-      }
-      tx.Prev.edge.add {
-        SysCall.Return()
+        SysCall.Call(arith.RequestExecute(serverId, decodedSrc, imm))
       }
       pathResult
     }
@@ -53,7 +48,7 @@ private object DecodePathSegments {
       imm: UInt,
   ): HwInline[UInt] = HwInline.thread(s"LoadPath_$serverId") { tx =>
     val load = tx.importService[LoadServiceProcess]("Load")
-    val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
+    val regFile = tx.importService[AgeOrderedScoreboardRegfileProcess]("RegFile")
     val pathResult = load.ResultRef(serverId)
     val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
 
@@ -61,12 +56,7 @@ private object DecodePathSegments {
       SysCall.Inline(writePort.Reserve(rd))
     }
     tx.Step(s"LoadExec_$serverId") {
-      SysCall.Call(load.RequestLoad(serverId, imm), s"LoadReturn_$serverId")
-    }
-    tx.Step(s"LoadReturn_$serverId") {
-    }
-    tx.Prev.edge.add {
-      SysCall.Return()
+      SysCall.Call(load.RequestLoad(serverId, imm))
     }
     pathResult
   }
@@ -79,7 +69,7 @@ private object DecodePathSegments {
       decodedSrc: UInt,
       loadedValue: UInt,
   ): HwInline[UInt] = HwInline.thread(s"LoadAddPath_$serverId") { tx =>
-    val regFile = tx.importService[ScoreboardRegfileProcess]("RegFile")
+    val regFile = tx.importService[AgeOrderedScoreboardRegfileProcess]("RegFile")
     val load = tx.importService[LoadServiceProcess]("Load")
     val arith = tx.importService[ArithmeticServiceProcess]("Arithmetic")
     val pathResult = arith.ResultRef(serverId)
@@ -95,12 +85,7 @@ private object DecodePathSegments {
       decodedSrc := SysCall.Inline(regFile.Read(rs1))
     }
     tx.Step(s"LoadAddArithExec_$serverId") {
-      SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc), s"LoadAddReturn_$serverId")
-    }
-    tx.Step(s"LoadAddReturn_$serverId") {
-    }
-    tx.Prev.edge.add {
-      SysCall.Return()
+      SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc))
     }
     pathResult
   }
@@ -114,11 +99,11 @@ final class ServerDecodeProcess(
     localName: String,
 )(implicit kernel: Kernel)
     extends HwProcess(localName) {
-  val regFile = spawn(new ScoreboardRegfileProcess(8, 32, maxServers max 1, zeroReg = true, "RegFile"))
+  val regFile = spawn(new AgeOrderedScoreboardRegfileProcess(8, 32, maxServers max 1, maxServers max 1, zeroReg = true, "RegFile"))
   private val arith = spawn(new ArithmeticServiceProcess(maxServers max 1, 1, "Arithmetic"))
   private val load = spawn(new LoadServiceProcess(maxServers max 1, 1, initData, "Load"))
 
-  private case class ClientReq(pending: Bool, completed: Bool, instBits: UInt)
+  private case class ClientReq(pending: Bool, inFlight: Bool, completed: Bool, instBits: UInt)
   private case class ServerSlot(
       thread: HardwareThread,
       instArg: UInt,
@@ -131,6 +116,7 @@ final class ServerDecodeProcess(
   private val clientReqs = Array.tabulate(maxClients max 1) { _ =>
     ClientReq(
       pending = RegInit(false.B),
+      inFlight = RegInit(false.B),
       completed = RegInit(false.B),
       instBits = RegInit(0.U(ISA.instWidth.W)),
     )
@@ -255,15 +241,17 @@ final class ServerDecodeProcess(
 
   def RequestDecode(clientId: Int, instBits: UInt): HwInline[Unit] = HwInline.atomic(s"${name}_RequestDecode_$clientId") { t =>
     val req = clientReqs(clientId)
-    t.waitCondition(!req.pending)
-    when(!req.pending) {
+    t.waitCondition(!req.inFlight)
+    when(!req.inFlight) {
       req.instBits := instBits
       req.completed := false.B
       req.pending := true.B
+      req.inFlight := true.B
     }
     t.waitCondition(req.completed)
     when(req.completed) {
       req.completed := false.B
+      req.inFlight := false.B
       SysCall.Return()
     }
     ()

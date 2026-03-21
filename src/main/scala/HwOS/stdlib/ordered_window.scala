@@ -33,6 +33,12 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
       VecInit((0 until maxClients).map(i => reqs(i).forceCommit && entries(i).active && entries(i).commitPending && entries(i).token === nextCommit)).asUInt
     )
 
+  private def reclaimRequests: UInt =
+    VecInit((0 until maxClients).map(i => reqs(i).reclaim && entries(i).active)).asUInt
+
+  private def reclaimHead(reclaimOH: UInt): Bool =
+    VecInit((0 until maxClients).map(i => reclaimOH(i) && entries(i).token === nextCommit)).asUInt.orR
+
   override def entry(): Unit = {
     val daemon = createLogic("OrderDaemon")
 
@@ -41,8 +47,10 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
       val reserveFire = reserveGrantOH.orR
       val forceCommitOH = forceCommitRequests
       val commitFire = forceCommitOH.orR
-      val reclaimOH = VecInit((0 until maxClients).map(i => reqs(i).reclaim && entries(i).active)).asUInt
+      val reclaimOH = reclaimRequests
       val reclaimCount = PopCount(reclaimOH)
+      val reserveDelta = Mux(reserveFire, 1.U, 0.U)
+      val commitDelta = Mux(commitFire, 1.U, 0.U)
 
       for ((entry, i) <- entries.zipWithIndex) {
         when(reserveGrantOH(i)) {
@@ -66,12 +74,11 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
         when(commitFire) {
           nextCommit := nextCommit + 1.U
         }.otherwise {
-          val reclaimHead = VecInit((0 until maxClients).map(i => reclaimOH(i) && entries(i).token === nextCommit)).asUInt.orR
-          when(reclaimHead) {
+          when(reclaimHead(reclaimOH)) {
             nextCommit := nextCommit + 1.U
           }
         }
-        inFlight := inFlight + Mux(reserveFire, 1.U, 0.U) - Mux(commitFire, 1.U, 0.U) - reclaimCount
+        inFlight := inFlight + reserveDelta - commitDelta - reclaimCount
       }.elsewhen(reserveFire) {
         inFlight := inFlight + 1.U
       }
@@ -116,24 +123,29 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
     leases(id)
   }
 
+  private def withLease[T](id: Int, bindingName: String)(body: WindowLease => T): HwInline[T] =
+    HwInline.bindings(bindingName) { _ =>
+      body(leases(id))
+    }
+
   // Facade-first API
   def Reserve(id: Int): HwInline[Unit] = HwInline.atomic(s"WindowReserve_$id") { _ =>
-    val lease = SysCall.Inline(RequestLease(id))
+    val lease = SysCall.Inline(withLease(id, s"WindowReserveLease_$id")(identity))
     SysCall.Inline(lease.Reserve())
   }
 
   def Commit(id: Int): HwInline[Unit] = HwInline.stateless(s"WindowCommit_$id") { _ =>
-    val lease = SysCall.Inline(RequestLease(id))
+    val lease = SysCall.Inline(withLease(id, s"WindowCommitLease_$id")(identity))
     SysCall.Inline(lease.Commit())
   }
 
   def Committed(id: Int): HwInline[Bool] = HwInline.stateless(s"WindowCommitted_$id") { _ =>
-    val lease = SysCall.Inline(RequestLease(id))
+    val lease = SysCall.Inline(withLease(id, s"WindowCommittedLease_$id")(identity))
     SysCall.Inline(lease.Committed())
   }
 
   def ForceCommit(id: Int): HwInline[Unit] = HwInline.stateless(s"WindowForceCommit_$id") { _ =>
-    val lease = SysCall.Inline(RequestLease(id))
+    val lease = SysCall.Inline(withLease(id, s"WindowForceCommitLease_$id")(identity))
     SysCall.Inline(lease.ForceCommit())
   }
 }

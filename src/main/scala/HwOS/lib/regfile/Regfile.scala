@@ -178,8 +178,17 @@ object RegfileLib {
     private def matchingPorts(addr: UInt, requireReady: Bool): Vec[Bool] =
       VecInit(pendingPorts.toIndexedSeq.map(p => p.busy && p.addr === addr && (!requireReady || p.ready)))
 
+    private def pendingPort(portIdx: Int): PendingPort = pendingPorts(portIdx)
+
+    private def clearPublishState(portIdx: Int): Unit = {
+      val pending = pendingPort(portIdx)
+      pending.busy := false.B
+      pending.ready := false.B
+      publishDone(portIdx) := true.B
+    }
+
     private def BeginPendingWrite(portIdx: Int, addr: UInt): HwInline[Unit] = HwInline.atomic(s"BeginPendingWrite_$portIdx") { t =>
-      val pending = pendingPorts(portIdx)
+      val pending = pendingPort(portIdx)
       pending.busy  :=  true.B
       pending.addr  :=  addr
       pending.ready  :=  false.B
@@ -188,32 +197,32 @@ object RegfileLib {
     }
 
     private def FinishPendingWrite(portIdx: Int, data: UInt): HwInline[Unit] = HwInline.atomic(s"FinishPendingWrite_$portIdx") { t =>
-      val pending = pendingPorts(portIdx)
+      val pending = pendingPort(portIdx)
       pending.data  :=  data
       pending.ready  :=  true.B
       ()
     }
 
+    private def publishPendingWrite(portIdx: Int): Unit = {
+      val pending = pendingPort(portIdx)
+      val writePort = SysCall.Inline(semaReg.RequestWritePort(portIdx))
+      val sbLease = SysCall.Inline(scoreboard.RequestLease(portIdx))
+      val windowLease = SysCall.Inline(orderWindow.RequestLease(portIdx))
+      SysCall.Inline(writePort.Write(pending.addr, pending.data))
+      SysCall.Inline(sbLease.Release())
+      SysCall.Inline(writePort.Release())
+      SysCall.Inline(windowLease.ForceCommit())
+      clearPublishState(portIdx)
+    }
+
     override def entry(): Unit = {
       val daemon = createLogic("OrderedWriteDaemon")
-      for (pending <- pendingPorts) {
-        }
-      for (done <- publishDone) {
-        }
 
       daemon.run {
         for ((pending, i) <- pendingPorts.zipWithIndex) {
           val windowLease = SysCall.Inline(orderWindow.RequestLease(i))
           when(pending.busy && pending.ready && SysCall.Inline(windowLease.Committed())) {
-            val writePort = SysCall.Inline(semaReg.RequestWritePort(i))
-            SysCall.Inline(writePort.Write(pending.addr, pending.data))
-            val sbLease = SysCall.Inline(scoreboard.RequestLease(i))
-            SysCall.Inline(sbLease.Release())
-            SysCall.Inline(writePort.Release())
-            SysCall.Inline(windowLease.ForceCommit())
-            pending.busy  :=  false.B
-            pending.ready  :=  false.B
-            publishDone(i)  :=  true.B
+            publishPendingWrite(i)
           }
         }
       }
@@ -225,13 +234,16 @@ object RegfileLib {
     def GuardedRead(addr: UInt): HwInline[UInt] = HwInline.atomic("OrderedGuardedRead") { t =>
       val matchingReady = matchingPorts(addr, requireReady = true.B)
       val matchingBusy = matchingPorts(addr, requireReady = false.B)
-      val canRead = (if (zeroReg) addr === 0.U else false.B) || !matchingBusy.asUInt.orR || matchingReady.asUInt.orR
+      val isZero = if (zeroReg) addr === 0.U else false.B
+      val hasPendingReady = matchingReady.asUInt.orR
+      val hasPendingBusy = matchingBusy.asUInt.orR
+      val canRead = isZero || !hasPendingBusy || hasPendingReady
       t.waitCondition(canRead)
 
       val rdata = (WireInit(0.U(width.W)))
-      when(if (zeroReg) addr === 0.U else false.B) {
+      when(isZero) {
         rdata  :=  0.U
-      }.elsewhen(matchingReady.asUInt.orR) {
+      }.elsewhen(hasPendingReady) {
         rdata  :=  Mux1H(matchingReady, VecInit(pendingPorts.toIndexedSeq.map(_.data)))
       }.otherwise {
         rdata  :=  SysCall.Inline(semaReg.Read(addr))

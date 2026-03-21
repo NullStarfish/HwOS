@@ -23,13 +23,14 @@ final class ServerFetchProcess(
   val slots = program.indices.map { i =>
     val thread = createThread(s"Client${i}_req")
     val instArg = RegInit(0.U(ISA.instWidth.W))
-    new Slot(i, thread, instArg)
+    val issued = RegInit(false.B)
+    (new Slot(i, thread, instArg), issued)
   }
 
   override def entry(): Unit = {
     require(issueWidth == 2, "Current MVP keeps only 1-bit intra-bundle order")
 
-    for (slot <- slots) {
+    for ((slot, _) <- slots) {
       slot.thread.entry {
         slot.thread.Step(s"SubmitDecode_${slot.slotId}") {
           SysCall.Call(decode.RequestDecode(slot.slotId, slot.instArg), s"Retire_${slot.slotId}")
@@ -40,7 +41,7 @@ final class ServerFetchProcess(
     }
 
     launcher.run {
-      val freeVec = VecInit(slots.map(slot => !slot.thread.active))
+      val freeVec = VecInit(slots.map { case (slot, issued) => !slot.thread.active && !issued })
       val launchPlan = Seq(
         freeVec,
         VecInit(slots.indices.map(idx => freeVec(idx) && !PriorityEncoderOH(freeVec.asUInt)(idx)))
@@ -50,9 +51,10 @@ final class ServerFetchProcess(
         val slotFire = (fetchPtr + laneIdx.U) < program.length.U && slotOH.orR
         val inst = programRom((fetchPtr + laneIdx.U)(log2Ceil(program.length max 2) - 1, 0))
         when(slotFire) {
-          for ((slot, idx) <- slots.zipWithIndex) {
+          for (((slot, issued), idx) <- slots.zipWithIndex) {
             when(slotOH(idx)) {
               slot.instArg := inst
+              issued := true.B
               SysCall.Inline(SysCall.start(slot.thread))
             }
           }
@@ -68,6 +70,6 @@ final class ServerFetchProcess(
   }
 
   def ActiveThreadCount(): HwInline[UInt] = HwInline.stateless(s"${name}_ActiveThreadCount") { _ =>
-    PopCount(slots.map(_.thread.active)) + SysCall.Inline(decode.ActiveServerCount())
+    PopCount(slots.map(_._1.thread.active)) + SysCall.Inline(decode.ActiveServerCount())
   }
 }

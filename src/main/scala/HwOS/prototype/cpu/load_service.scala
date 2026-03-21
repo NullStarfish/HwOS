@@ -11,7 +11,7 @@ final class LoadServiceProcess(val maxClients: Int, val ports: Int, val initData
   private val memDepth = 16
   private val mem = RegInit(VecInit((0 until memDepth).map(i => initData.lift(i).getOrElse(0).U(32.W))))
 
-  private case class LoadReq(pending: Bool, completed: Bool, addr: UInt, result: UInt)
+  private case class LoadReq(pending: Bool, inFlight: Bool, completed: Bool, addr: UInt, result: UInt)
   private case class ServerSlot(
       thread: HwOS.kernel.thread.HardwareThread,
       addr: UInt,
@@ -23,6 +23,7 @@ final class LoadServiceProcess(val maxClients: Int, val ports: Int, val initData
   private val requests = Array.tabulate(maxClients max 1) { _ =>
     LoadReq(
       pending = RegInit(false.B),
+      inFlight = RegInit(false.B),
       completed = RegInit(false.B),
       addr = RegInit(0.U(32.W)),
       result = RegInit(0.U(32.W)),
@@ -101,15 +102,17 @@ final class LoadServiceProcess(val maxClients: Int, val ports: Int, val initData
 
   def RequestLoad(clientId: Int, addr: UInt): HwInline[UInt] = HwInline.atomic(s"${name}_RequestLoad_$clientId") { t =>
     val req = requests(clientId)
-    t.waitCondition(!req.pending)
-    when(!req.pending) {
+    t.waitCondition(!req.inFlight)
+    when(!req.inFlight) {
       req.addr := addr
       req.completed := false.B
       req.pending := true.B
+      req.inFlight := true.B
     }
     t.waitCondition(req.completed)
     when(req.completed) {
       req.completed := false.B
+      req.inFlight := false.B
       SysCall.Return()
     }
     req.result
