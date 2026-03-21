@@ -1,5 +1,6 @@
 package HwOS.kernel.thread
 
+import HwOS.kernel.thread.step.EdgeAction
 import scala.collection.mutable.ArrayBuffer
 
 final class DebugStepRecord(
@@ -14,5 +15,9 @@ final class DebugStepRecord(
 private[kernel] trait ThreadDebugApi {
   def debugSteps: Seq[DebugStepRecord]
   def hasReturningStep: Boolean
+  def debugStepActions: Map[String, Seq[EdgeAction]]
   def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit
+  def markExplicitReturnEncountered(): Unit
+  def registerCallSiteReturnRequirement(callSite: HwOS.kernel.debug.CallStack.CallSiteSnapshot): Unit
+  def markCallSiteReturned(callSiteId: Int): Unit
 }

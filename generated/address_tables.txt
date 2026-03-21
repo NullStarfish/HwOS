@@ -1,17 +1,26 @@
 State Table
-owner | object | space | kind | start | span | end_exclusive | signal
-------+--------+-------+------+-------+------+---------------+-------
-0 entries
+owner                                     | object                                                          | space | kind  | start | span | end_exclusive | signal                                      
+------------------------------------------+-----------------------------------------------------------------+-------+-------+-------+------+---------------+---------------------------------------------
+Init/FnKillProc/Blocker_activation_thread | Init/FnKillProc/Blocker_activation_thread_runtime_cursor        | state | state | 0     | 2    | 2             | HwFunctionKillModule.cursorReg: Reg[UInt<2>]
+Init/FnKillProc/Blocker_activation_thread | Init/FnKillProc/Blocker_activation_thread_runtime_runtime_state | state | state | 2     | 2    | 4             | HwFunctionKillModule.stateReg: Reg[UInt<2>] 
+Init/FnKillProc/Worker_thread             | Init/FnKillProc/Worker_thread_runtime_cursor                    | state | state | 4     | 3    | 7             | HwFunctionKillModule.cursorReg: Reg[UInt<3>]
+Init/FnKillProc/Worker_thread             | Init/FnKillProc/Worker_thread_runtime_runtime_state             | state | state | 7     | 2    | 9             | HwFunctionKillModule.stateReg: Reg[UInt<2>] 
+Init/FnKillProc/Controller_thread         | Init/FnKillProc/Controller_thread_runtime_cursor                | state | state | 9     | 5    | 14            | HwFunctionKillModule.cursorReg: Reg[UInt<5>]
+Init/FnKillProc/Controller_thread         | Init/FnKillProc/Controller_thread_runtime_runtime_state         | state | state | 14    | 2    | 16            | HwFunctionKillModule.stateReg: Reg[UInt<2>] 
 
 Code Table
-owner | segment | space | code_start | span | code_entry | labels | addresses
-------+---------+-------+------------+------+------------+--------+----------
-0 entries
+owner                                     | segment                                           | space | code_start | span | code_entry | labels                                                                                                          | addresses                                                                                                                               
+------------------------------------------+---------------------------------------------------+-------+------------+------+------------+-----------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------
+Init/FnKillProc/Blocker_activation_thread | Init/FnKillProc/Blocker_activation_thread_segment | code  | 0          | 4    | 0          | [Acquire, WaitRelease, Commit, Anon_Return_to_ThreadExit]                                                       | {Acquire=0, WaitRelease=1, Commit=2, Anon_Return_to_ThreadExit=3}                                                                       
+Init/FnKillProc/Worker_thread             | Init/FnKillProc/Worker_thread_segment             | code  | 4          | 4    | 4          | [Init, Blocker_Blocker_CallWait_to_AfterCall, AfterCall, Anon_Return_to_ThreadExit]                             | {Init=4, Blocker_Blocker_CallWait_to_AfterCall=5, AfterCall=6, Anon_Return_to_ThreadExit=7}                                             
+Init/FnKillProc/Controller_thread         | Init/FnKillProc/Controller_thread_segment         | code  | 8          | 9    | 8          | [Start1, Gap1, Gap2, Kill1, ObserveKill1, ObserveKill2, ReleaseAndRestart, WaitDone, Anon_Return_to_ThreadExit] | {Start1=8, Gap1=9, Gap2=10, Kill1=11, ObserveKill1=12, ObserveKill2=13, ReleaseAndRestart=14, WaitDone=15, Anon_Return_to_ThreadExit=16}
 
 Binding Table
-binding | owner | cursor_object | cursor_space | cursor_start | runtime_state_object | runtime_state_space | runtime_state_start | code_segment | code_space | code_start | code_owner | code_entry
---------+-------+---------------+--------------+--------------+----------------------+---------------------+---------------------+--------------+------------+------------+------------+-----------
-0 entries
+binding                                           | owner                                     | cursor_object                                            | cursor_space | cursor_start | runtime_state_object                                            | runtime_state_space | runtime_state_start | code_segment                                      | code_space | code_start | code_owner                                | code_entry
+--------------------------------------------------+-------------------------------------------+----------------------------------------------------------+--------------+--------------+-----------------------------------------------------------------+---------------------+---------------------+---------------------------------------------------+------------+------------+-------------------------------------------+-----------
+Init/FnKillProc/Blocker_activation_thread_runtime | Init/FnKillProc/Blocker_activation_thread | Init/FnKillProc/Blocker_activation_thread_runtime_cursor | state        | 0            | Init/FnKillProc/Blocker_activation_thread_runtime_runtime_state | state               | 2                   | Init/FnKillProc/Blocker_activation_thread_segment | code       | 0          | Init/FnKillProc/Blocker_activation_thread | 0         
+Init/FnKillProc/Worker_thread_runtime             | Init/FnKillProc/Worker_thread             | Init/FnKillProc/Worker_thread_runtime_cursor             | state        | 4            | Init/FnKillProc/Worker_thread_runtime_runtime_state             | state               | 7                   | Init/FnKillProc/Worker_thread_segment             | code       | 4          | Init/FnKillProc/Worker_thread             | 4         
+Init/FnKillProc/Controller_thread_runtime         | Init/FnKillProc/Controller_thread         | Init/FnKillProc/Controller_thread_runtime_cursor         | state        | 9            | Init/FnKillProc/Controller_thread_runtime_runtime_state         | state               | 14                  | Init/FnKillProc/Controller_thread_segment         | code       | 8          | Init/FnKillProc/Controller_thread         | 8         
 
 Exported Memory Table
 symbol | owner | backing_object | start | span | type | capability

@@ -105,7 +105,7 @@ private[kernel] object ThreadRuntimeLogic {
     val keepLoweringGuards =
       layoutState.currentLoweringStep >= 0 &&
         irState.program.steps(layoutState.currentLoweringStep).edgeActions.exists {
-          case Return(_, _, true) | Jump(_, _, true) => true
+          case Return(_, _, _, true) | Jump(_, _, true) => true
           case _ => false
         }
 
@@ -240,13 +240,16 @@ private[kernel] object ThreadRuntimeLogic {
         }
       } else {
       val guards = layoutState.currentEdgeGuards.take(action match {
-        case Return(guardDepth, _, _) => guardDepth
+        case Return(guardDepth, _, _, _) => guardDepth
         case Jump(guardDepth, _, _) => guardDepth
         case _ => 0
       })
       wrapGuards(guards) {
         action match {
-          case Return(_, Some(target), _) =>
+          case Return(_, targetOpt, returnEdgePatch, _) =>
+            emitReturnEdgePatch(returnEdgePatch)
+            targetOpt match {
+              case Some(target) =>
             val targetPc = layoutState.jumpTargets.getOrElse(
               target,
               throw new Exception(
@@ -254,8 +257,9 @@ private[kernel] object ThreadRuntimeLogic {
               ),
             )
             runtime.cursor.reg := targetPc
-          case Return(_, None, _) =>
-            runtime.stateReg := RuntimeLifecycle.Done.U(runtime.stateReg.getWidth.W)
+              case None =>
+                runtime.stateReg := RuntimeLifecycle.Done.U(runtime.stateReg.getWidth.W)
+            }
           case Jump(_, target, _) =>
             val targetIndex = ThreadLayout.resolveStepRef(irState, layoutState, target)
             val targetStep = irState.program.steps(targetIndex)
@@ -280,6 +284,17 @@ private[kernel] object ThreadRuntimeLogic {
       nextPc: UInt,
   ): Unit = emitEdgeCursorAssign(layoutState) {
     runtime.cursor.reg := nextPc
+  }
+
+  private[kernel] def emitReturnEdgePatch(
+      patch: Option[HwOS.kernel.debug.CallStack.ReturnEdgePatch],
+  ): Unit = {
+    patch match {
+      case Some(returnPatch) =>
+        returnPatch.emitThunk()
+      case None =>
+        ()
+    }
   }
 
   private def emitEdgeCursorAssign(

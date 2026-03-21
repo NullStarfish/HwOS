@@ -3,6 +3,7 @@ package HwOS.kernel.system
 import chisel3._
 import scala.collection.mutable.ArrayBuffer
 import HwOS.kernel.debug.CallStack
+import HwOS.kernel.debug.CallStack.CallSiteSnapshot
 import HwOS.kernel.thread.step.EdgeAction
 
 final class GlobalCodeSegment(
@@ -29,6 +30,7 @@ final class VirtualStepRecord(
     val block: () => Unit,
     val threadCallStack: Seq[String],
     val implicitReturnTarget: Option[String],
+    val implicitCallSite: Option[CallSiteSnapshot],
     val invokedCalls: ArrayBuffer[Seq[String]] = ArrayBuffer.empty[Seq[String]],
 ) {
   var allocatedAddress: Int = -1
@@ -41,7 +43,13 @@ final class VirtualProgram(val ownerName: String) {
   private val records = ArrayBuffer[VirtualStepRecord]()
 
   def appendStep(name: String, block: () => Unit): VirtualStepRecord = {
-    val record = new VirtualStepRecord(name, block, CallStack.getSnapshot, CallStack.currentReturnTarget)
+    val record = new VirtualStepRecord(
+      name,
+      block,
+      CallStack.getSnapshot,
+      CallStack.currentReturnTarget,
+      CallStack.currentCallSiteSnapshot,
+    )
     records += record
     record
   }

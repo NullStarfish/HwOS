@@ -71,7 +71,7 @@ private[kernel] object ThreadLayout {
     layoutState.currentDebugRecord = Some(irState.program.steps(index))
     layoutState.currentEdgeGuards = Nil
     val step = irState.program.steps(index)
-    CallStack.withFrame(step.name, step.implicitReturnTarget) {
+    CallStack.withFrame(step.name, step.implicitReturnTarget, step.implicitCallSite) {
       step.block()
     }
     afterBody

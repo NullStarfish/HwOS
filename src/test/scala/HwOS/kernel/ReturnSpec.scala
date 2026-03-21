@@ -1,6 +1,8 @@
 package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.thread.step.EdgeAction
+import HwOS.kernel.thread.ThreadDebugApi
 import HwOS.kernel.function.HwFunction
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.process.HwProcess
@@ -426,6 +428,73 @@ class ReturnSpec extends AnyFlatSpec {
     }
   }
 
+  it should "execute call-site return edge blocks before the continuation step" in {
+    class CallSiteEdgeModule extends Module {
+      val io = IO(new Bundle {
+        val out = Output(UInt(8.W))
+        val done = Output(Bool())
+      })
+
+      io.out := DontCare
+      io.done := DontCare
+
+      implicit val kernel: Kernel = new Kernel()
+
+      object Init extends HwProcess("Init") {
+        val worker = createThread("Worker")
+        val outReg = RegInit(0.U(8.W))
+
+        private def callee: HwInline[Unit] = HwInline.thread("CallSiteEdgeCallee") { t =>
+          t.Step("Produce") {
+            outReg := 1.U
+          }
+          SysCall.Return()
+          ()
+        }
+
+        override def entry(): Unit = {
+          worker.entry {
+            val call = SysCall.CallSite(callee, "AfterCall")
+            call.edge.add {
+              outReg := outReg + 10.U
+            }
+            SysCall.Call(call)
+            worker.Step("AfterCall") {
+              outReg := outReg + 1.U
+            }
+            SysCall.Return()
+          }
+
+          val daemon = createLogic("Daemon")
+          daemon.run {
+            when(!worker.active && !worker.done) {
+              SysCall.Inline(SysCall.start(worker))
+            }
+            io.out := outReg
+            io.done := worker.done
+          }
+        }
+      }
+
+      Init.build()
+    }
+
+    simulate(new CallSiteEdgeModule) { c =>
+      c.reset.poke(true.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      var cycles = 0
+      while (c.io.done.peek().litValue == 0 && cycles < 20) {
+        c.clock.step()
+        cycles += 1
+      }
+
+      c.io.done.expect(true.B)
+      c.io.out.expect(12.U)
+    }
+  }
+
   it should "mark returning-step information in pre-analysis before lowering runs" in {
     class ReturnEffectSummaryModule extends Module {
       implicit val kernel: Kernel = new Kernel()
@@ -447,6 +516,91 @@ class ReturnSpec extends AnyFlatSpec {
     }
 
     _root_.circt.stage.ChiselStage.emitCHIRRTL(new ReturnEffectSummaryModule)
+  }
+
+  it should "attach call-site continuation and return-edge patch to Return during pre-analysis" in {
+    class ReturnCallSiteSummaryModule extends Module {
+      implicit val kernel: Kernel = new Kernel()
+
+      object Init extends HwProcess("Init") {
+        val worker = createThread("Worker")
+
+        override def entry(): Unit = {
+          val callee = HwInline.thread("CalleeWithReturn") { t =>
+            t.Step("InnerStep") {
+              SysCall.Return()
+            }
+            ()
+          }
+
+          worker.entry {
+            SysCall.Call(callee, "AfterCall")
+            worker.Step("AfterCall") {
+              SysCall.Return()
+            }
+          }
+
+          val debugWorker = worker.asInstanceOf[ThreadDebugApi]
+          val returns = debugWorker.debugStepActions.getOrElse("InnerStep", Seq.empty).collect { case ret: EdgeAction.Return => ret }
+          assert(returns.length == 1)
+          assert(returns.head.returnTarget.contains("AfterCall"))
+          assert(returns.head.returnEdgePatch.nonEmpty)
+          assert(returns.head.returnEdgePatch.flatMap(_.continuationTarget).contains("AfterCall"))
+        }
+      }
+
+      Init.build()
+    }
+
+    _root_.circt.stage.ChiselStage.emitCHIRRTL(new ReturnCallSiteSummaryModule)
+  }
+
+  it should "keep nested call-site return-edge patches isolated during pre-analysis" in {
+    class NestedReturnCallSiteModule extends Module {
+      implicit val kernel: Kernel = new Kernel()
+
+      object Init extends HwProcess("Init") {
+        val worker = createThread("Worker")
+
+        override def entry(): Unit = {
+          val inner = HwInline.thread("InnerNested") { t =>
+            t.Step("InnerReturnStep") {
+              SysCall.Return()
+            }
+            ()
+          }
+
+          val outer = HwInline.thread("OuterNestedCall") { t =>
+            SysCall.Call(inner, "OuterResume")
+            t.Step("OuterResume") {
+              SysCall.Return()
+            }
+            ()
+          }
+
+          worker.entry {
+            SysCall.Call(outer, "AfterOuter")
+            worker.Step("AfterOuter") {
+              SysCall.Return()
+            }
+          }
+          val debugWorker = worker.asInstanceOf[ThreadDebugApi]
+          val innerReturns = debugWorker.debugStepActions.getOrElse("InnerReturnStep", Seq.empty).collect { case ret: EdgeAction.Return => ret }
+          val outerReturns = debugWorker.debugStepActions.getOrElse("OuterResume", Seq.empty).collect { case ret: EdgeAction.Return => ret }
+
+          assert(innerReturns.length == 1)
+          assert(outerReturns.length == 1)
+          assert(innerReturns.head.returnTarget.contains("OuterResume"))
+          assert(innerReturns.head.returnEdgePatch.flatMap(_.continuationTarget).contains("OuterResume"))
+          assert(outerReturns.head.returnTarget.contains("AfterOuter"))
+          assert(outerReturns.head.returnEdgePatch.flatMap(_.continuationTarget).contains("AfterOuter"))
+        }
+      }
+
+      Init.build()
+    }
+
+    _root_.circt.stage.ChiselStage.emitCHIRRTL(new NestedReturnCallSiteModule)
   }
 
   it should "allow Prev.edge.add(Return()) to patch the pass edge created after waitCondition" in {

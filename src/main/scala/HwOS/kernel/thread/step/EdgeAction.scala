@@ -1,5 +1,6 @@
 package HwOS.kernel.thread.step
 
+import HwOS.kernel.debug.CallStack.ReturnEdgePatch
 import HwOS.kernel.thread.StepRef
 
 private[kernel] sealed trait EdgeAction {
@@ -15,6 +16,7 @@ private[kernel] object EdgeAction {
   final case class Return(
       override val guardDepth: Int = 0,
       returnTarget: Option[String] = None,
+      returnEdgePatch: Option[ReturnEdgePatch] = None,
       override val emitInLowering: Boolean = false,
   ) extends EdgeAction {
     override val kindName: String = "return"

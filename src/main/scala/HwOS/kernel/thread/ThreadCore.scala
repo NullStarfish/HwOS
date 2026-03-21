@@ -2,9 +2,12 @@ package HwOS.kernel.thread
 
 import chisel3._
 import HwOS.kernel.context.{ContextScope, ThreadCtx}
+import HwOS.kernel.debug.CallStack.CallSiteSnapshot
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
 import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
 
 trait ThreadCore
     extends ThreadControlApi
@@ -17,6 +20,9 @@ trait ThreadCore
 
   private var irStateOpt: Option[ThreadIR.IRState] = None
   private val layoutState = new ThreadLayout.LayoutState()
+  private val requiredReturningCallSites = ArrayBuffer.empty[CallSiteSnapshot]
+  private val returnedCallSiteIds = mutable.Set.empty[Int]
+  private var explicitReturnEncountered: Boolean = false
 
   private def irState: ThreadIR.IRState =
     irStateOpt.getOrElse(throw new Exception(s"[HwOS] Thread IR is not initialized for thread '$name'."))
@@ -66,7 +72,12 @@ trait ThreadCore
     }
 
   override def hasReturningStep: Boolean =
-    irStateOpt.exists(_.program.steps.exists(_.edgeActions.exists(_.isReturning)))
+    explicitReturnEncountered || irStateOpt.exists(_.program.steps.exists(_.edgeActions.exists(_.isReturning)))
+
+  override def debugStepActions: Map[String, Seq[EdgeAction]] =
+    irStateOpt
+      .map(_.program.steps.map(step => step.name -> step.edgeActions.toSeq).toMap)
+      .getOrElse(Map.empty)
 
   override def debugStepEffects: Map[String, Seq[String]] =
     irStateOpt
@@ -78,6 +89,18 @@ trait ThreadCore
 
   override def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
     layoutState.currentDebugRecord.foreach(_.invokedCalls += snapshot)
+  }
+
+  override def markExplicitReturnEncountered(): Unit = {
+    explicitReturnEncountered = true
+  }
+
+  override def registerCallSiteReturnRequirement(callSite: CallSiteSnapshot): Unit = {
+    requiredReturningCallSites += callSite
+  }
+
+  override def markCallSiteReturned(callSiteId: Int): Unit = {
+    returnedCallSiteIds += callSiteId
   }
 
   override val Next: StepRef = StepRef.NextStepRef
@@ -131,6 +154,7 @@ trait ThreadCore
     ThreadIR.runGlobals(irState)
     if (irState.program.steps.isEmpty) { return }
     val layoutPlan = ThreadRuntimeLogic.analyzeControl(irState, layoutState)
+    validateRequiredReturningCallSites()
 
     val allocatedRuntime = ThreadRuntimeLogic.materializeRuntime(
       owner = this,
@@ -165,6 +189,22 @@ trait ThreadCore
 
     verifyExitPath()
     maybePrintCapabilitySummary()
+  }
+
+  private def validateRequiredReturningCallSites(): Unit = {
+    val steps = irState.program.steps
+    for (callSite <- requiredReturningCallSites) {
+      val hasExplicitReturn = steps.exists { step =>
+        step.implicitCallSite.exists(_.id == callSite.id) &&
+        step.edgeActions.exists(_.isReturning)
+      } || returnedCallSiteIds.contains(callSite.id)
+      if (callSite.requiresExplicitReturn && !hasExplicitReturn) {
+        throw new Exception(
+          s"[HwOS] Callable segment '${callSite.name}' was used with SysCall.Call(...) but has no explicit SysCall.Return(). " +
+            s"Call-terminated segments must end through SysCall.Return().",
+        )
+      }
+    }
   }
 
   override def waitCondition(cond: => Bool): Unit = {

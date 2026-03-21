@@ -1,6 +1,7 @@
 package HwOS.kernel.debug
 
 import scala.collection.mutable.Stack
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * CallStack is primarily a debug-oriented call-frame tracker.
@@ -8,12 +9,33 @@ import scala.collection.mutable.Stack
  * is delegated to dedicated helpers.
  */
 object CallStack {
+  private val nextCallSiteId = new AtomicInteger(1)
+
+  final case class ReturnEdgePatch(
+      continuationTarget: Option[String],
+      emitThunk: () => Unit = () => (),
+  )
+
+  final case class CallSiteSnapshot(
+      id: Int,
+      name: String,
+      continuationTarget: Option[String],
+      requiresExplicitReturn: Boolean,
+      returnEdgePatch: Option[ReturnEdgePatch],
+  )
+
+  final class CallSite(
+      val snapshot: CallSiteSnapshot,
+  ) {
+    var returned: Boolean = false
+  }
+
   final class Frame(
       val name: String,
       val returnTarget: Option[String],
-      val requiresExplicitReturn: Boolean = false,
+      val callSiteSnapshot: Option[CallSiteSnapshot] = None,
+      val liveCallSite: Option[CallSite] = None,
   ) {
-    var returned: Boolean = false
   }
 
   // 使用 ThreadLocal 确保并行编译时的安全性
@@ -24,7 +46,11 @@ object CallStack {
   private def pushFrame(frame: Frame): Unit = stack.get().push(frame)
 
   def withFrame[T](name: String, returnTarget: Option[String])(block: => T): T = {
-    pushFrame(new Frame(name, returnTarget))
+    withFrame(name, returnTarget, currentCallSiteSnapshot)(block)
+  }
+
+  def withFrame[T](name: String, returnTarget: Option[String], callSiteSnapshot: Option[CallSiteSnapshot])(block: => T): T = {
+    pushFrame(new Frame(name, returnTarget, callSiteSnapshot = callSiteSnapshot))
     try {
       block
     } finally {
@@ -32,19 +58,45 @@ object CallStack {
     }
   }
 
-  def pushCall(name: String, returnTarget: Option[String], requiresExplicitReturn: Boolean = false): Unit =
-    pushFrame(new Frame(name, returnTarget, requiresExplicitReturn))
+  def pushCall(
+      name: String,
+      returnTarget: Option[String],
+      requiresExplicitReturn: Boolean = false,
+      returnEdgePatch: Option[ReturnEdgePatch] = None,
+  ): CallSite = {
+    val site = new CallSite(
+      CallSiteSnapshot(
+        id = nextCallSiteId.getAndIncrement(),
+        name = name,
+        continuationTarget = returnTarget,
+        requiresExplicitReturn = requiresExplicitReturn,
+        returnEdgePatch = returnEdgePatch,
+      ),
+    )
+    pushFrame(new Frame(name, returnTarget, callSiteSnapshot = Some(site.snapshot), liveCallSite = Some(site)))
+    site
+  }
   
   def pop(): Option[Frame] = Option.when(stack.get().nonEmpty)(stack.get().pop())
 
   def currentFrame: Option[Frame] = stack.get().headOption
 
+  def currentCallSite: Option[CallSite] =
+    currentFrame.flatMap(_.liveCallSite)
+
+  def currentCallSiteSnapshot: Option[CallSiteSnapshot] =
+    currentFrame.flatMap { frame =>
+      frame.liveCallSite.map(_.snapshot).orElse(frame.callSiteSnapshot)
+    }
+
   def currentReturnTarget: Option[String] = {
-    stack.get().iterator.collectFirst { case frame if frame.returnTarget.nonEmpty => frame.returnTarget.get }
+    currentCallSiteSnapshot.flatMap(_.continuationTarget).orElse {
+      stack.get().iterator.collectFirst { case frame if frame.returnTarget.nonEmpty => frame.returnTarget.get }
+    }
   }
 
   def markReturned(): Unit = {
-    currentFrame.foreach(_.returned = true)
+    currentCallSite.foreach(_.returned = true)
   }
 
   /**

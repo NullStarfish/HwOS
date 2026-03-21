@@ -27,15 +27,78 @@ object SysCall {
   private def currentInvokeMode: Option[InlineCallMode] =
     invokeModeStack.get().headOption
 
-  private def requireExplicitReturn(frameName: String): Unit = {
-    val frame = CallStack.pop().getOrElse(
+  private def currentCallSite = CallStack.currentCallSiteSnapshot
+
+  final class CallEdge private[system] (private val appendThunk: (() => Unit) => Unit) {
+    def add(block: => Unit): Unit = {
+      appendThunk(() => block)
+    }
+  }
+
+  final class CallSiteHandle[T] private[system] (
+      val func: HwInline[T],
+      val returnTo: String,
+  ) {
+    private var returnEdgeThunk: () => Unit = () => ()
+    val edge: CallEdge = new CallEdge(next => {
+      val previous = returnEdgeThunk
+      returnEdgeThunk = () => {
+        previous()
+        next()
+      }
+    })
+
+    private[system] def returnEdgePatch: CallStack.ReturnEdgePatch =
+      CallStack.ReturnEdgePatch(
+        continuationTarget = Some(returnTo),
+        emitThunk = () => returnEdgeThunk(),
+      )
+  }
+
+  private def popCallFrame(frameName: String): Unit =
+    CallStack.pop().getOrElse(
       throw new Exception(s"[HwOS] Missing call frame while finalizing '$frameName'."),
     )
-    if (frame.requiresExplicitReturn && !frame.returned) {
-      throw new Exception(
-        s"[HwOS] Callable segment '$frameName' was used with SysCall.Call(...) but has no explicit SysCall.Return(). " +
-          s"Call-terminated segments must end through SysCall.Return().",
+
+  private def markExplicitReturnOnCurrentThread(): Unit = {
+    scala.util.Try(ContextScope.current).toOption.foreach {
+      case AtomicCtx(t: ThreadDebugApi) =>
+        t.markExplicitReturnEncountered()
+        currentCallSite.foreach(site => t.markCallSiteReturned(site.id))
+      case ThreadCtx(t: ThreadDebugApi) =>
+        t.markExplicitReturnEncountered()
+        currentCallSite.foreach(site => t.markCallSiteReturned(site.id))
+      case _ =>
+    }
+  }
+
+  private def recordReturnAction(callSite: Option[CallStack.CallSiteSnapshot]): Boolean = {
+    if (EdgePatchAnalysis.isActive) {
+      EdgePatchAnalysis.recordReturn(callSite)
+      true
+    } else if (PreLoweringAnalysis.isActive) {
+      PreLoweringAnalysis.record(
+        EdgeAction.Return(
+          returnTarget = callSite.flatMap(_.continuationTarget),
+          returnEdgePatch = callSite.flatMap(_.returnEdgePatch),
+        ),
       )
+      true
+    } else {
+      false
+    }
+  }
+
+  private def emitImmediateReturn(t: HardwareThread, callSite: Option[CallStack.CallSiteSnapshot]): Unit = {
+    if (recordReturnAction(callSite)) {
+      return
+    }
+    ThreadRuntimeLogic.emitReturnEdgePatch(callSite.flatMap(_.returnEdgePatch))
+    callSite.flatMap(_.continuationTarget) match {
+      case Some(target) =>
+        t.jump(target)
+      case None =>
+        t.runtimeExit()
     }
   }
 
@@ -59,7 +122,7 @@ object SysCall {
   }
 
   def Call[T](func: HwInline[T]): T = {
-    CallStack.currentReturnTarget match {
+    currentCallSite.flatMap(_.continuationTarget) match {
       case Some(target) =>
         Call(func, target)
       case None =>
@@ -67,10 +130,13 @@ object SysCall {
     }
   }
 
+  def CallSite[T](func: HwInline[T], returnTo: String): CallSiteHandle[T] =
+    new CallSiteHandle(func, returnTo)
+
   def Call[T](func: HwFunction[T]): T = {
     ContextScope.current match {
       case ThreadCtx(t) =>
-        CallStack.currentReturnTarget match {
+        currentCallSite.flatMap(_.continuationTarget) match {
           case Some(target) => Call(func, target)
           case None =>
             throw new Exception(
@@ -88,7 +154,23 @@ object SysCall {
    * Return() 将跳转到该返回地址。
    */
   def Call[T](func: HwInline[T], returnTo: String): T = {
-    CallStack.pushCall(func.name, returnTarget = Some(returnTo), requiresExplicitReturn = true)
+    Call(CallSite(func, returnTo))
+  }
+
+  def Call[T](site: CallSiteHandle[T]): T = {
+    val liveSite = CallStack.pushCall(
+      site.func.name,
+      returnTarget = Some(site.returnTo),
+      requiresExplicitReturn = true,
+      returnEdgePatch = Some(site.returnEdgePatch),
+    )
+    ContextScope.current match {
+      case ThreadCtx(debugThread: ThreadDebugApi) =>
+        debugThread.registerCallSiteReturnRequirement(liveSite.snapshot)
+      case AtomicCtx(debugThread: ThreadDebugApi) =>
+        debugThread.registerCallSiteReturnRequirement(liveSite.snapshot)
+      case _ =>
+    }
     pushInvokeMode(CallMode)
     var failed = false
     try {
@@ -97,11 +179,24 @@ object SysCall {
           case ThreadCtx(_) | AtomicCtx(_) =>
           case _ =>
             throw new Exception(
-              s"[HwOS] Call('$returnTo') with explicit return target must be used inside ThreadCtx or AtomicCtx.",
+              s"[HwOS] Call('${site.returnTo}') with explicit return target must be used inside ThreadCtx or AtomicCtx.",
             )
         }
       }
-      func.emit(ContextScope.getCurrentAgent())
+      val currentAgent = ContextScope.getCurrentAgent()
+      ContextScope.current match {
+        case AtomicCtx(t) =>
+          try {
+            site.func.emit(currentAgent)
+          } catch {
+            case ex: Exception if ex.getMessage != null && ex.getMessage.contains("Illegal inline call") =>
+              ContextScope.withContext(ThreadCtx(t)) {
+                site.func.emit(currentAgent)
+              }
+          }
+        case _ =>
+          site.func.emit(currentAgent)
+      }
     } catch {
       case ex: Throwable =>
         failed = true
@@ -109,9 +204,9 @@ object SysCall {
     } finally {
       popInvokeMode()
       if (failed) {
-        CallStack.pop()
+        popCallFrame(site.func.name)
       } else {
-        requireExplicitReturn(func.name)
+        popCallFrame(site.func.name)
       }
     }
   }
@@ -177,35 +272,22 @@ object SysCall {
     }
 
     CallStack.markReturned()
+    markExplicitReturnOnCurrentThread()
 
-    if (EdgePatchAnalysis.isActive) {
-      EdgePatchAnalysis.recordReturn(CallStack.currentReturnTarget)
-      return
-    }
-
-    if (PreLoweringAnalysis.isActive) {
-      PreLoweringAnalysis.record(EdgeAction.Return())
+    if (recordReturnAction(currentCallSite)) {
       return
     }
 
     ContextScope.current match {
-      case AtomicCtx(t: ThreadDebugApi) =>
-        CallStack.currentReturnTarget match {
-          case Some(target) =>
-            t.jump(target)
-          case None =>
-            t.runtimeExit()
-        }
-      case ThreadCtx(t) =>
-        CallStack.currentReturnTarget match {
-          case Some(target) =>
-            t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), target)) {
-              t.jump(target)
-            }
-          case None =>
-            t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), "ThreadExit")) {
-              t.runtimeExit()
-            }
+      case AtomicCtx(t: HardwareThread) =>
+        emitImmediateReturn(t, currentCallSite)
+      case ThreadCtx(t: HardwareThread) =>
+        val capturedCallSite = currentCallSite
+        val returnStepLabel = capturedCallSite
+          .flatMap(_.continuationTarget)
+          .getOrElse("ThreadExit")
+        t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), returnStepLabel)) {
+          emitImmediateReturn(t, capturedCallSite)
         }
       case _ =>
         throw new Exception("[HwOS] SysCall.Return() can only be used inside ThreadCtx or AtomicCtx.")

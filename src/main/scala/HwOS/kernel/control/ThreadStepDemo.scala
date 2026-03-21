@@ -81,6 +81,12 @@ object ThreadStepDemo {
         .flatMap(_.edgeActions)
         .map(_.kindName)
 
+    def stepActions(stepName: String): Seq[EdgeAction] =
+      irState.program.steps
+        .find(_.name == stepName)
+        .toSeq
+        .flatMap(_.edgeActions)
+
     def runtime: RuntimeContext =
       layoutState.runtimeContext.getOrElse(throw new Exception(s"[ThreadStepDemo] Program '$name' has not been built yet."))
   }

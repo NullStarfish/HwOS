@@ -58,7 +58,7 @@ private[kernel] object PreLoweringAnalysis {
     activeRecord.set(Some(record))
     edgeGuardStack.set(Nil)
     try {
-      CallStack.withFrame(record.name, record.implicitReturnTarget) {
+      CallStack.withFrame(record.name, record.implicitReturnTarget, record.implicitCallSite) {
         withTempRegion(module, tempRegion) { block }
       }
     } finally {

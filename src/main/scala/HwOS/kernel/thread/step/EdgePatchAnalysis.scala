@@ -1,6 +1,7 @@
 package HwOS.kernel.thread.step
 
 import scala.collection.mutable.ArrayBuffer
+import HwOS.kernel.debug.CallStack.CallSiteSnapshot
 import HwOS.kernel.system.VirtualStepRecord
 import HwOS.kernel.thread.StepRef
 
@@ -30,9 +31,14 @@ private[kernel] object EdgePatchAnalysis {
     }
   }
 
-  def recordReturn(returnTarget: Option[String]): Unit = {
+  def recordReturn(callSite: Option[CallSiteSnapshot]): Unit = {
     val patch = current
-    patch.record.edgeActions += EdgeAction.Return(patch.guardDepth, returnTarget, emitInLowering = true)
+    patch.record.edgeActions += EdgeAction.Return(
+      guardDepth = patch.guardDepth,
+      returnTarget = callSite.flatMap(_.continuationTarget),
+      returnEdgePatch = callSite.flatMap(_.returnEdgePatch),
+      emitInLowering = true,
+    )
   }
 
   def recordJump(target: StepRef): Unit = {
