@@ -23,8 +23,8 @@ final class ServerFetchProcess(
   val slots = program.indices.map { i =>
     val thread = createThread(s"Client${i}_req")
     val instArg = RegInit(0.U(ISA.instWidth.W))
-    val issued = RegInit(false.B)
-    (new Slot(i, thread, instArg), issued)
+    val occupied = RegInit(false.B)
+    (new Slot(i, thread, instArg), occupied)
   }
 
   override def entry(): Unit = {
@@ -41,7 +41,15 @@ final class ServerFetchProcess(
     }
 
     launcher.run {
-      val freeVec = VecInit(slots.map { case (slot, issued) => !slot.thread.active && !issued })
+      for ((slot, occupied) <- slots) {
+        when(occupied && slot.thread.done) {
+          occupied := false.B
+        }
+      }
+
+      val freeVec = VecInit(slots.map { case (slot, occupied) =>
+        !slot.thread.active && !occupied
+      })
       val launchPlan = Seq(
         freeVec,
         VecInit(slots.indices.map(idx => freeVec(idx) && !PriorityEncoderOH(freeVec.asUInt)(idx)))
@@ -51,18 +59,18 @@ final class ServerFetchProcess(
         val slotFire = (fetchPtr + laneIdx.U) < program.length.U && slotOH.orR
         val inst = programRom((fetchPtr + laneIdx.U)(log2Ceil(program.length max 2) - 1, 0))
         when(slotFire) {
-          for (((slot, issued), idx) <- slots.zipWithIndex) {
+          for (((slot, occupied), idx) <- slots.zipWithIndex) {
             when(slotOH(idx)) {
               slot.instArg := inst
-              issued := true.B
+              occupied := true.B
               SysCall.Inline(SysCall.start(slot.thread))
             }
           }
         }
-        Mux(slotFire, 1.U, 0.U)
+        slotFire
       }
 
-      val issueCount = fires.reduce(_ + _)
+      val issueCount = PopCount(VecInit(fires))
       when(issueCount =/= 0.U) {
         fetchPtr := fetchPtr + issueCount
       }

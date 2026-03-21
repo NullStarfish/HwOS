@@ -10,34 +10,38 @@ import chisel3._
 import chisel3.util._
 
 private object DecodePathSegments {
+  private def withReservedWrite(
+      tx: HardwareThread,
+      writePort: AgeOrderedScoreboardRegfileProcess#OrderedRegWritePort,
+      targetRd: UInt,
+      entryLabel: String,
+  )(body: => UInt): UInt = {
+    tx.Step(entryLabel) {
+      SysCall.Inline(writePort.Reserve(targetRd))
+    }
+    body
+  }
+
   def AddiPath(
       serverId: Int,
       rd: UInt,
       rs1: UInt,
       imm: UInt,
-      decodedSrc: UInt,
   ): HwInline[UInt] = HwInline.thread(s"AddiPath_$serverId") { tx =>
-    def withReservedWrite(writePort: AgeOrderedScoreboardRegfileProcess#OrderedRegWritePort, targetRd: UInt, entryLabel: String)(
-        body: => UInt
-    ): UInt = {
-      tx.Step(entryLabel) {
-        SysCall.Inline(writePort.Reserve(targetRd))
-      }
-      body
-    }
-
     val regFile = tx.importService[AgeOrderedScoreboardRegfileProcess]("RegFile")
     val arith = tx.importService[ArithmeticServiceProcess]("Arithmetic")
-    val pathResult = arith.ResultRef(serverId)
     val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
+    val decodedSrc = RegInit(0.U(32.W))
+    val pathResult = RegInit(0.U(32.W))
 
-    withReservedWrite(writePort, rd, s"ArithReserve_$serverId") {
+    withReservedWrite(tx, writePort, rd, s"ArithReserve_$serverId") {
       tx.Step(s"ArithRead_$serverId") {
         decodedSrc := SysCall.Inline(regFile.Read(rs1))
       }
       tx.Step(s"ArithExec_$serverId") {
-        SysCall.Call(arith.RequestExecute(serverId, decodedSrc, imm))
+        pathResult := SysCall.Call(arith.RequestExecute(serverId, decodedSrc, imm), s"ArithDone_$serverId")
       }
+      tx.Step(s"ArithDone_$serverId") {}
       pathResult
     }
   }
@@ -49,15 +53,16 @@ private object DecodePathSegments {
   ): HwInline[UInt] = HwInline.thread(s"LoadPath_$serverId") { tx =>
     val load = tx.importService[LoadServiceProcess]("Load")
     val regFile = tx.importService[AgeOrderedScoreboardRegfileProcess]("RegFile")
-    val pathResult = load.ResultRef(serverId)
     val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
+    val pathResult = RegInit(0.U(32.W))
 
     tx.Step(s"LoadReserve_$serverId") {
       SysCall.Inline(writePort.Reserve(rd))
     }
     tx.Step(s"LoadExec_$serverId") {
-      SysCall.Call(load.RequestLoad(serverId, imm))
+      pathResult := SysCall.Call(load.RequestLoad(serverId, imm), s"LoadDone_$serverId")
     }
+    tx.Step(s"LoadDone_$serverId") {}
     pathResult
   }
 
@@ -66,14 +71,14 @@ private object DecodePathSegments {
       rd: UInt,
       rs1: UInt,
       imm: UInt,
-      decodedSrc: UInt,
-      loadedValue: UInt,
   ): HwInline[UInt] = HwInline.thread(s"LoadAddPath_$serverId") { tx =>
     val regFile = tx.importService[AgeOrderedScoreboardRegfileProcess]("RegFile")
     val load = tx.importService[LoadServiceProcess]("Load")
     val arith = tx.importService[ArithmeticServiceProcess]("Arithmetic")
-    val pathResult = arith.ResultRef(serverId)
     val writePort = SysCall.Inline(regFile.RequestWritePort(serverId))
+    val loadedValue = RegInit(0.U(32.W))
+    val decodedSrc = RegInit(0.U(32.W))
+    val pathResult = RegInit(0.U(32.W))
 
     tx.Step(s"LoadAddReserve_$serverId") {
       SysCall.Inline(writePort.Reserve(rd))
@@ -85,8 +90,9 @@ private object DecodePathSegments {
       decodedSrc := SysCall.Inline(regFile.Read(rs1))
     }
     tx.Step(s"LoadAddArithExec_$serverId") {
-      SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc))
+      pathResult := SysCall.Call(arith.RequestExecute(serverId, loadedValue, decodedSrc), s"LoadAddDone_$serverId")
     }
+    tx.Step(s"LoadAddDone_$serverId") {}
     pathResult
   }
 
@@ -109,8 +115,6 @@ final class ServerDecodeProcess(
       instArg: UInt,
       ownerValid: Bool,
       ownerClient: UInt,
-      decodedSrc: UInt,
-      loadedValue: UInt,
   )
 
   private val clientReqs = Array.tabulate(maxClients max 1) { _ =>
@@ -129,8 +133,6 @@ final class ServerDecodeProcess(
       instArg = RegInit(0.U(ISA.instWidth.W)),
       ownerValid = RegInit(false.B),
       ownerClient = RegInit(0.U(log2Ceil((maxClients max 1) max 2).W)),
-      decodedSrc = RegInit(0.U(32.W)),
-      loadedValue = RegInit(0.U(32.W)),
     )
   }
 
@@ -151,7 +153,6 @@ final class ServerDecodeProcess(
           rd,
           rs1,
           imm,
-          slot.decodedSrc,
         )
 
         val loadPath = DecodePathSegments.LoadPath(
@@ -165,8 +166,6 @@ final class ServerDecodeProcess(
           rd,
           rs1,
           imm,
-          slot.decodedSrc,
-          slot.loadedValue,
         )
 
         StructuredControl

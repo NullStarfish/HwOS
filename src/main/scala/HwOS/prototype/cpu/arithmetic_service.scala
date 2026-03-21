@@ -108,9 +108,6 @@ final class ArithmeticServiceProcess(val maxClients: Int, val ports: Int, localN
     }
     req.result
   }
-
-  private[cpu] def ResultRef(clientId: Int): UInt = requests(clientId).result
-
   def ActiveServerCount(): HwInline[UInt] = HwInline.stateless(s"${name}_ActiveServerCount") { _ =>
     PopCount(servers.map(_.thread.active))
   }
