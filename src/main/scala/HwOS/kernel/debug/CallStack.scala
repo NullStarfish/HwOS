@@ -22,6 +22,15 @@ object CallStack {
 
   private def pushFrame(frame: Frame): Unit = stack.get().push(frame)
 
+  def withFrame[T](name: String, returnTarget: Option[String])(block: => T): T = {
+    pushFrame(new Frame(name, returnTarget))
+    try {
+      block
+    } finally {
+      pop()
+    }
+  }
+
   def pushCall(name: String, returnTarget: Option[String]): Unit =
     pushFrame(new Frame(name, returnTarget))
   

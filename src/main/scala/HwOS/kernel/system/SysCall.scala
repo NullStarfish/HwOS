@@ -46,8 +46,14 @@ object SysCall {
     }
   }
 
-  @deprecated("Use SysCall.Inline(...) for natural fallthrough segments or SysCall.Call(..., returnTo) for formal calls.", "vNext")
-  def Call[T](func: HwInline[T]): T = Inline(func)
+  def Call[T](func: HwInline[T]): T = {
+    CallStack.currentReturnTarget match {
+      case Some(target) =>
+        Call(func, target)
+      case None =>
+        Inline(func)
+    }
+  }
 
   def Call[T](func: HwFunction[T]): T = {
     ContextScope.current match {

@@ -2,6 +2,7 @@ package HwOS.kernel.thread.step
 
 import chisel3._
 import scala.collection.mutable
+import HwOS.kernel.debug.CallStack
 import HwOS.kernel.system.{RuntimeContext, VirtualStepRecord}
 import HwOS.kernel.thread.StepRef
 import HwOS.kernel.thread.step.EdgeAction
@@ -69,7 +70,10 @@ private[kernel] object ThreadLayout {
     layoutState.currentLoweringStep = index
     layoutState.currentDebugRecord = Some(irState.program.steps(index))
     layoutState.currentEdgeGuards = Nil
-    irState.program.steps(index).block()
+    val step = irState.program.steps(index)
+    CallStack.withFrame(step.name, step.implicitReturnTarget) {
+      step.block()
+    }
     afterBody
     layoutState.currentEdgeGuards = saveGuards
     layoutState.currentDebugRecord = saveRecord

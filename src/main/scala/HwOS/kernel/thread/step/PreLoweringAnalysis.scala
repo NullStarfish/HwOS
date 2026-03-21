@@ -2,6 +2,7 @@ package HwOS.kernel.thread.step
 
 import chisel3.{Bool, Module => ChiselModule, RawModule}
 import chisel3.experimental.UnlocatableSourceInfo
+import HwOS.kernel.debug.CallStack
 import HwOS.kernel.system.VirtualStepRecord
 
 private[kernel] object PreLoweringAnalysis {
@@ -57,7 +58,9 @@ private[kernel] object PreLoweringAnalysis {
     activeRecord.set(Some(record))
     edgeGuardStack.set(Nil)
     try {
-      withTempRegion(module, tempRegion) { block }
+      CallStack.withFrame(record.name, record.implicitReturnTarget) {
+        withTempRegion(module, tempRegion) { block }
+      }
     } finally {
       val addedIds = ids.length - idsBefore
       if (addedIds > 0) {
