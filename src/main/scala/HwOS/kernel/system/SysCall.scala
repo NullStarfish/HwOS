@@ -8,6 +8,7 @@ import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.{EdgeGuardContext, EdgePatchAnalysis, PreLoweringAnalysis}
 import HwOS.kernel.thread.step.ThreadRuntimeLogic
+import HwOS.kernel.system.CallProtocolContext.{CallSiteBinding, CallSiteSnapshot, ContinuationBinding, ContinuationSnapshot, ReturnEdgePatch}
 
 object SysCall {
   private sealed trait InlineCallMode
@@ -27,7 +28,8 @@ object SysCall {
   private def currentInvokeMode: Option[InlineCallMode] =
     invokeModeStack.get().headOption
 
-  private def currentCallSite = CallStack.currentCallSiteSnapshot
+  private def currentCallSite = CallProtocolContext.currentCallSiteSnapshot
+  private def currentContinuation = CallProtocolContext.currentContinuationSnapshot
 
   final class CallEdge private[system] (private val appendThunk: (() => Unit) => Unit) {
     def add(block: => Unit): Unit = {
@@ -48,17 +50,13 @@ object SysCall {
       }
     })
 
-    private[system] def returnEdgePatch: CallStack.ReturnEdgePatch =
-      CallStack.ReturnEdgePatch(
-        continuationTarget = Some(returnTo),
-        emitThunk = () => returnEdgeThunk(),
+    private[system] def continuationBinding: ContinuationBinding =
+      CallProtocolContext.bindContinuation(
+        targetLabel = Some(returnTo),
+        requiresExplicitReturn = true,
+        returnEdgePatch = Some(ReturnEdgePatch(continuationTarget = Some(returnTo), emitThunk = () => returnEdgeThunk())),
       )
   }
-
-  private def popCallFrame(frameName: String): Unit =
-    CallStack.pop().getOrElse(
-      throw new Exception(s"[HwOS] Missing call frame while finalizing '$frameName'."),
-    )
 
   private def markExplicitReturnOnCurrentThread(): Unit = {
     scala.util.Try(ContextScope.current).toOption.foreach {
@@ -72,15 +70,14 @@ object SysCall {
     }
   }
 
-  private def recordReturnAction(callSite: Option[CallStack.CallSiteSnapshot]): Boolean = {
+  private def recordReturnAction(continuation: Option[ContinuationSnapshot]): Boolean = {
     if (EdgePatchAnalysis.isActive) {
-      EdgePatchAnalysis.recordReturn(callSite)
+      EdgePatchAnalysis.recordReturn(continuation)
       true
     } else if (PreLoweringAnalysis.isActive) {
       PreLoweringAnalysis.record(
         EdgeAction.Return(
-          returnTarget = callSite.flatMap(_.continuationTarget),
-          returnEdgePatch = callSite.flatMap(_.returnEdgePatch),
+          continuation = continuation,
         ),
       )
       true
@@ -89,12 +86,12 @@ object SysCall {
     }
   }
 
-  private def emitImmediateReturn(t: HardwareThread, callSite: Option[CallStack.CallSiteSnapshot]): Unit = {
-    if (recordReturnAction(callSite)) {
+  private def emitImmediateReturn(t: HardwareThread, continuation: Option[ContinuationSnapshot]): Unit = {
+    if (recordReturnAction(continuation)) {
       return
     }
-    ThreadRuntimeLogic.emitReturnEdgePatch(callSite.flatMap(_.returnEdgePatch))
-    callSite.flatMap(_.continuationTarget) match {
+    ThreadRuntimeLogic.emitReturnEdgePatch(continuation.flatMap(_.returnEdgePatch))
+    continuation.flatMap(_.targetLabel) match {
       case Some(target) =>
         t.jump(target)
       case None =>
@@ -122,7 +119,7 @@ object SysCall {
   }
 
   def Call[T](func: HwInline[T]): T = {
-    currentCallSite.flatMap(_.continuationTarget) match {
+    currentContinuation.flatMap(_.targetLabel) match {
       case Some(target) =>
         Call(func, target)
       case None =>
@@ -136,7 +133,7 @@ object SysCall {
   def Call[T](func: HwFunction[T]): T = {
     ContextScope.current match {
       case ThreadCtx(t) =>
-        currentCallSite.flatMap(_.continuationTarget) match {
+        currentContinuation.flatMap(_.targetLabel) match {
           case Some(target) => Call(func, target)
           case None =>
             throw new Exception(
@@ -158,101 +155,91 @@ object SysCall {
   }
 
   def Call[T](site: CallSiteHandle[T]): T = {
-    val liveSite = CallStack.pushCall(
-      site.func.name,
-      returnTarget = Some(site.returnTo),
-      requiresExplicitReturn = true,
-      returnEdgePatch = Some(site.returnEdgePatch),
-    )
-    ContextScope.current match {
-      case ThreadCtx(debugThread: ThreadDebugApi) =>
-        debugThread.registerCallSiteReturnRequirement(liveSite.snapshot)
-      case AtomicCtx(debugThread: ThreadDebugApi) =>
-        debugThread.registerCallSiteReturnRequirement(liveSite.snapshot)
-      case _ =>
-    }
     pushInvokeMode(CallMode)
-    var failed = false
     try {
-      scala.util.Try {
+      ContextScope.current match {
+        case ThreadCtx(_) | AtomicCtx(_) =>
+        case _ =>
+          throw new Exception(
+            s"[HwOS] Call('${site.returnTo}') with explicit return target must be used inside ThreadCtx or AtomicCtx.",
+          )
+      }
+      CallProtocolContext.withCallSite(site.func.name, site.continuationBinding) { liveSite =>
         ContextScope.current match {
-          case ThreadCtx(_) | AtomicCtx(_) =>
+          case ThreadCtx(debugThread: ThreadDebugApi) =>
+            debugThread.registerCallSiteReturnRequirement(liveSite.snapshot)
+          case AtomicCtx(debugThread: ThreadDebugApi) =>
+            debugThread.registerCallSiteReturnRequirement(liveSite.snapshot)
           case _ =>
-            throw new Exception(
-              s"[HwOS] Call('${site.returnTo}') with explicit return target must be used inside ThreadCtx or AtomicCtx.",
-            )
+        }
+        val currentAgent = ContextScope.getCurrentAgent()
+        ContextScope.current match {
+          case AtomicCtx(t) =>
+            try {
+              site.func.emit(currentAgent)
+            } catch {
+              case ex: Exception if ex.getMessage != null && ex.getMessage.contains("Illegal inline call") =>
+                ContextScope.withContext(ThreadCtx(t)) {
+                  site.func.emit(currentAgent)
+                }
+            }
+          case _ =>
+            site.func.emit(currentAgent)
         }
       }
-      val currentAgent = ContextScope.getCurrentAgent()
-      ContextScope.current match {
-        case AtomicCtx(t) =>
-          try {
-            site.func.emit(currentAgent)
-          } catch {
-            case ex: Exception if ex.getMessage != null && ex.getMessage.contains("Illegal inline call") =>
-              ContextScope.withContext(ThreadCtx(t)) {
-                site.func.emit(currentAgent)
-              }
-          }
-        case _ =>
-          site.func.emit(currentAgent)
-      }
-    } catch {
-      case ex: Throwable =>
-        failed = true
-        throw ex
     } finally {
       popInvokeMode()
-      if (failed) {
-        popCallFrame(site.func.name)
-      } else {
-        popCallFrame(site.func.name)
-      }
     }
   }
 
   def Call[T](func: HwFunction[T], returnTo: String): T = {
-    CallStack.pushCall(func.name, returnTarget = Some(returnTo))
     pushInvokeMode(CallMode)
     try {
       ContextScope.current match {
         case ThreadCtx(caller) =>
-          val activation = func.ensureActivation(caller.owner)
-          val callLease = func.allocateCallLease(caller)
-          val result = func.ensureResultHandle(caller.owner)
-          val callStepName = ContinuationNaming.freshFunctionCallStepName(System.identityHashCode(caller), func.name, returnTo)
+          CallProtocolContext.withCallSite(
+            func.name,
+            CallProtocolContext.bindContinuation(
+              targetLabel = Some(returnTo),
+              requiresExplicitReturn = true,
+            ),
+          ) { _ =>
+            val activation = func.ensureActivation(caller.owner)
+            val callLease = func.allocateCallLease(caller)
+            val result = func.ensureResultHandle(caller.owner)
+            val callStepName = ContinuationNaming.freshFunctionCallStepName(System.identityHashCode(caller), func.name, returnTo)
 
-          caller.Step(callStepName) {
-            val binding = callLease.binding
-            val bindingId = callLease.bindingId
-            val bindingIdValue = bindingId.U(binding.activeBindingId.getWidth.W)
-            val pending = callLease.callPending
-            val thisCallActive = callLease.isActive
+            caller.Step(callStepName) {
+              val binding = callLease.binding
+              val bindingId = callLease.bindingId
+              val bindingIdValue = bindingId.U(binding.activeBindingId.getWidth.W)
+              val pending = callLease.callPending
+              val thisCallActive = callLease.isActive
 
-            when(!pending) {
-              when(!binding.callActive && !activation.active) {
-                binding.activeBindingId  :=  bindingIdValue
-                binding.callActive  :=  true.B
-                Inline(start(activation))
-                pending  :=  true.B
+              when(!pending) {
+                when(!binding.callActive && !activation.active) {
+                  binding.activeBindingId  :=  bindingIdValue
+                  binding.callActive  :=  true.B
+                  Inline(start(activation))
+                  pending  :=  true.B
+                }
+                caller.waitCondition(false.B)
+              }.elsewhen(thisCallActive && activation.done) {
+                binding.callActive  :=  false.B
+                binding.activeBindingId  :=  0.U(binding.activeBindingId.getWidth.W)
+                pending  :=  false.B
+                caller.jump(returnTo)
+              }.otherwise {
+                caller.waitCondition(false.B)
               }
-              caller.waitCondition(false.B)
-            }.elsewhen(thisCallActive && activation.done) {
-              binding.callActive  :=  false.B
-              binding.activeBindingId  :=  0.U(binding.activeBindingId.getWidth.W)
-              pending  :=  false.B
-              caller.jump(returnTo)
-            }.otherwise {
-              caller.waitCondition(false.B)
             }
+            result
           }
-          result
         case _ =>
           throw new Exception(s"[HwOS] Call('$returnTo') on HwFunction '${func.name}' must be used inside ThreadCtx.")
       }
     } finally {
       popInvokeMode()
-      CallStack.pop()
     }
   }
 
@@ -271,23 +258,23 @@ object SysCall {
       case _ =>
     }
 
-    CallStack.markReturned()
+    CallProtocolContext.markReturned()
     markExplicitReturnOnCurrentThread()
 
-    if (recordReturnAction(currentCallSite)) {
+    if (recordReturnAction(currentContinuation)) {
       return
     }
 
     ContextScope.current match {
       case AtomicCtx(t: HardwareThread) =>
-        emitImmediateReturn(t, currentCallSite)
+        emitImmediateReturn(t, currentContinuation)
       case ThreadCtx(t: HardwareThread) =>
-        val capturedCallSite = currentCallSite
-        val returnStepLabel = capturedCallSite
-          .flatMap(_.continuationTarget)
+        val capturedContinuation = currentContinuation
+        val returnStepLabel = capturedContinuation
+          .flatMap(_.targetLabel)
           .getOrElse("ThreadExit")
         t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), returnStepLabel)) {
-          emitImmediateReturn(t, capturedCallSite)
+          emitImmediateReturn(t, capturedContinuation)
         }
       case _ =>
         throw new Exception("[HwOS] SysCall.Return() can only be used inside ThreadCtx or AtomicCtx.")

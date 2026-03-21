@@ -3,6 +3,8 @@ package HwOS.kernel.thread.step
 import chisel3.{Bool, Module => ChiselModule, RawModule}
 import chisel3.experimental.UnlocatableSourceInfo
 import HwOS.kernel.debug.CallStack
+import HwOS.kernel.system.RecordedEffect
+import HwOS.kernel.system.CallProtocolContext
 import HwOS.kernel.system.VirtualStepRecord
 
 private[kernel] object PreLoweringAnalysis {
@@ -24,6 +26,7 @@ private[kernel] object PreLoweringAnalysis {
   def record(effect: EdgeAction): Unit = {
     val record = currentRecord
     record.edgeActions += effect
+    record.capturedEffects += RecordedEffect(effect, edgeGuardStack.get())
   }
 
   def pushEdgeGuard(cond: Bool): Unit = {
@@ -52,14 +55,15 @@ private[kernel] object PreLoweringAnalysis {
     val idsBefore = ids.length
     val portsBefore = modulePortsSize(module)
 
-    val staticActions = record.staticEdgeActions.toVector
     record.edgeActions.clear()
-    record.edgeActions ++= staticActions
+    record.capturedEffects.clear()
     activeRecord.set(Some(record))
     edgeGuardStack.set(Nil)
     try {
-      CallStack.withFrame(record.name, record.implicitReturnTarget, record.implicitCallSite) {
-        withTempRegion(module, tempRegion) { block }
+      CallProtocolContext.withCallSiteSnapshot(record.implicitCallSite) {
+        CallStack.withFrame(record.name, None, record.implicitCallSite) {
+          withTempRegion(module, tempRegion) { block }
+        }
       }
     } finally {
       val addedIds = ids.length - idsBefore

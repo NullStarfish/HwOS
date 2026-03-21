@@ -2,7 +2,7 @@ package HwOS.kernel.thread
 
 import chisel3._
 import HwOS.kernel.context.{ContextScope, ThreadCtx}
-import HwOS.kernel.debug.CallStack.CallSiteSnapshot
+import HwOS.kernel.system.CallProtocolContext.CallSiteSnapshot
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
 import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}

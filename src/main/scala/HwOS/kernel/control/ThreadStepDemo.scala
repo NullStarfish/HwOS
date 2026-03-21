@@ -29,7 +29,7 @@ object ThreadStepDemo {
         if (PreLoweringAnalysis.isActive) {
           PreLoweringAnalysis.record(EdgeAction.Hijack(target))
         } else {
-          ThreadLayout.lowerStepAt(irState, layoutState, ThreadLayout.resolveStepRef(irState, layoutState, target))
+          ThreadRuntimeLogic.emitHijack(irState, layoutState, runtime, target)
         }
       }
 

@@ -1,7 +1,8 @@
 package HwOS.kernel.thread.step
 
-import HwOS.kernel.debug.CallStack.ReturnEdgePatch
+import HwOS.kernel.system.CallProtocolContext.ContinuationSnapshot
 import HwOS.kernel.thread.StepRef
+import chisel3.Bool
 
 private[kernel] sealed trait EdgeAction {
   def kindName: String
@@ -15,12 +16,14 @@ private[kernel] sealed trait EdgeAction {
 private[kernel] object EdgeAction {
   final case class Return(
       override val guardDepth: Int = 0,
-      returnTarget: Option[String] = None,
-      returnEdgePatch: Option[ReturnEdgePatch] = None,
+      continuation: Option[ContinuationSnapshot] = None,
       override val emitInLowering: Boolean = false,
   ) extends EdgeAction {
     override val kindName: String = "return"
     override val isReturning: Boolean = true
+
+    def returnTarget: Option[String] = continuation.flatMap(_.targetLabel)
+    def returnEdgePatch = continuation.flatMap(_.returnEdgePatch)
   }
 
   final case class Jump(
@@ -37,7 +40,7 @@ private[kernel] object EdgeAction {
     override val hijackTarget: Option[StepRef] = Some(target)
   }
 
-  case object Wait extends EdgeAction {
+  final case class Wait(cond: Bool) extends EdgeAction {
     override val kindName: String = "wait"
   }
 }

@@ -18,6 +18,6 @@ private[kernel] trait ThreadDebugApi {
   def debugStepActions: Map[String, Seq[EdgeAction]]
   def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit
   def markExplicitReturnEncountered(): Unit
-  def registerCallSiteReturnRequirement(callSite: HwOS.kernel.debug.CallStack.CallSiteSnapshot): Unit
+  def registerCallSiteReturnRequirement(callSite: HwOS.kernel.system.CallProtocolContext.CallSiteSnapshot): Unit
   def markCallSiteReturned(callSiteId: Int): Unit
 }

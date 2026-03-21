@@ -1,0 +1,120 @@
+package HwOS.kernel.thread.step
+
+import HwOS.kernel.system.{RecordedEdgePatch, RecordedEffect, VirtualStepRecord}
+import HwOS.kernel.thread.step.ThreadCompilePlan._
+
+private[kernel] object ThreadCompileAnalysis {
+  def analyze(
+      irState: ThreadIR.IRState,
+      layoutState: ThreadLayout.LayoutState,
+  ): ThreadCompilePlan = {
+    preAnalyzeProgram(irState)
+    val suppressed = collectSuppressedStandalone(irState, layoutState)
+    val standalone = irState.program.steps.indices.filterNot(suppressed.contains).toVector
+    val stepPlans = irState.program.steps.zipWithIndex.map { case (step, index) =>
+      buildStepPlan(irState, layoutState, step, index, suppressed)
+    }.toVector
+    val plan = ThreadCompilePlan(
+      stepPlans = stepPlans,
+      suppressedStandalone = suppressed,
+      standaloneIndices = standalone,
+      hasReturningStep = stepPlans.exists(_.effects.exists {
+        case _: ReturnEffect => true
+        case PatchedEdge(_, patchEffects) => patchEffects.exists(_.isInstanceOf[ReturnEffect])
+        case _ => false
+      }),
+      entryIndex = 0,
+    )
+    validateJumpTargets(irState, plan)
+    layoutState.compilePlan = Some(plan)
+    plan
+  }
+
+  private def preAnalyzeProgram(irState: ThreadIR.IRState): Unit = {
+    for (step <- irState.program.steps) {
+      PreLoweringAnalysis.analyzeStep(step) {
+        step.block()
+      }
+    }
+  }
+
+  private def collectSuppressedStandalone(
+      irState: ThreadIR.IRState,
+      layoutState: ThreadLayout.LayoutState,
+  ): Set[Int] = {
+    irState.program.steps.zipWithIndex.flatMap { case (step, index) =>
+      step.capturedEffects.collect {
+        case RecordedEffect(action, _) if action.hijackTarget.nonEmpty =>
+          val target = action.hijackTarget.get
+          val localState = new ThreadLayout.LayoutState()
+          localState.currentLoweringStep = index
+          ThreadLayout.resolveStepRef(irState, localState, target)
+      }
+    }.toSet
+  }
+
+  private def buildStepPlan(
+      irState: ThreadIR.IRState,
+      layoutState: ThreadLayout.LayoutState,
+      step: VirtualStepRecord,
+      stepIndex: Int,
+      suppressed: Set[Int],
+  ): StepPlan = {
+    val localState = new ThreadLayout.LayoutState()
+    localState.currentLoweringStep = stepIndex
+    val effects = step.capturedEffects.flatMap(compileEffect(irState, localState, _)).toSeq ++
+      step.staticEdgePatches.map(patch => PatchedEdge(patch.target, patch.effects.flatMap(compileEffect(irState, localState, _)).toSeq))
+    val waits = effects.collect { case wait: WaitEffect => wait }
+    StepPlan(
+      stepIndex = stepIndex,
+      standalone = !suppressed.contains(stepIndex),
+      entryPolicy = StepEntryPolicy(waits = waits),
+      effects = effects,
+    )
+  }
+
+  private def compileEffect(
+      irState: ThreadIR.IRState,
+      layoutState: ThreadLayout.LayoutState,
+      recorded: RecordedEffect,
+  ): Option[EdgeEffect] = recorded.action match {
+    case EdgeAction.Wait(cond) =>
+      Some(WaitEffect(cond))
+    case EdgeAction.Jump(_, target, _) =>
+      Some(JumpEffect(ThreadLayout.resolveStepRef(irState, layoutState, target), recorded.guards))
+    case EdgeAction.Return(_, continuation, _) =>
+      Some(ReturnEffect(continuation, recorded.guards))
+    case EdgeAction.Hijack(target) =>
+      Some(HijackInlineEffect(ThreadLayout.resolveStepRef(irState, layoutState, target)))
+  }
+
+  private def validateJumpTargets(
+      irState: ThreadIR.IRState,
+      plan: ThreadCompilePlan,
+  ): Unit = {
+    for (stepPlan <- plan.stepPlans) {
+      val sourceStep = irState.program.steps(stepPlan.stepIndex)
+      for (effect <- stepPlan.effects) {
+        effect match {
+          case JumpEffect(targetIndex, _) =>
+            if (!plan.standaloneIndices.contains(targetIndex)) {
+              val targetStep = irState.program.steps(targetIndex)
+              throw new Exception(
+                s"[Thread] jump target '${targetStep.name}' referenced from '${sourceStep.name}' in program '${irState.programName}' has no standalone code slot.",
+              )
+            }
+          case PatchedEdge(_, patchEffects) =>
+            patchEffects.collect { case JumpEffect(targetIndex, _) => targetIndex }.foreach { targetIndex =>
+              if (!plan.standaloneIndices.contains(targetIndex)) {
+                val targetStep = irState.program.steps(targetIndex)
+                throw new Exception(
+                  s"[Thread] jump target '${targetStep.name}' referenced from '${sourceStep.name}' in program '${irState.programName}' has no standalone code slot.",
+                )
+              }
+            }
+          case _ =>
+        }
+      }
+    }
+  }
+}

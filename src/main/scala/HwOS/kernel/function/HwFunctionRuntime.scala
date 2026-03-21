@@ -2,7 +2,7 @@ package HwOS.kernel.function
 
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{OSReaper, OSReaperManagedLogic}
+import HwOS.kernel.system.{CallProtocolContext, OSReaper, OSReaperManagedLogic}
 import HwOS.kernel.thread.{HardwareAgent, HardwareThread, ThreadDebugApi}
 import chisel3._
 
@@ -47,9 +47,11 @@ private[kernel] final class FunctionRuntimeHost[T](
 
   val activation: HardwareThread = {
     val thread = owner.createThread(name = s"${functionName}_activation")
-    CallStack.withIsolatedStack {
-      thread.entry {
-        resultHandle = Some(body(thread))
+    CallProtocolContext.withIsolatedProtocol {
+      CallStack.withIsolatedStack {
+        thread.entry {
+          resultHandle = Some(body(thread))
+        }
       }
     }
     thread match {

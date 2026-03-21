@@ -3,8 +3,19 @@ package HwOS.kernel.system
 import chisel3._
 import scala.collection.mutable.ArrayBuffer
 import HwOS.kernel.debug.CallStack
-import HwOS.kernel.debug.CallStack.CallSiteSnapshot
 import HwOS.kernel.thread.step.EdgeAction
+import HwOS.kernel.thread.step.ThreadCompilePlan.PatchTarget
+import HwOS.kernel.system.CallProtocolContext.CallSiteSnapshot
+
+final case class RecordedEffect(
+    action: EdgeAction,
+    guards: List[Bool] = Nil,
+)
+
+final case class RecordedEdgePatch(
+    target: PatchTarget,
+    effects: Seq[RecordedEffect],
+)
 
 final class GlobalCodeSegment(
     val ownerName: String,
@@ -29,14 +40,14 @@ final class VirtualStepRecord(
     val name: String,
     val block: () => Unit,
     val threadCallStack: Seq[String],
-    val implicitReturnTarget: Option[String],
     val implicitCallSite: Option[CallSiteSnapshot],
     val invokedCalls: ArrayBuffer[Seq[String]] = ArrayBuffer.empty[Seq[String]],
 ) {
   var allocatedAddress: Int = -1
   var loweredStandalone: Boolean = true
-  val staticEdgeActions: ArrayBuffer[EdgeAction] = ArrayBuffer.empty[EdgeAction]
   val edgeActions: ArrayBuffer[EdgeAction] = ArrayBuffer.empty[EdgeAction]
+  val capturedEffects: ArrayBuffer[RecordedEffect] = ArrayBuffer.empty[RecordedEffect]
+  val staticEdgePatches: ArrayBuffer[RecordedEdgePatch] = ArrayBuffer.empty[RecordedEdgePatch]
 }
 
 final class VirtualProgram(val ownerName: String) {
@@ -47,8 +58,7 @@ final class VirtualProgram(val ownerName: String) {
       name,
       block,
       CallStack.getSnapshot,
-      CallStack.currentReturnTarget,
-      CallStack.currentCallSiteSnapshot,
+      CallProtocolContext.currentCallSiteSnapshot,
     )
     records += record
     record
