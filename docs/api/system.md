@@ -36,7 +36,12 @@
 
 作用：
 
-- 把一段 inline 控制代码 emit 到当前调用上下文
+- 发起一个显式 return-terminated 的 callable segment
+
+关键边界：
+
+- 被调用 segment 必须包含显式 `SysCall.Return()`
+- `Return()` 会把控制流接回当前 `Call` 绑定的 continuation
 
 ### `SysCall.Call(HwFunction, returnTo)`
 
@@ -52,6 +57,12 @@
 
 - 返回 continuation
 - 或在 root 下落到 kernel `exit`
+
+关键边界：
+
+- 它是 callable segment 的正式退出原语
+- 它不是普通 jump 的别名
+- 在 `SysCall.Call(...)` 上下文里，return edge 会携带 call-site continuation 语义
 
 ### `SysCall.start(target)`
 
@@ -107,11 +118,11 @@
 ```scala
 controller.entry {
   controller.Step("StartWorker") {
-    SysCall.Call(SysCall.start(worker))
+    SysCall.Inline(SysCall.start(worker))
   }
   controller.Step("KillWorker") {
-    SysCall.Call(SysCall.kill(worker))
-    SysCall.Call(SysCall.Return())
+    SysCall.Inline(SysCall.kill(worker))
+    SysCall.Return()
   }
 }
 ```

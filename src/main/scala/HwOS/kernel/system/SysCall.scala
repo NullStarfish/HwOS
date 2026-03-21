@@ -27,6 +27,18 @@ object SysCall {
   private def currentInvokeMode: Option[InlineCallMode] =
     invokeModeStack.get().headOption
 
+  private def requireExplicitReturn(frameName: String): Unit = {
+    val frame = CallStack.pop().getOrElse(
+      throw new Exception(s"[HwOS] Missing call frame while finalizing '$frameName'."),
+    )
+    if (frame.requiresExplicitReturn && !frame.returned) {
+      throw new Exception(
+        s"[HwOS] Callable segment '$frameName' was used with SysCall.Call(...) but has no explicit SysCall.Return(). " +
+          s"Call-terminated segments must end through SysCall.Return().",
+      )
+    }
+  }
+
   // ==========================================
   // 1. Function Linker Layer (逻辑注入)
   // ==========================================
@@ -76,8 +88,9 @@ object SysCall {
    * Return() 将跳转到该返回地址。
    */
   def Call[T](func: HwInline[T], returnTo: String): T = {
-    CallStack.pushCall(func.name, returnTarget = Some(returnTo))
+    CallStack.pushCall(func.name, returnTarget = Some(returnTo), requiresExplicitReturn = true)
     pushInvokeMode(CallMode)
+    var failed = false
     try {
       scala.util.Try {
         ContextScope.current match {
@@ -89,9 +102,17 @@ object SysCall {
         }
       }
       func.emit(ContextScope.getCurrentAgent())
+    } catch {
+      case ex: Throwable =>
+        failed = true
+        throw ex
     } finally {
       popInvokeMode()
-      CallStack.pop()
+      if (failed) {
+        CallStack.pop()
+      } else {
+        requireExplicitReturn(func.name)
+      }
     }
   }
 
@@ -155,6 +176,8 @@ object SysCall {
       case _ =>
     }
 
+    CallStack.markReturned()
+
     if (EdgePatchAnalysis.isActive) {
       EdgePatchAnalysis.recordReturn(CallStack.currentReturnTarget)
       return
@@ -167,7 +190,6 @@ object SysCall {
 
     ContextScope.current match {
       case AtomicCtx(t: ThreadDebugApi) =>
-        CallStack.markReturned()
         CallStack.currentReturnTarget match {
           case Some(target) =>
             t.jump(target)
@@ -175,7 +197,6 @@ object SysCall {
             t.runtimeExit()
         }
       case ThreadCtx(t) =>
-        CallStack.markReturned()
         CallStack.currentReturnTarget match {
           case Some(target) =>
             t.Step(ContinuationNaming.freshReturnStepName(System.identityHashCode(t), target)) {

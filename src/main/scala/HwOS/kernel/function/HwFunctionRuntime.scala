@@ -3,7 +3,7 @@ package HwOS.kernel.function
 import HwOS.kernel.debug.CallStack
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.{OSReaper, OSReaperManagedLogic}
-import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
+import HwOS.kernel.thread.{HardwareAgent, HardwareThread, ThreadDebugApi}
 import chisel3._
 
 private[kernel] final class FunctionCallBindingState(
@@ -51,6 +51,13 @@ private[kernel] final class FunctionRuntimeHost[T](
       thread.entry {
         resultHandle = Some(body(thread))
       }
+    }
+    thread match {
+      case debugThread: ThreadDebugApi if !debugThread.hasReturningStep =>
+        throw new Exception(
+          s"[HwOS] HwFunction '$functionName' is call-terminated and must contain an explicit SysCall.Return().",
+        )
+      case _ =>
     }
     thread
   }

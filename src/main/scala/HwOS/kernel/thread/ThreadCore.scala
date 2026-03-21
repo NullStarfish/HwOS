@@ -65,6 +65,9 @@ trait ThreadCore
       )
     }
 
+  override def hasReturningStep: Boolean =
+    irStateOpt.exists(_.program.steps.exists(_.edgeActions.exists(_.isReturning)))
+
   override def debugStepEffects: Map[String, Seq[String]] =
     irStateOpt
       .map(_.program.steps.map(step => step.name -> edgeActionNames(step.edgeActions.toSeq).toSeq).toMap)

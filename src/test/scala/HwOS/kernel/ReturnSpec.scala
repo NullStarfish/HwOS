@@ -1,6 +1,7 @@
 package HwOS.kernel
 
 import HwOS.kernel.HwOSLanguage._
+import HwOS.kernel.function.HwFunction
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.SysCall
@@ -202,6 +203,227 @@ class ReturnSpec extends AnyFlatSpec {
     }
 
     assert(ex.getMessage.contains("illegal inside Inline"))
+  }
+
+  it should "reject Call(HwInline) segments that omit explicit Return()" in {
+    val ex = intercept[Exception] {
+      class MissingInlineReturnModule extends Module {
+        implicit val kernel: Kernel = new Kernel()
+
+        object Init extends HwProcess("Init") {
+          val worker = createThread("Worker")
+
+          private def badSegment: HwInline[Unit] = HwInline.thread("BadCallSegment") { t =>
+            t.Step("Body") {}
+            ()
+          }
+
+          override def entry(): Unit = {
+            worker.entry {
+              SysCall.Call(badSegment, "AfterBadCall")
+              worker.Step("AfterBadCall") {}
+              SysCall.Return()
+            }
+          }
+        }
+
+        Init.build()
+      }
+
+      _root_.circt.stage.ChiselStage.emitCHIRRTL(new MissingInlineReturnModule)
+    }
+
+    assert(ex.getMessage.contains("BadCallSegment"))
+    assert(ex.getMessage.contains("no explicit SysCall.Return()"))
+  }
+
+  it should "reject Call(HwFunction) bodies that omit explicit Return()" in {
+    val ex = intercept[Exception] {
+      class MissingFunctionReturnModule extends Module {
+        implicit val kernel: Kernel = new Kernel()
+
+        object Init extends HwProcess("Init") {
+          val worker = createThread("Worker")
+
+          val badFn = HwFunction.thread("BadFn") { t =>
+            t.Step("Body") {}
+            ()
+          }
+
+          override def entry(): Unit = {
+            worker.entry {
+              SysCall.Inline(badFn.Invoke("AfterBadFn"))
+              worker.Step("AfterBadFn") {}
+              SysCall.Return()
+            }
+          }
+        }
+
+        Init.build()
+      }
+
+      _root_.circt.stage.ChiselStage.emitCHIRRTL(new MissingFunctionReturnModule)
+    }
+
+    assert(ex.getMessage.contains("BadFn"))
+    assert(ex.getMessage.contains("must contain an explicit SysCall.Return()"))
+  }
+
+  it should "route multiple explicit Return sites in one Call to the same continuation" in {
+    class MultiReturnCallModule extends Module {
+      val io = IO(new Bundle {
+        val chooseAlt = Input(Bool())
+        val out = Output(UInt(8.W))
+        val done = Output(Bool())
+      })
+
+      io.out := DontCare
+      io.done := DontCare
+
+      implicit val kernel: Kernel = new Kernel()
+
+      object Init extends HwProcess("Init") {
+        val worker = createThread("Worker")
+        val outReg = RegInit(0.U(8.W))
+
+        private def multiExit: HwInline[Unit] = HwInline.thread("MultiExit") { t =>
+          t.Step("ChooseExit") {
+            when(io.chooseAlt) {
+              outReg := 2.U
+              t.jump("ExitB")
+            }.otherwise {
+              outReg := 1.U
+              t.jump("ExitA")
+            }
+          }
+          t.Step("ExitA") {
+            SysCall.Return()
+          }
+          t.Step("ExitB") {
+            SysCall.Return()
+          }
+          ()
+        }
+
+        override def entry(): Unit = {
+          worker.entry {
+            SysCall.Call(multiExit, "AfterCall")
+            worker.Step("AfterCall") {
+              outReg := outReg + 10.U
+            }
+            SysCall.Return()
+          }
+
+          val daemon = createLogic("Daemon")
+          daemon.run {
+            when(!worker.active && !worker.done) {
+              SysCall.Inline(SysCall.start(worker))
+            }
+            io.out := outReg
+            io.done := worker.done
+          }
+        }
+      }
+
+      Init.build()
+    }
+
+    simulate(new MultiReturnCallModule) { c =>
+      c.reset.poke(true.B)
+      c.io.chooseAlt.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      var cycles = 0
+      while (c.io.done.peek().litValue == 0 && cycles < 20) {
+        c.clock.step()
+        cycles += 1
+      }
+
+      c.io.done.expect(true.B)
+      c.io.out.expect(11.U)
+    }
+
+    simulate(new MultiReturnCallModule) { c =>
+      c.reset.poke(true.B)
+      c.io.chooseAlt.poke(true.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      var cycles = 0
+      while (c.io.done.peek().litValue == 0 && cycles < 20) {
+        c.clock.step()
+        cycles += 1
+      }
+
+      c.io.done.expect(true.B)
+      c.io.out.expect(12.U)
+    }
+  }
+
+  it should "keep allowing natural fallthrough in SysCall.Inline thread segments" in {
+    class FallthroughInlineModule extends Module {
+      val io = IO(new Bundle {
+        val out = Output(UInt(8.W))
+        val done = Output(Bool())
+      })
+
+      io.out := DontCare
+      io.done := DontCare
+
+      implicit val kernel: Kernel = new Kernel()
+
+      object Init extends HwProcess("Init") {
+        val worker = createThread("Worker")
+        val outReg = RegInit(0.U(8.W))
+
+        private def helper: HwInline[Unit] = HwInline.thread("NaturalInline") { t =>
+          t.Step("WriteOne") {
+            outReg := 1.U
+          }
+          t.Step("WriteTwo") {
+            outReg := outReg + 1.U
+          }
+          ()
+        }
+
+        override def entry(): Unit = {
+          worker.entry {
+            SysCall.Inline(helper)
+            worker.Step("Finish") {
+              outReg := outReg + 10.U
+            }
+            SysCall.Return()
+          }
+
+          val daemon = createLogic("Daemon")
+          daemon.run {
+            when(!worker.active && !worker.done) {
+              SysCall.Inline(SysCall.start(worker))
+            }
+            io.out := outReg
+            io.done := worker.done
+          }
+        }
+      }
+
+      Init.build()
+    }
+
+    simulate(new FallthroughInlineModule) { c =>
+      c.reset.poke(true.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      var cycles = 0
+      while (c.io.done.peek().litValue == 0 && cycles < 20) {
+        c.clock.step()
+        cycles += 1
+      }
+
+      c.io.done.expect(true.B)
+      c.io.out.expect(12.U)
+    }
   }
 
   it should "mark returning-step information in pre-analysis before lowering runs" in {

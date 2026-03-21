@@ -50,31 +50,43 @@ module TopModule(
   output io_done
 );
 
-  reg        activeReg;
-  wire       activeReg_0 = activeReg;
-  reg        doneReg;
-  reg  [2:0] pcReg;
-  wire [2:0] pcReg_0 = pcReg;
-  wire       _layer_probe = pcReg == 3'h0;
-  wire       _layer_probe_0 = pcReg == 3'h1;
-  wire       _layer_probe_1 = pcReg == 3'h2;
-  wire       _layer_probe_2 = pcReg == 3'h3;
-  wire       _layer_probe_3 = pcReg == 3'h4;
-  wire       _layer_probe_4 = pcReg == 3'h5;
+  reg  [2:0] cursorReg;
+  wire [2:0] cursorReg_0 = cursorReg;
+  reg  [1:0] stateReg;
+  wire [1:0] stateReg_0 = stateReg;
+  wire       _justStarted_T = stateReg == 2'h1;
+  wire       _layer_probe = cursorReg == 3'h0;
+  wire       _layer_probe_0 = cursorReg == 3'h1;
+  wire       _layer_probe_1 = cursorReg == 3'h2;
+  wire       _layer_probe_2 = cursorReg == 3'h3;
+  wire       _layer_probe_3 = cursorReg == 3'h4;
+  wire       _layer_probe_4 = cursorReg == 3'h5;
+  wire       _layer_probe_5 = cursorReg == 3'h6;
+  wire       _GEN = _justStarted_T & _layer_probe_5;
   always @(posedge clock) begin
     if (reset) begin
-      activeReg <= 1'h0;
-      doneReg <= 1'h0;
-      pcReg <= 3'h0;
+      cursorReg <= 3'h0;
+      stateReg <= 2'h0;
     end
     else begin
-      activeReg <= io_start | ~_layer_probe_4 & activeReg;
-      doneReg <= ~io_start & (_layer_probe_4 | doneReg);
-      if (io_start | _layer_probe_4)
-        pcReg <= 3'h0;
-      else if (_layer_probe_3 & activeReg | _layer_probe_2 & activeReg | _layer_probe_1
-               & activeReg | _layer_probe_0 & activeReg | _layer_probe & activeReg)
-        pcReg <= pcReg + 3'h1;
+      if (io_start | _GEN)
+        cursorReg <= 3'h0;
+      else if (_justStarted_T & _layer_probe_4)
+        cursorReg <= 3'h6;
+      else if (_justStarted_T & _layer_probe_3)
+        cursorReg <= 3'h5;
+      else if (_justStarted_T & _layer_probe_2)
+        cursorReg <= 3'h4;
+      else if (_justStarted_T & _layer_probe_1)
+        cursorReg <= 3'h3;
+      else if (_justStarted_T & _layer_probe_0)
+        cursorReg <= 3'h2;
+      else if (_justStarted_T & _layer_probe)
+        cursorReg <= 3'h1;
+      if (io_start)
+        stateReg <= 2'h1;
+      else if (_GEN)
+        stateReg <= 2'h2;
     end
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_
@@ -90,22 +102,14 @@ module TopModule(
         for (logic [1:0] i = 2'h0; i < 2'h2; i += 2'h1) begin
           _RANDOM[i[0]] = `RANDOM;
         end
-        activeReg = _RANDOM[1'h0][0];
-        doneReg = _RANDOM[1'h0][1];
-        pcReg = _RANDOM[1'h1][4:2];
+        cursorReg = _RANDOM[1'h1][2:0];
+        stateReg = _RANDOM[1'h1][4:3];
       `endif // RANDOMIZE_REG_INIT
     end // initial
     `ifdef FIRRTL_AFTER_INITIAL
       `FIRRTL_AFTER_INITIAL
     `endif // FIRRTL_AFTER_INITIAL
   `endif // ENABLE_INITIAL_REG_
-  KernelStateMonitorDPI monitor (
-    .clock   (clock),
-    .reset   (reset),
-    .pcs     ({29'h0, pcReg}),
-    .actives (activeReg),
-    .dones   (doneReg)
-  );
-  assign io_done = doneReg;
+  assign io_done = stateReg == 2'h2;
 endmodule
 

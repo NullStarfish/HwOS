@@ -13,5 +13,6 @@ final class DebugStepRecord(
 
 private[kernel] trait ThreadDebugApi {
   def debugSteps: Seq[DebugStepRecord]
+  def hasReturningStep: Boolean
   def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit
 }

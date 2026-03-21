@@ -57,30 +57,33 @@ module TopModule_Verification();
   reg [2:0] lastPc;
   `ifndef SYNTHESIS
     wire _GEN =
-      TopModule.activeReg_0 & TopModule.pcReg_0 != lastPc | TopModule.activeReg_0
-      & ~wasActive;
+      TopModule._justStarted_T & TopModule.cursorReg_0 != lastPc
+      | TopModule._justStarted_T & ~wasActive;
     always @(posedge TopModule.clock) begin
-      if ((`PRINTF_COND_) & ~wasActive & TopModule.activeReg_0 & ~TopModule.reset)
+      if ((`PRINTF_COND_) & ~wasActive & TopModule._justStarted_T & ~TopModule.reset)
         $fwrite(32'h80000002, "[Init/Demo/Main_thread] --- ONLINE ---\n");
-      if ((`PRINTF_COND_) & wasActive & ~TopModule.activeReg_0 & ~TopModule.reset)
+      if ((`PRINTF_COND_) & wasActive & TopModule.stateReg_0 != 2'h1 & ~TopModule.reset)
         $fwrite(32'h80000002, "[Init/Demo/Main_thread] --- OFFLINE ---\n");
       if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 0] Init\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [SK 0] Init\n");
       if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_0 & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 1] WaitLink\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [SK 1] WaitLink\n");
       if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_1 & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 2] PrepareHeader\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [SK 2] PrepareHeader\n");
       if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_2 & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 3] Transmit\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [SK 3] Transmit\n");
       if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_3 & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 4] Ack\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [SK 4] Ack\n");
       if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_4 & ~TopModule.reset)
-        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [PC 5] Finish\n");
+        $fwrite(32'h80000002, "[Init/Demo/Main_thread] EXEC [SK 5] Finish\n");
+      if ((`PRINTF_COND_) & _GEN & TopModule._layer_probe_5 & ~TopModule.reset)
+        $fwrite(32'h80000002,
+                "[Init/Demo/Main_thread] EXEC [SK 6] Anon_Return_to_ThreadExit\n");
     end // always @(posedge)
   `endif // not def SYNTHESIS
   always @(posedge TopModule.clock) begin
-    wasActive <= TopModule.activeReg_0;
-    lastPc <= TopModule.pcReg_0;
+    wasActive <= TopModule._justStarted_T;
+    lastPc <= TopModule.cursorReg_0;
   end // always @(posedge)
   `ifdef ENABLE_INITIAL_REG_
     `ifdef FIRRTL_BEFORE_INITIAL

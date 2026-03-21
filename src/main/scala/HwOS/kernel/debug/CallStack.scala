@@ -11,6 +11,7 @@ object CallStack {
   final class Frame(
       val name: String,
       val returnTarget: Option[String],
+      val requiresExplicitReturn: Boolean = false,
   ) {
     var returned: Boolean = false
   }
@@ -31,8 +32,8 @@ object CallStack {
     }
   }
 
-  def pushCall(name: String, returnTarget: Option[String]): Unit =
-    pushFrame(new Frame(name, returnTarget))
+  def pushCall(name: String, returnTarget: Option[String], requiresExplicitReturn: Boolean = false): Unit =
+    pushFrame(new Frame(name, returnTarget, requiresExplicitReturn))
   
   def pop(): Option[Frame] = Option.when(stack.get().nonEmpty)(stack.get().pop())
 

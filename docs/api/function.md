@@ -78,6 +78,11 @@
 
 - 需要 thread 级上下文的 inline 控制段
 
+关键边界：
+
+- 被 `SysCall.Inline(...)` 使用时，可以自然 fallthrough
+- 被 `SysCall.Call(...)` 使用时，必须包含显式 `SysCall.Return()`
+
 #### `HwInline.stateless`
 
 使用时机：
@@ -115,6 +120,8 @@
 
 - 如果当前有 continuation，则回 continuation
 - 如果当前是 root，则内部转成 kernel `exit`
+- 它是 `Call`-terminated segment 的正式退出原语
+- 在 `SysCall.Call(...)` 上下文中，lowering 会把 call-site continuation 语义附着到 `Return()` 上
 
 ## Usage examples
 
@@ -127,10 +134,10 @@ val zeroCounter = HwInline.atomic("ZeroCounter") { t =>
 
 worker.entry {
   worker.Step("Init") {
-    SysCall.Call(zeroCounter)
+    SysCall.Inline(zeroCounter)
   }
   worker.Step("Finish") {
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
   }
 }
 ```
@@ -143,7 +150,7 @@ val workerFn = HwFunction.thread("WorkerFn") { t =>
     counter := counter + 1.U
   }
   t.Step("Ret") {
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
   }
 }
 ```
@@ -157,7 +164,7 @@ caller.entry {
   }
   caller.Step("AfterCall") {
     doneReg := true.B
-    SysCall.Call(SysCall.Return())
+    SysCall.Return()
   }
 }
 ```
@@ -168,6 +175,8 @@ caller.entry {
 
 它承担的是局部控制段职责。  
 在硬件里，控制段的结构代价不能像软件那样被编译器/OS 完全隐藏。
+
+当它被 `SysCall.Call(...)` 使用时，当前语义会把它视为显式 return-terminated segment，而不是自然结束的 helper。
 
 ### `HwFunction` 不是纯 inline helper
 
