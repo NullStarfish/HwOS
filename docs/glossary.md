@@ -5,10 +5,10 @@
 
 ## A-C
 
-### `activation thread`
+### `activation thread`（历史）
 
-当前 `HwFunction` v1 内部隐藏的执行 thread。  
-它承载 function body 的真实运行，不等于 caller thread。
+历史 `HwFunction` v1 内部隐藏执行 thread 的叫法。  
+当前主线已移除 `HwFunction`，该术语只用于阅读旧材料。
 
 ### `binding`
 
@@ -20,15 +20,15 @@
 `KernelAddressSpace` 导出的元数据表之一。  
 它记录 cursor/runtime state 与 code segment 的对应关系。
 
-### `call binding`
+### `call binding`（历史）
 
-`HwFunction` v1 为一次调用建立的显式绑定状态。  
-它支撑 continuation、kill propagation 与 reclaim。
+历史 `HwFunction` v1 的调用绑定状态。  
+当前主线不再把它作为正式机制。
 
 ### `code segment`
 
 HwOS 中真正可移植、可组合、可被链接的控制代码段。  
-当前 `HwInline` 和 `HwFunction` 都属于 code segment 家族，但结构代价不同。
+当前主线的正式代码段 API 是 `HwInline`。
 
 ### `code space`
 
@@ -63,17 +63,16 @@ provider/process 通过 `export(symbol, signal, caps)` 把资源注册到 export
 `KernelAddressSpace` 导出的元数据表之一。  
 它只记录显式 export 的资源，不记录所有本地 Chisel 值。
 
-### `HwFunction`
+### `HwFunction`（历史）
 
-当前 v1 的真实硬件函数模型。  
-它通过隐藏 activation thread、blocking call 与 call binding 获得调用语义。  
-它是独立 code segment，不是纯 inline helper。
+历史 v1 的函数模型；当前主线已移除。
 
 ### `HwInline`
 
 纯 inline 控制段。  
-它不会创建独立 activation thread，也不提供真实调用协议。  
-它很像软件里的局部 helper，但其结构代价在硬件里必须显式考虑。
+它不会创建独立 activation thread。  
+它很像软件里的局部 helper，但其结构代价在硬件里必须显式考虑。  
+需要可调用语义时，使用 `SysCall.Call(HwInline, returnTo)` + 显式 `SysCall.Return()`。
 
 ## K-N
 

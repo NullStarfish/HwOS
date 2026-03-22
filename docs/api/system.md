@@ -4,7 +4,7 @@
 
 这一组 API 负责解决：
 
-- 系统调用怎么驱动 thread / function 生命周期
+- 系统调用怎么驱动 thread / callable segment 生命周期
 - kernel 地址表如何分配与导出
 
 它不负责：
@@ -42,14 +42,6 @@
 
 - 被调用 segment 必须包含显式 `SysCall.Return()`
 - `Return()` 会把控制流接回当前 `Call` 绑定的 continuation
-
-### `SysCall.Call(HwFunction, returnTo)`
-
-作用：
-
-- 发起当前 v1 的真实函数调用
-- 启动 activation thread
-- caller 在 call step 等待 activation done
 
 ### `SysCall.Return()`
 
@@ -167,6 +159,6 @@ kernel.addressSpace.exportAddressTables("generated")
 
 ## 与其他模块的关系
 
-- `HwInline` / `HwFunction` 调用形态，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
+- `HwInline` 调用形态，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
 - `RuntimeContext` 驱动下的 thread 观察接口，看 [thread.md](/Users/nullstarfish/HwOS_personal/docs/api/thread.md)
 - 哲学与概念边界，看 [concepts.md](/Users/nullstarfish/HwOS_personal/docs/concepts.md)

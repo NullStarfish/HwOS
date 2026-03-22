@@ -8,7 +8,7 @@
 当前 HwOS 的核心哲学可以压成几句话：
 
 - HwOS 不是先从数据通路出发，再把控制塞进去；它首先把**控制流**当成第一等设计对象
-- `thread` 是统一执行宿主，`HwFunction` / `HwInline` 是运行在其上的控制代码段
+- `thread` 是统一执行宿主，`HwInline` 是运行在其上的控制代码段
 - `Process` 当前更接近 **service / environment / physical component**，而不是软件意义上的 OS process
 - `export / declare` 只负责跨边界可见性与依赖记录；同一 process 内的本地代码可以继续直接 Scala/Chisel 交互
 - `OSReaper` 是可选系统神力，不是基础语言或基础 runtime 的默认组成部分
@@ -41,7 +41,7 @@ HwOS 试图解决的不是“如何再包装一层 Chisel API”，而是以下�
 
 - `thread` 是执行体
 - `Step` / `StepRef` 是编译期控制对象
-- `HwInline` / `HwFunction` 是控制代码段
+- `HwInline` 是控制代码段
 
 这意味着 HwOS 的重点不是“如何定义一堆寄存器和 wire”，而是：
 
@@ -68,9 +68,7 @@ HwOS 试图解决的不是“如何再包装一层 Chisel API”，而是以下�
 而真正 portable / combinable / linkable 的，是运行在 thread 上的控制代码段：
 
 - `HwInline`
-- `HwFunction`
-
-所以后续如果要谈 “linkable”，最自然的落点首先不是 thread 壳，而是：
+- 所以后续如果要谈 “linkable”，最自然的落点首先不是 thread 壳，而是：
 
 - code segment 的 portable / combinable / linkable
 
@@ -84,8 +82,7 @@ HwOS 试图解决的不是“如何再包装一层 Chisel API”，而是以下�
 
 所以 HwOS 必须把这件事显式公开：
 
-- `HwInline` 是局部控制段
-- `HwFunction` 是独立 code segment
+- `HwInline` 是局部/可调用控制段
 - `thread` 是执行宿主
 
 这不是命名偏好，而是在显式区分：
@@ -150,7 +147,7 @@ HwOS 试图解决的不是“如何再包装一层 Chisel API”，而是以下�
 
 - HwOS 当前首先是 **控制流本位** 的硬件描述框架
 - `thread` 是执行宿主
-- `HwFunction` / `HwInline` 是控制代码段
+- `HwInline` 是控制代码段
 - `Process` 更接近 service / environment / physical component
 - `export / declare` 构成 lightweight symbolic v0
 - `own / grant / ACL` 已退出当前主线

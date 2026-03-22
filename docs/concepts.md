@@ -16,8 +16,6 @@ graph TD
   T --> R["RuntimeContext"]
   T --> S["Step / StepRef / hijack / jump"]
   T --> K["Kernel"]
-  F["HwFunction"] --> A["Activation Thread"]
-  F --> CB["Call Binding"]
   I["HwInline"] --> T
   K --> AS["KernelAddressSpace"]
   AS --> ST["State Table"]
@@ -225,34 +223,12 @@ thread 更像：
 ### 它的边界
 
 它直接在当前调用上下文中 emit 控制逻辑。  
-如果需要真实调用/阻塞/kill 传播语义，应使用 `HwFunction`。
+如果需要可调用控制段语义，当前主线统一使用 `SysCall.Call(HwInline, ...)` + 显式 `SysCall.Return()`。
 
-## HwFunction
+## 历史说明：HwFunction
 
-### 它是什么
-
-`HwFunction` 当前是 v1 的真实函数模型，也是当前最明确的独立 code segment 载体。
-
-特征：
-
-- 隐藏 activation thread
-- blocking call
-- 单 activation slot
-- continuation binding
-
-### 它不是什么
-
-- 它不是纯 inline helper
-- 它不是软件调用栈的直接翻版
-
-### 它的边界
-
-`HwFunction` 当前更像：
-
-- 可调用控制代码段
-- portable / composable code segment
-
-而不是传统软件 function 的直接硬件投影。
+`HwFunction` 是历史 v1 概念，当前主线已移除。  
+相关 activation thread / call binding 机制不再作为现行 API。
 
 ## Symbolic v0
 

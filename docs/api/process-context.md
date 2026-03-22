@@ -209,5 +209,5 @@ v0 下，只有跨边界复用和正式接口才推荐 symbolic。
 ## 与其他模块的关系
 
 - thread 如何组织控制流，看 [thread.md](/Users/nullstarfish/HwOS_personal/docs/api/thread.md)
-- `HwInline` / `HwFunction` 如何作为控制代码段使用，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
+- `HwInline` 如何作为控制代码段使用，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
 - 地址表导出与 `exported/dependency` 两张表，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)

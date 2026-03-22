@@ -44,7 +44,6 @@
 - [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
 - 对应源码：
   - [function/HwInline.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/function/HwInline.scala)
-  - [function/HwFunction.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/function/HwFunction.scala)
 
 ### System
 
@@ -65,4 +64,3 @@
 - `StepRef` 是正式主语义，字符串跳转只算过渡包装
 - `Return` 是正式用户结束语义，`exit` 不是公开 API
 - thread 只有统一主线，不再有多个 backend 的分流说明
-

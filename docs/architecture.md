@@ -24,7 +24,7 @@
 - `thread` 是唯一正式控制流执行宿主
 - `StepRef` 是编译期 step 引用
 - `RuntimeContext(cursor + stateReg + binding)` 是 thread runtime 的第一性模型
-- `HwInline` / `HwFunction` 是运行在 thread 上的控制代码段
+- `HwInline` 是运行在 thread 上的控制代码段
 - `HwProcess` 当前更接近 service / environment / physical component
 - `KernelAddressSpace` 负责 state / code / binding / exported / dependency 五类元数据
 - `OSReaper` 是可选系统服务，不是基础运行模型的默认组成部分
@@ -55,8 +55,6 @@ graph TD
   AS --> ET["Exported Memory Table"]
   AS --> DT["Dependency Table"]
   K --> R["OSReaper (optional)"]
-  F["HwFunction v1"] --> AT["隐藏 activation thread"]
-  AT --> T
   I["HwInline"] --> T
   C["StructuredControl / ThreadStepDemo"] --> T
 ```
@@ -225,28 +223,12 @@ graph TD
 
 ### `function`
 
-当前仓库同时有两类“函数”：
+当前主线只有 `HwInline` 这一个正式控制段 API：
 
 - `HwInline`
-  - 纯 inline 控制段
-  - 直接把逻辑 emit 到当前调用上下文
-- `HwFunction`
-  - 当前 v1 的真实函数模型
-  - 是独立 code segment
-
-`HwFunction` 当前不是最终形态，而是 v1 方案：
-
-- 每个 function 有一个隐藏 activation thread
-- caller 通过 `SysCall.Call(HwFunction, returnTo)` 发起 blocking call
-- caller 在 call step 阻塞等待
-- activation thread 自己跑 function body
-- activation `Return()` 后 caller 回到 continuation
-
-当前已经补上的关键语义：
-
-- 单 activation slot
-- 显式 call binding
-- caller kill 时 activation 连坐 kill / reclaim
+  - 可作为 inline 控制段
+  - 也可作为 callable segment（`SysCall.Call(HwInline, ...)`）
+  - 不自带隐藏 activation thread
 
 ### `control`
 
@@ -366,20 +348,14 @@ thread 的完整路径大致是：
 - 不会让 cursor 跳进某个被 splice 的内部 step
 - 它会 stall 回当前入口 step 的地址
 
-### 3. function call 流程
+### 3. callable segment 流程
 
-当前 `HwFunction` 的调用流程：
+当前 `HwInline` 的可调用流程：
 
-1. caller 进入 `SysCall.Call(func, returnTo)`
-2. `func.ensureActivation(...)` 保证隐藏 activation thread 已存在
-3. caller 生成一个 call wait step
-4. 如果 activation 空闲：
-   - 建立 call binding
-   - `start(activation)`
-   - caller 进入等待
-5. activation thread 执行 function body
-6. activation `Return()`
-7. caller 检测 activation done，跳回 continuation
+1. caller 进入 `SysCall.Call(inlineSeg, returnTo)`
+2. call-site continuation 被记录到返回边
+3. inline segment 执行并在显式 `SysCall.Return()` 处退出
+4. caller 跳回 continuation
 
 ### 4. symbolic v0 流程
 
@@ -416,6 +392,27 @@ symbolic v0 的路径非常轻：
 - `reset()` 是基础原语
 - 即时截断与强制收尾是附加系统能力
 
+### 6. prototype CPU 组织流程（ServerInjected）
+
+当前 `prototype/cpu` 的主线组织已经切成显式前后端容器：
+
+- `BackendProcess`
+  - `regFile`
+  - `ArithmeticServiceProcess`
+  - `LoadServiceProcess`
+  - `CommitServiceProcess`
+  - `AddiPathProcess` / `LoadPathProcess` / `LoadAddPathProcess`
+- `FrontendProcess`
+  - `ServerDecodeProcess`
+  - `ServerFetchProcess`
+
+当前关键行为约束：
+
+- decode 负责 `Reserve(rd)` 的时机保证
+- path 负责异步推进 execute 生命周期
+- commit 独立负责 `WritebackAndClear`
+- load/arith 的结构仲裁仅保留在 service 层
+
 ## 当前设计决策
 
 以下约定是当前主线，后续代码和文档都应围绕它们：
@@ -426,21 +423,18 @@ symbolic v0 的路径非常轻：
 - `RuntimeContext(cursor + stateReg + binding)` 是 thread runtime 的第一性模型
 - `Process` 当前应理解为 service / environment / physical component
 - `ThreadDef` 是 definition-first 的 thread code 接口
-- `HwInline` / `HwFunction` 是控制代码段，不是软件 function 的直接翻版
+- `HwInline` 是控制代码段，不是软件 function 的直接翻版
 - `export / declare` 构成 lightweight symbolic v0
 - `KernelAddressSpace` 不再维护 `grant table`
 - `OSReaper` 是可选系统服务，不是基础模型默认部分
 - `exit` 是内核概念，不是用户 API
-- `HwFunction` 还是 v1，而不是最终 function 架构
+- `HwFunction` 已从当前主线移除
 
 ## 已知局限
 
 当前真实存在、且对接手开发有帮助的局限包括：
 
-- `HwFunction` 仍然是 v1：
-  - 单 activation slot
-  - 隐藏 activation thread
-  - 不是最终 function runtime 形态
+- callable segment 当前统一使用 `HwInline`
 - symbolic v0 还很轻：
   - 只支持精确符号名
   - 还没有 namespace / 模糊匹配
@@ -459,5 +453,5 @@ symbolic v0 的路径非常轻：
 5. [src/main/scala/HwOS/kernel/thread/step/ThreadRuntimeLogic.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/thread/step/ThreadRuntimeLogic.scala)
 6. [src/main/scala/HwOS/kernel/system/KernelAddressSpace.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/system/KernelAddressSpace.scala)
 7. [src/main/scala/HwOS/kernel/system/SysCall.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/system/SysCall.scala)
-8. [src/main/scala/HwOS/kernel/function/HwFunction.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/function/HwFunction.scala)
+8. [src/main/scala/HwOS/kernel/function/HwInline.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/function/HwInline.scala)
 9. [src/main/scala/HwOS/kernel/examples/symbolic/CounterWorkerThreadUnit.scala](/Users/nullstarfish/HwOS_personal/src/main/scala/HwOS/kernel/examples/symbolic/CounterWorkerThreadUnit.scala)

@@ -29,7 +29,7 @@
 
 - `thread` 是 **code-space 的正式执行宿主**
 - 它更像 runtime engine / CPU host
-- 真正 portable / combinable 的控制代码通常是运行在 thread 上的 `HwInline` / `HwFunction`
+- 真正 portable / combinable 的控制代码通常是运行在 thread 上的 `HwInline`
 
 所以 thread 很重要，但它不是当前最核心的代码复用单元。
 
@@ -245,7 +245,6 @@ worker.entry {
 真正 portable / combinable 的控制代码更多体现在：
 
 - `HwInline`
-- `HwFunction`
 
 ### `Process` 不是 thread 的“父线程”
 
@@ -255,5 +254,5 @@ worker.entry {
 ## 与其他模块的关系
 
 - process 如何提供环境和安装 thread，看 [process-context.md](/Users/nullstarfish/HwOS_personal/docs/api/process-context.md)
-- `HwInline` / `HwFunction` 作为控制代码段的用法，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
+- `HwInline` 作为控制代码段的用法，看 [function.md](/Users/nullstarfish/HwOS_personal/docs/api/function.md)
 - `start/kill/Return` 的系统语义，看 [system.md](/Users/nullstarfish/HwOS_personal/docs/api/system.md)

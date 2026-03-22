@@ -27,7 +27,7 @@ HwOS 当前的工作，是把这些分散机制收敛成一条更清楚的主线
 
 - `thread` 作为统一执行宿主
 - `Step` / `StepRef` 作为编译期控制对象
-- `HwInline` / `HwFunction` 作为正式控制代码段
+- `HwInline` 作为正式控制代码段
 - `Process` 作为 service / environment / physical component
 - `export / declare` 作为 lightweight symbolic v0 的跨边界接口
 - `KernelAddressSpace` 作为 state/code/binding/exported/dependency 元数据平面
@@ -76,7 +76,7 @@ HwOS 当前的核心命题可以压成两句：
 
 1. **thread 是正式执行宿主**
 2. **Step / StepRef 是编译期控制对象**
-3. **`HwInline` / `HwFunction` 是控制代码段，而不是普通软件 function**
+3. **`HwInline` 是控制代码段，而不是普通软件 function**
 4. **`Process` 是环境、服务与物理组件壳，而不是软件意义上的 OS process**
 5. **`export / declare` 只负责跨边界可见性与依赖记录**
 6. **state/code 是两套不同的空间**
@@ -131,15 +131,12 @@ HwOS 当前的核心命题可以压成两句：
 当前主要体现为：
 
 - `HwInline`
-  - 局部 inline 控制段
-- `HwFunction`
-  - 独立 code segment
-  - 当前 v1 通过 activation thread 获得真实调用语义
+  - 局部或可调用控制段（通过 `SysCall.Call(HwInline, ...)`）
 
 这一定义的关键意义在于：
 
 - thread 更像 runtime engine / CPU host
-- `HwInline` / `HwFunction` 更像运行在其上的控制程序片段
+- `HwInline` 更像运行在其上的控制程序片段
 
 ### 定义 4：环境对象
 
@@ -255,7 +252,7 @@ HwOS 不再把控制逻辑当成附着在数据通路上的辅助结构，而是
 
 ### 5.3 让控制代码段成为正式可组合对象
 
-`HwInline` / `HwFunction` 让控制代码本身能够以：
+`HwInline` 让控制代码本身能够以：
 
 - 可组合
 - 可移植
@@ -300,10 +297,7 @@ HwOS 不是试图把所有硬件值都做成符号系统。
 
 ### 仍然是演进中的部分
 
-- `HwFunction` 仍然是 v1
-  - 隐藏 activation thread
-  - blocking call
-  - 单 activation slot
+- 历史 `HwFunction` v1 已移除，当前 callable segment 主线统一使用 `HwInline + SysCall.Call/Return`
 - code segment 的“linkable”主线仍在继续收敛
 - `Process` 到 object/service 的正式命名与叙事仍在继续演进
 
