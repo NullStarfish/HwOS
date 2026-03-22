@@ -17,11 +17,11 @@ final class CommitServiceProcess(
   require(maxPorts > 0, "CommitServiceProcess requires at least one write port")
   require(depth > 0, "CommitServiceProcess requires positive buffer depth")
 
-  private case class CommitReq(valid: Bool, clientId: UInt, rd: UInt, result: UInt)
+  private case class CommitReq(valid: Bool, writePortId: UInt, rd: UInt, result: UInt)
   private case class CommitSlot(
       thread: HwOS.kernel.thread.HardwareThread,
       valid: Bool,
-      clientId: UInt,
+      writePortId: UInt,
       rd: UInt,
       result: UInt,
   )
@@ -29,7 +29,7 @@ final class CommitServiceProcess(
   private val slots = Array.tabulate(depth) { _ =>
     CommitReq(
       valid = RegInit(false.B),
-      clientId = RegInit(0.U(log2Ceil((maxPorts max 1) max 2).W)),
+      writePortId = RegInit(0.U(log2Ceil((maxPorts max 1) max 2).W)),
       rd = RegInit(0.U(ISA.regWidth.W)),
       result = RegInit(0.U(32.W)),
     )
@@ -39,7 +39,7 @@ final class CommitServiceProcess(
     CommitSlot(
       thread = createThread(s"CommitServer$portIdx"),
       valid = RegInit(false.B),
-      clientId = RegInit(0.U(log2Ceil((maxPorts max 1) max 2).W)),
+      writePortId = RegInit(0.U(log2Ceil((maxPorts max 1) max 2).W)),
       rd = RegInit(0.U(ISA.regWidth.W)),
       result = RegInit(0.U(32.W)),
     )
@@ -60,12 +60,12 @@ final class CommitServiceProcess(
 
     dispatcher.run {
       for ((server, serverIdx) <- servers.zipWithIndex) {
-        val matchingOH = PriorityEncoderOH(VecInit(slots.map(req => req.valid && req.clientId === serverIdx.U)).asUInt)
+        val matchingOH = PriorityEncoderOH(VecInit(slots.map(req => req.valid && req.writePortId === serverIdx.U)).asUInt)
         when(matchingOH.orR && !server.valid && !server.thread.active) {
           for ((req, reqIdx) <- slots.zipWithIndex) {
             when(matchingOH(reqIdx)) {
               server.valid := true.B
-              server.clientId := req.clientId
+              server.writePortId := req.writePortId
               server.rd := req.rd
               server.result := req.result
               req.valid := false.B
@@ -83,14 +83,14 @@ final class CommitServiceProcess(
     }
   }
 
-  def RequestCommit(clientId: Int, rd: UInt, result: UInt): HwInline[Unit] = HwInline.atomic(s"${name}_RequestCommit_$clientId") { t =>
+  def RequestCommit(writePortId: Int, rd: UInt, result: UInt): HwInline[Unit] = HwInline.atomic(s"${name}_RequestCommit_$writePortId") { t =>
     val freeOH = PriorityEncoderOH(VecInit(slots.map(!_.valid)).asUInt)
     t.waitCondition(freeOH.orR)
     when(freeOH.orR) {
       for ((req, idx) <- slots.zipWithIndex) {
         when(freeOH(idx)) {
           req.valid := true.B
-          req.clientId := clientId.U
+          req.writePortId := writePortId.U
           req.rd := rd
           req.result := result
         }
@@ -109,8 +109,8 @@ final class AddiPathProcess(
     arith: ArithmeticServiceProcess,
     commit: CommitServiceProcess,
     val depth: Int,
-    val writePortId: Int,
     val arithClientId: Int,
+    val writePortId: Int,
     localName: String,
 )(implicit kernel: Kernel)
     extends HwProcess(localName) {
@@ -153,10 +153,6 @@ final class AddiPathProcess(
     val dispatcher = createLogic("Dispatcher")
 
     server.thread.entry {
-      server.thread.Step("Reserve") {
-        val writePort = SysCall.Inline(regFile.RequestWritePort(writePortId))
-        SysCall.Inline(writePort.Reserve(server.rd))
-      }
       server.thread.Step("Read") {
         server.decodedSrc := SysCall.Inline(regFile.Read(server.rs1))
       }
@@ -213,12 +209,11 @@ final class AddiPathProcess(
 }
 
 final class LoadPathProcess(
-    regFile: AgeOrderedScoreboardRegfileProcess,
     load: LoadServiceProcess,
     commit: CommitServiceProcess,
     val depth: Int,
-    val writePortId: Int,
     val loadClientId: Int,
+    val writePortId: Int,
     localName: String,
 )(implicit kernel: Kernel)
     extends HwProcess(localName) {
@@ -256,10 +251,6 @@ final class LoadPathProcess(
     val dispatcher = createLogic("Dispatcher")
 
     server.thread.entry {
-      server.thread.Step("Reserve") {
-        val writePort = SysCall.Inline(regFile.RequestWritePort(writePortId))
-        SysCall.Inline(writePort.Reserve(server.rd))
-      }
       server.thread.Step("Exec") {
         server.result := SysCall.Call(load.RequestLoad(loadClientId, server.imm), "Commit")
       }
@@ -316,9 +307,9 @@ final class LoadAddPathProcess(
     arith: ArithmeticServiceProcess,
     commit: CommitServiceProcess,
     val depth: Int,
-    val writePortId: Int,
     val loadClientId: Int,
     val arithClientId: Int,
+    val writePortId: Int,
     localName: String,
 )(implicit kernel: Kernel)
     extends HwProcess(localName) {
@@ -363,10 +354,6 @@ final class LoadAddPathProcess(
     val dispatcher = createLogic("Dispatcher")
 
     server.thread.entry {
-      server.thread.Step("Reserve") {
-        val writePort = SysCall.Inline(regFile.RequestWritePort(writePortId))
-        SysCall.Inline(writePort.Reserve(server.rd))
-      }
       server.thread.Step("LoadExec") {
         server.loadedValue := SysCall.Call(load.RequestLoad(loadClientId, server.imm), "ArithRead")
       }

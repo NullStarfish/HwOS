@@ -8,13 +8,11 @@ import chisel3.util._
 
 final class ServerFetchProcess(
     program: Seq[ISA.Instr],
-    initData: Seq[Int],
-    decodeServers: Int,
+    decode: ServerDecodeProcess,
     localName: String,
 )(implicit kernel: Kernel)
     extends HwProcess(localName) {
   private val issueWidth = 2
-  val decode = spawn(new ServerDecodeProcess(program.length max 1, decodeServers, initData, "Decode"))
   private val launcher = createLogic("Launcher")
 
   private val fetchPtr = RegInit(0.U(log2Ceil(program.length + 1).W))

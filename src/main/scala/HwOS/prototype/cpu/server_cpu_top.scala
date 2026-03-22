@@ -26,15 +26,16 @@ class ServerInjectedCpuModule(program: Seq[ISA.Instr], initData: Seq[Int] = Seq.
     io.x2
     io.x3
     io.activeThreads
-    val fetch = spawn(new ServerFetchProcess(program, initData, decodeServers, "Fetch"))
+    val backend = spawn(new BackendProcess(initData, decodeServers, "Backend"))
+    val frontend = spawn(new FrontendProcess(program, decodeServers, backend, "Frontend"))
     val daemon = createLogic("Daemon")
 
     override def entry(): Unit = {
       daemon.run {
-        io.x1 := SysCall.Inline(fetch.decode.regFile.ReadCommitted(1.U))
-        io.x2 := SysCall.Inline(fetch.decode.regFile.ReadCommitted(2.U))
-        io.x3 := SysCall.Inline(fetch.decode.regFile.ReadCommitted(3.U))
-        io.activeThreads := SysCall.Inline(fetch.ActiveThreadCount())
+        io.x1 := SysCall.Inline(backend.regFile.ReadCommitted(1.U))
+        io.x2 := SysCall.Inline(backend.regFile.ReadCommitted(2.U))
+        io.x3 := SysCall.Inline(backend.regFile.ReadCommitted(3.U))
+        io.activeThreads := SysCall.Inline(frontend.ActiveThreadCount())
       }
     }
   }
@@ -75,7 +76,8 @@ class ServerDecodeWrapperModule(
     io.x3
     io.activeThreads
 
-    val decode = spawn(new ServerDecodeProcess(maxClients, decodeServers, initData, "Decode"))
+    val backend = spawn(new BackendProcess(initData, decodeServers, "Backend"))
+    val decode = spawn(new ServerDecodeProcess(maxClients, decodeServers, backend, "Decode"))
     val daemon = createLogic("Daemon")
 
     private val clientSlots = (0 until maxClients).map { clientId =>
@@ -105,9 +107,9 @@ class ServerDecodeWrapperModule(
           }
         }
 
-        io.x1 := SysCall.Inline(decode.regFile.ReadCommitted(1.U))
-        io.x2 := SysCall.Inline(decode.regFile.ReadCommitted(2.U))
-        io.x3 := SysCall.Inline(decode.regFile.ReadCommitted(3.U))
+        io.x1 := SysCall.Inline(backend.regFile.ReadCommitted(1.U))
+        io.x2 := SysCall.Inline(backend.regFile.ReadCommitted(2.U))
+        io.x3 := SysCall.Inline(backend.regFile.ReadCommitted(3.U))
         io.activeThreads := PopCount(clientSlots.map(_._1.active)) + SysCall.Inline(decode.ActiveServerCount())
       }
     }

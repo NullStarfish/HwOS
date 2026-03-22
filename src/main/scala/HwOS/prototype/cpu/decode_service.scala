@@ -11,19 +11,14 @@ import chisel3.util._
 final class ServerDecodeProcess(
     val maxClients: Int,
     val maxServers: Int,
-    val initData: Seq[Int],
+    backend: BackendProcess,
     localName: String,
 )(implicit kernel: Kernel)
     extends HwProcess(localName) {
-  private val pathBufferDepth = 3
-  val regFile = spawn(new AgeOrderedScoreboardRegfileProcess(8, 32, maxServers max 3, maxServers max 3, zeroReg = true, "RegFile"))
-  private val arith = spawn(new ArithmeticServiceProcess(maxServers max 2, 1, "Arithmetic"))
-  private val load = spawn(new LoadServiceProcess(maxServers max 2, 1, initData, "Load"))
-  private val commit = spawn(new CommitServiceProcess(regFile, maxPorts = 3, depth = pathBufferDepth, "Commit"))
-  private val addiPath = spawn(new AddiPathProcess(regFile, arith, commit, pathBufferDepth, writePortId = 0, arithClientId = 0, "AddiPath"))
-  private val loadPath = spawn(new LoadPathProcess(regFile, load, commit, pathBufferDepth, writePortId = 1, loadClientId = 0, "LoadPath"))
-  private val loadAddPath =
-    spawn(new LoadAddPathProcess(regFile, load, arith, commit, pathBufferDepth, writePortId = 2, loadClientId = 1, arithClientId = 1, "LoadAddPath"))
+  val regFile = backend.regFile
+  private val addiPath = backend.addiPath
+  private val loadPath = backend.loadPath
+  private val loadAddPath = backend.loadAddPath
 
   private case class ClientReq(pending: Bool, inFlight: Bool, completed: Bool, instBits: UInt)
   private case class ServerSlot(
@@ -64,10 +59,16 @@ final class ServerDecodeProcess(
       slot.thread.entry {
         slot.thread.Step(s"DecodeDispatch_$serverId") {
           when(opcode === ISA.OP_ADDI) {
+            val writePort = SysCall.Inline(regFile.RequestWritePort(0))
+            SysCall.Inline(writePort.Reserve(rd))
             SysCall.Inline(addiPath.RequestAddi(serverId, rd, rs1, imm))
           }.elsewhen(opcode === ISA.OP_LOAD) {
+            val writePort = SysCall.Inline(regFile.RequestWritePort(1))
+            SysCall.Inline(writePort.Reserve(rd))
             SysCall.Inline(loadPath.RequestLoadPath(serverId, rd, imm))
           }.elsewhen(opcode === ISA.OP_LOADADD) {
+            val writePort = SysCall.Inline(regFile.RequestWritePort(2))
+            SysCall.Inline(writePort.Reserve(rd))
             SysCall.Inline(loadAddPath.RequestLoadAdd(serverId, rd, rs1, imm))
           }
         }
@@ -128,12 +129,6 @@ final class ServerDecodeProcess(
   }
 
   def ActiveServerCount(): HwInline[UInt] = HwInline.stateless(s"${name}_ActiveServerCount") { _ =>
-    PopCount(servers.map(_.thread.active)) +
-      SysCall.Inline(addiPath.ActiveServerCount()) +
-      SysCall.Inline(loadPath.ActiveServerCount()) +
-      SysCall.Inline(loadAddPath.ActiveServerCount()) +
-      SysCall.Inline(commit.ActiveServerCount()) +
-      SysCall.Inline(arith.ActiveServerCount()) +
-      SysCall.Inline(load.ActiveServerCount())
+    PopCount(servers.map(_.thread.active)) + SysCall.Inline(backend.ActiveThreadCount())
   }
 }
