@@ -3,9 +3,9 @@ package HwOS.kernel.control
 import chisel3._
 import HwOS.kernel.context.HwContextEntity
 import HwOS.kernel.system.{Kernel, RuntimeContext}
-import HwOS.kernel.thread.{StepRef}
+import HwOS.kernel.thread.{RuntimeControlHostAdapter, StepRef}
 import HwOS.kernel.thread.step.EdgeAction
-import HwOS.kernel.thread.step.{PreLoweringAnalysis, ThreadIR, ThreadLayout, ThreadRuntimeLogic}
+import HwOS.kernel.thread.step.{ControlProgramBuilder, PreLoweringAnalysis, ThreadIR, ThreadLayout, ThreadRuntimeLogic}
 
 object ThreadStepDemo {
   type StepLayout = ThreadLayout.StepLayout
@@ -13,11 +13,14 @@ object ThreadStepDemo {
   type HijackAction = ThreadIR.HijackAction
 
   final class Program(val name: String)(implicit kernel: Kernel) {
-    private val irState = new ThreadIR.IRState(name, kernel.addressSpace.createVirtualProgram(name))
-    private val layoutState = new ThreadLayout.LayoutState()
+    private val builder = new ControlProgramBuilder(name, kernel.addressSpace.createVirtualProgram(name))
+    private val irState = builder.state.irState
+    private var compiledProgramOpt: Option[HwOS.kernel.thread.step.ControlProgram.CompiledControlProgram] = None
+    private var runtimeOpt: Option[RuntimeContext] = None
+    private var hostOpt: Option[RuntimeControlHostAdapter] = None
 
     def Step(stepName: String)(block: => Unit): Unit = {
-      ThreadIR.defineStep(irState, stepName)(block)
+      builder.defineStep(stepName)(block)
     }
 
     def stepRef(stepName: String): StepRef = StepRef.NamedStepRef(stepName)
@@ -29,7 +32,7 @@ object ThreadStepDemo {
         if (PreLoweringAnalysis.isActive) {
           PreLoweringAnalysis.record(EdgeAction.Hijack(target))
         } else {
-          ThreadRuntimeLogic.emitHijack(irState, layoutState, runtime, target)
+          ThreadRuntimeLogic.emitHijack(builder, compiledProgram, host, target)
         }
       }
 
@@ -37,42 +40,47 @@ object ThreadStepDemo {
     def hijack(targetName: String): HijackAction = hijack(stepRef(targetName))
 
     def jump(target: StepRef): Unit = {
-      ThreadRuntimeLogic.emitJump(irState, layoutState, runtime, target)
+      ThreadRuntimeLogic.emitJump(builder, compiledProgram, host, target)
     }
 
     // Transitional demo convenience wrapper. The main thread API is StepRef-first.
     def jump(targetName: String): Unit = jump(stepRef(targetName))
 
     def waitCondition(cond: => Bool): Unit = {
-      ThreadRuntimeLogic.emitWaitCondition(irState, layoutState, runtime, cond)
+      ThreadRuntimeLogic.emitWaitCondition(builder, host, cond)
     }
 
     def build(owner: HwContextEntity): RuntimeContext = {
-      val plan = ThreadRuntimeLogic.analyzeControl(irState, layoutState)
-      val runtime = ThreadRuntimeLogic.materializeRuntime(
-        owner = owner,
-        irState = irState,
-        layoutState = layoutState,
-        plan = plan,
+      val plan = ThreadRuntimeLogic.compileProgram(builder)
+      val hostAdapter = new RuntimeControlHostAdapter(
+        entity = owner,
+        hostName = name,
+      )
+      val lowered = hostAdapter.materializeProgram(
+        builder = builder,
+        compiledProgram = plan,
         initialState = HwOS.kernel.system.RuntimeLifecycle.Running,
       )
-      ThreadRuntimeLogic.lowerRuntime(irState, layoutState, plan, runtime)
-      runtime
+      compiledProgramOpt = Some(lowered.compiledProgram)
+      runtimeOpt = Some(lowered.runtime)
+      hostOpt = Some(hostAdapter)
+      ThreadRuntimeLogic.lowerRuntime(builder, lowered.compiledProgram, hostAdapter)
+      lowered.runtime
     }
 
     def layout: Seq[StepLayout] =
-      irState.program.steps.map(step => StepLayout(step.name, step.allocatedAddress, step.loweredStandalone))
+      compiledProgram.steps.map(step => StepLayout(step.name, step.allocatedAddress, step.loweredStandalone))
 
     def preAnalyzeOnly(): Unit = {
-      ThreadRuntimeLogic.analyzeControl(irState, layoutState)
+      compiledProgramOpt = Some(ThreadRuntimeLogic.compileProgram(builder))
     }
 
     def plannedStandaloneLabels: Seq[String] = {
-      ThreadRuntimeLogic.analyzeControl(irState, layoutState).standaloneIndices.map(idx => irState.program.steps(idx).name)
+      compiledProgram.layout.standaloneLabels
     }
 
     def hasReturningStep: Boolean =
-      ThreadRuntimeLogic.analyzeControl(irState, layoutState).hasReturningStep
+      compiledProgram.hasReturningStep
 
     def stepEffects(stepName: String): Seq[String] =
       irState.program.steps
@@ -88,6 +96,12 @@ object ThreadStepDemo {
         .flatMap(_.edgeActions)
 
     def runtime: RuntimeContext =
-      layoutState.runtimeContext.getOrElse(throw new Exception(s"[ThreadStepDemo] Program '$name' has not been built yet."))
+      runtimeOpt.getOrElse(throw new Exception(s"[ThreadStepDemo] Program '$name' has not been built yet."))
+
+    private def compiledProgram =
+      compiledProgramOpt.getOrElse(throw new Exception(s"[ThreadStepDemo] Program '$name' has not been compiled yet."))
+
+    private def host =
+      hostOpt.getOrElse(throw new Exception(s"[ThreadStepDemo] Program '$name' has not been built yet."))
   }
 }

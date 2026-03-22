@@ -5,43 +5,48 @@ import HwOS.kernel.context.{ContextScope, ThreadCtx}
 import HwOS.kernel.system.CallProtocolContext.CallSiteSnapshot
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
 import HwOS.kernel.thread.step.EdgeAction
-import HwOS.kernel.thread.step.{ThreadIR, ThreadLayout, ThreadRuntimeLogic}
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable
+import HwOS.kernel.thread.step.{ControlProgram, ControlProgramBuilder, CurrentProgramContext, ThreadRuntimeLogic}
 
 trait ThreadCore
     extends ThreadControlApi
     with ThreadRuntimeApi
     with ThreadDebugApi { self: HardwareThread =>
-  private var runtimeContext: Option[RuntimeContext] = None
   private[kernel] var generatedEntry: Boolean = false
   private[kernel] var hasExitPath: Boolean = false
   private[kernel] val freeze: Bool = WireInit(false.B)
 
-  private var irStateOpt: Option[ThreadIR.IRState] = None
-  private val layoutState = new ThreadLayout.LayoutState()
-  private val requiredReturningCallSites = ArrayBuffer.empty[CallSiteSnapshot]
-  private val returnedCallSiteIds = mutable.Set.empty[Int]
-  private var explicitReturnEncountered: Boolean = false
+  private var programBuilderOpt: Option[ControlProgramBuilder] = None
+  private var compiledProgramOpt: Option[ControlProgram.CompiledControlProgram] = None
+  private var threadHostOpt: Option[ThreadHost] = None
+  private val debugValidation = new ThreadDebugValidation
 
-  private def irState: ThreadIR.IRState =
-    irStateOpt.getOrElse(throw new Exception(s"[HwOS] Thread IR is not initialized for thread '$name'."))
+  private def programBuilder: ControlProgramBuilder =
+    programBuilderOpt.getOrElse(throw new Exception(s"[HwOS] Thread program is not initialized for thread '$name'."))
+
+  private def programFacade: ThreadProgramFacade =
+    new ThreadProgramFacade(programBuilder)
+
+  private def compiledProgram: ControlProgram.CompiledControlProgram =
+    compiledProgramOpt.getOrElse(throw new Exception(s"[HwOS] Compiled program is not initialized for thread '$name'."))
 
   private def runtime: RuntimeContext =
-    runtimeContext.getOrElse(throw new Exception(s"[HwOS] Runtime context is not allocated for thread '$name'."))
+    threadHost.runtimeStateHandle
+
+  private def threadHost: ThreadHost =
+    threadHostOpt.getOrElse(throw new Exception(s"[HwOS] Thread host is not allocated for thread '$name'."))
 
   override private[kernel] def runtimeHandle: RuntimeContext = runtime
 
   override def active: Bool =
-    runtimeContext.map(ThreadRuntimeLogic.isRunning).getOrElse(false.B)
+    threadHostOpt.map(_.isActive).getOrElse(false.B)
 
   override def done: Bool =
-    runtimeContext.map(ThreadRuntimeLogic.isDone).getOrElse(false.B)
+    threadHostOpt.map(_.isDone).getOrElse(false.B)
 
-  override def pc: UInt = runtime.cursor.reg
+  override def pc: UInt = threadHostOpt.map(_.pc).getOrElse(0.U)
 
   override private[kernel] def runtimeStart(): Unit = {
-    ThreadRuntimeLogic.start(runtime)
+    threadHost.start()
   }
 
   override private[kernel] def runtimeExit(): Unit = {
@@ -49,18 +54,18 @@ trait ThreadCore
     if (HwOS.kernel.thread.step.PreLoweringAnalysis.isActive) {
       return
     }
-    ThreadRuntimeLogic.exit(runtime)
+    threadHost.exit()
   }
 
   override def reset(): Unit = {
-    ThreadRuntimeLogic.resetToIdle(runtime)
+    threadHost.reset()
   }
 
   private def verifyExitPath(): Unit = {}
   private def maybePrintCapabilitySummary(): Unit = ()
 
   override def debugSteps: Seq[DebugStepRecord] =
-    irStateOpt.toSeq.flatMap(_.program.steps).map { step =>
+    compiledProgramOpt.toSeq.flatMap(_.steps).map { step =>
       new DebugStepRecord(
         step.name,
         step.allocatedAddress,
@@ -72,60 +77,52 @@ trait ThreadCore
     }
 
   override def hasReturningStep: Boolean =
-    explicitReturnEncountered || irStateOpt.exists(_.program.steps.exists(_.edgeActions.exists(_.isReturning)))
+    debugValidation.hasReturningStep(compiledProgramOpt)
 
   override def debugStepActions: Map[String, Seq[EdgeAction]] =
-    irStateOpt
-      .map(_.program.steps.map(step => step.name -> step.edgeActions.toSeq).toMap)
+    compiledProgramOpt
+      .map(_.steps.map(step => step.name -> step.edgeActions.toSeq).toMap)
       .getOrElse(Map.empty)
 
   override def debugStepEffects: Map[String, Seq[String]] =
-    irStateOpt
-      .map(_.program.steps.map(step => step.name -> edgeActionNames(step.edgeActions.toSeq).toSeq).toMap)
+    compiledProgramOpt
+      .map(_.steps.map(step => step.name -> edgeActionNames(step.edgeActions.toSeq)).toMap)
       .getOrElse(Map.empty)
 
   private def edgeActionNames(actions: Seq[EdgeAction]): Seq[String] =
     actions.map(_.kindName)
 
   override def recordAtomicCallSnapshot(snapshot: Seq[String]): Unit = {
-    layoutState.currentDebugRecord.foreach(_.invokedCalls += snapshot)
+    debugValidation.recordAtomicCallSnapshot(CurrentProgramContext.currentDebugRecord, snapshot)
   }
 
   override def markExplicitReturnEncountered(): Unit = {
-    explicitReturnEncountered = true
+    debugValidation.markExplicitReturnEncountered()
   }
 
   override def registerCallSiteReturnRequirement(callSite: CallSiteSnapshot): Unit = {
-    requiredReturningCallSites += callSite
+    debugValidation.registerCallSiteReturnRequirement(callSite)
   }
 
   override def markCallSiteReturned(callSiteId: Int): Unit = {
-    returnedCallSiteIds += callSiteId
+    debugValidation.markCallSiteReturned(callSiteId)
   }
 
   override val Next: StepRef = StepRef.NextStepRef
 
   override def Prev: StepRef = {
-    if (HwOS.kernel.thread.step.PreLoweringAnalysis.isActive) {
-      StepRef.NamedStepRef(HwOS.kernel.thread.step.PreLoweringAnalysis.currentRecord.name)
-    } else if (layoutState.currentLoweringStep >= 0) {
-      StepRef.NamedStepRef(irState.program.steps(layoutState.currentLoweringStep).name)
-    } else if (irState.program.steps.nonEmpty) {
-      StepRef.NamedStepRef(irState.program.steps.last.name)
-    } else {
-      throw new Exception(s"[HwOS] Prev is unavailable before any Step is defined in thread '$name'.")
-    }
+    programFacade.prevRef
   }
 
   override def hijack(target: StepRef): Unit = {
     if (ContextScope.getCurrentThread() != this) {
       throw new Exception("Cannot hijack another thread!")
     }
-    ThreadRuntimeLogic.emitHijack(irState, layoutState, runtime, target)
+    ThreadRuntimeLogic.emitHijack(programBuilder, compiledProgram, threadHost, target)
   }
 
   override def Step(stepName: String)(block: => Unit): Unit = {
-    ThreadIR.defineStep(irState, stepName) {
+    programBuilder.defineStep(stepName) {
       ContextScope.withContext(HwOS.kernel.context.AtomicCtx(this)) {
         block
       }
@@ -136,11 +133,11 @@ trait ThreadCore
     if (ContextScope.getCurrentThread() != this) {
       throw new Exception("Cannot jump another thread!")
     }
-    ThreadRuntimeLogic.emitJump(irState, layoutState, runtime, target)
+    ThreadRuntimeLogic.emitJump(programBuilder, compiledProgram, threadHost, target)
   }
 
   private[kernel] def recordEdgePatch(target: StepRef)(block: => Unit): Unit = {
-    ThreadRuntimeLogic.recordEdgePatch(irState, layoutState, target, block)
+    ThreadRuntimeLogic.recordEdgePatch(programBuilder, target, block)
   }
 
   override def entry(block: => Unit): Unit = {
@@ -149,26 +146,27 @@ trait ThreadCore
     }
     generatedEntry = true
 
-    irStateOpt = Some(new ThreadIR.IRState(name, owner.kernel.addressSpace.createVirtualProgram(name)))
+    val builder = new ControlProgramBuilder(name, owner.kernel.addressSpace.createVirtualProgram(name))
+    programBuilderOpt = Some(builder)
     ContextScope.withContext(ThreadCtx(this)) { block }
-    ThreadIR.runGlobals(irState)
-    if (irState.program.steps.isEmpty) { return }
-    val layoutPlan = ThreadRuntimeLogic.analyzeControl(irState, layoutState)
-    validateRequiredReturningCallSites()
+    builder.runGlobals()
+    if (builder.steps.isEmpty) { return }
+    val plan = ThreadRuntimeLogic.compileProgram(builder)
+    compiledProgramOpt = Some(plan)
+    debugValidation.validateRequiredReturningCallSites(plan)
 
-    val allocatedRuntime = ThreadRuntimeLogic.materializeRuntime(
-      owner = this,
-      irState = irState,
-      layoutState = layoutState,
-      plan = layoutPlan,
+    val host = new ThreadHost(this)
+    threadHostOpt = Some(host)
+    val loweredRuntime = host.materializeProgram(
+      builder = builder,
+      compiledProgram = plan,
       initialState = RuntimeLifecycle.Idle,
     )
-    runtimeContext = Some(allocatedRuntime)
+    compiledProgramOpt = Some(loweredRuntime.compiledProgram)
     ThreadRuntimeLogic.lowerRuntime(
-      irState = irState,
-      layoutState = layoutState,
-      plan = layoutPlan,
-      runtime = allocatedRuntime,
+      builder = builder,
+      compiledProgram = loweredRuntime.compiledProgram,
+      host = threadHost,
     )
 
     if (debugEnable) {
@@ -178,7 +176,7 @@ trait ThreadCore
       when(wasActive && !active) { agentPrint("--- OFFLINE ---") }
       val justStarted = active && !wasActive
       when((active && pc =/= lastPc) || justStarted) {
-        for (step <- irState.program.steps if step.allocatedAddress >= 0 && step.loweredStandalone) {
+        for (step <- compiledProgram.steps if step.allocatedAddress >= 0 && step.loweredStandalone) {
           when(pc === step.allocatedAddress.U(pc.getWidth.W)) { agentPrint(s"EXEC [SK ${step.allocatedAddress}] ${step.name}") }
         }
       }
@@ -191,27 +189,11 @@ trait ThreadCore
     maybePrintCapabilitySummary()
   }
 
-  private def validateRequiredReturningCallSites(): Unit = {
-    val steps = irState.program.steps
-    for (callSite <- requiredReturningCallSites) {
-      val hasExplicitReturn = steps.exists { step =>
-        step.implicitCallSite.exists(_.id == callSite.id) &&
-        step.edgeActions.exists(_.isReturning)
-      } || returnedCallSiteIds.contains(callSite.id)
-      if (callSite.requiresExplicitReturn && !hasExplicitReturn) {
-        throw new Exception(
-          s"[HwOS] Callable segment '${callSite.name}' was used with SysCall.Call(...) but has no explicit SysCall.Return(). " +
-            s"Call-terminated segments must end through SysCall.Return().",
-        )
-      }
-    }
-  }
-
   override def waitCondition(cond: => Bool): Unit = {
     if (ContextScope.getCurrentThread() != this) {
       throw new Exception("waitCondition outside entry")
     }
-    ThreadRuntimeLogic.emitWaitCondition(irState, layoutState, runtime, cond)
+    ThreadRuntimeLogic.emitWaitCondition(programBuilder, threadHost, cond)
   }
 
   override def waitAndAct(cond: Bool)(block: => Unit): Unit = {
@@ -229,7 +211,7 @@ trait ThreadCore
       case ThreadCtx(_) =>
       case _ => throw new Exception("global outside entry")
     }
-    ThreadIR.defineGlobal(irState) {
+    programBuilder.defineGlobal {
       ContextScope.withContext(ThreadCtx(this)) {
         block
       }

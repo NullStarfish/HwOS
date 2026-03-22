@@ -1,22 +1,13 @@
 package HwOS.kernel.thread.step
 
-import chisel3._
 import HwOS.kernel.debug.CallStack
-import HwOS.kernel.system.{CallProtocolContext, RuntimeContext, VirtualStepRecord}
+import HwOS.kernel.system.{CallProtocolContext, RuntimeContext}
 import HwOS.kernel.thread.StepRef
-import HwOS.kernel.thread.step.ThreadCompilePlan.ThreadCompilePlan
+import HwOS.kernel.thread.step.ControlProgram.{CompiledControlProgram, CompiledProgramLayout}
 
 private[kernel] object ThreadLayout {
   final case class StepLayout(name: String, address: Int, standalone: Boolean)
-
-  final class LayoutState {
-    var runtimeContext: Option[RuntimeContext] = None
-    var compilePlan: Option[ThreadCompilePlan] = None
-    var jumpTargets = Map.empty[String, UInt]
-    var currentLoweringStep: Int = -1
-    var currentEntryStep: Int = -1
-    var currentDebugRecord: Option[VirtualStepRecord] = None
-  }
+  final case class StepRefContext(currentStepIndex: Int)
 
   def resolveStepIndex(irState: ThreadIR.IRState, stepName: String): Int = {
     val idx = irState.program.labels.indexOf(stepName)
@@ -28,13 +19,13 @@ private[kernel] object ThreadLayout {
 
   def resolveStepRef(
       irState: ThreadIR.IRState,
-      layoutState: LayoutState,
+      refContext: StepRefContext,
       target: StepRef,
   ): Int = target match {
     case StepRef.NamedStepRef(name) =>
       resolveStepIndex(irState, name)
     case StepRef.NextStepRef =>
-      val current = layoutState.currentLoweringStep
+      val current = refContext.currentStepIndex
       if (current < 0) {
         throw new Exception(s"[Thread] Next step reference requires an active lowering step in program '${irState.programName}'.")
       }
@@ -48,51 +39,45 @@ private[kernel] object ThreadLayout {
 
   def lowerStepAt(
       irState: ThreadIR.IRState,
-      layoutState: LayoutState,
       index: Int,
       afterBody: => Unit = (),
   ): Unit = {
-    val saveLowering = layoutState.currentLoweringStep
-    val saveEntry = layoutState.currentEntryStep
-    val saveRecord = layoutState.currentDebugRecord
-
-    if (layoutState.currentEntryStep < 0) {
-    layoutState.currentEntryStep = index
-    }
-    layoutState.currentLoweringStep = index
-    layoutState.currentDebugRecord = Some(irState.program.steps(index))
     val step = irState.program.steps(index)
-    ControlLoweringContext.withStep(layoutState.currentEntryStep, index) {
-      CallProtocolContext.withCallSiteSnapshot(step.implicitCallSite) {
-        CallStack.withFrame(step.name, None, step.implicitCallSite) {
-          step.block()
+    val entryStepIndex = CurrentProgramContext.currentEntryStepIndex.getOrElse(index)
+    ControlLoweringContext.withStep(entryStepIndex, index) {
+      CurrentProgramContext.withLowering(entryStepIndex, index, step) {
+        CallProtocolContext.withCallSiteSnapshot(step.implicitCallSite) {
+          CallStack.withFrame(step.name, None, step.implicitCallSite) {
+            step.block()
+          }
         }
+        afterBody
       }
-      afterBody
     }
-    layoutState.currentDebugRecord = saveRecord
-    layoutState.currentLoweringStep = saveLowering
-    layoutState.currentEntryStep = saveEntry
   }
 
   def materializeLayout(
       irState: ThreadIR.IRState,
-      layoutState: LayoutState,
-      plan: ThreadCompilePlan,
+      compiledProgram: CompiledControlProgram,
       runtime: RuntimeContext,
-  ): Unit = {
-    layoutState.compilePlan = Some(plan)
-    layoutState.jumpTargets = plan.standaloneIndices.iterator.map { index =>
+  ): CompiledControlProgram = {
+    val plan = compiledProgram.compilePlan
+    val stepAddresses = plan.standaloneIndices.iterator.map { index =>
       val step = irState.program.steps(index)
       val addr = runtime.cursor.segment.addressOf(step.name)
       step.allocatedAddress = addr
       step.loweredStandalone = true
-      step.name -> runtime.cursor.addressOf(step.name)
+      index -> addr
     }.toMap
 
     for ((step, index) <- irState.program.steps.zipWithIndex if plan.suppressedStandalone.contains(index)) {
       step.loweredStandalone = false
       step.allocatedAddress = -1
     }
+    compiledProgram.withLayout(
+      compiledProgram.layout.copy(
+        stepAddresses = stepAddresses,
+      ),
+    )
   }
 }

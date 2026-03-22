@@ -1,18 +1,35 @@
 package HwOS.kernel.thread.step
 
+import HwOS.kernel.thread.step.ControlProgram.{CompiledControlProgram, CompiledProgramLayout}
 import HwOS.kernel.system.{RecordedEdgePatch, RecordedEffect, VirtualStepRecord}
 import HwOS.kernel.thread.step.ThreadCompilePlan._
 
 private[kernel] object ThreadCompileAnalysis {
+  def compile(builder: ControlProgramBuilder): CompiledControlProgram = {
+    val irState = builder.state.irState
+    val plan = analyze(irState)
+    CompiledControlProgram(
+      programName = builder.programName,
+      program = builder.program,
+      compilePlan = plan,
+      layout = CompiledProgramLayout(
+        standaloneIndices = plan.standaloneIndices,
+        suppressedStandalone = plan.suppressedStandalone,
+        entryIndex = plan.entryIndex,
+        stepIndicesByLabel = irState.program.labels.zipWithIndex.toMap,
+        standaloneLabels = plan.standaloneIndices.map(idx => irState.program.steps(idx).name),
+      ),
+    )
+  }
+
   def analyze(
       irState: ThreadIR.IRState,
-      layoutState: ThreadLayout.LayoutState,
   ): ThreadCompilePlan = {
     preAnalyzeProgram(irState)
-    val suppressed = collectSuppressedStandalone(irState, layoutState)
+    val suppressed = collectSuppressedStandalone(irState)
     val standalone = irState.program.steps.indices.filterNot(suppressed.contains).toVector
     val stepPlans = irState.program.steps.zipWithIndex.map { case (step, index) =>
-      buildStepPlan(irState, layoutState, step, index, suppressed)
+      buildStepPlan(irState, step, index, suppressed)
     }.toVector
     val plan = ThreadCompilePlan(
       stepPlans = stepPlans,
@@ -26,7 +43,6 @@ private[kernel] object ThreadCompileAnalysis {
       entryIndex = 0,
     )
     validateJumpTargets(irState, plan)
-    layoutState.compilePlan = Some(plan)
     plan
   }
 
@@ -40,30 +56,25 @@ private[kernel] object ThreadCompileAnalysis {
 
   private def collectSuppressedStandalone(
       irState: ThreadIR.IRState,
-      layoutState: ThreadLayout.LayoutState,
   ): Set[Int] = {
     irState.program.steps.zipWithIndex.flatMap { case (step, index) =>
       step.capturedEffects.collect {
         case RecordedEffect(action, _) if action.hijackTarget.nonEmpty =>
           val target = action.hijackTarget.get
-          val localState = new ThreadLayout.LayoutState()
-          localState.currentLoweringStep = index
-          ThreadLayout.resolveStepRef(irState, localState, target)
+          ThreadLayout.resolveStepRef(irState, ThreadLayout.StepRefContext(index), target)
       }
     }.toSet
   }
 
   private def buildStepPlan(
       irState: ThreadIR.IRState,
-      layoutState: ThreadLayout.LayoutState,
       step: VirtualStepRecord,
       stepIndex: Int,
       suppressed: Set[Int],
   ): StepPlan = {
-    val localState = new ThreadLayout.LayoutState()
-    localState.currentLoweringStep = stepIndex
-    val effects = step.capturedEffects.flatMap(compileEffect(irState, localState, _)).toSeq ++
-      step.staticEdgePatches.map(patch => PatchedEdge(patch.target, patch.effects.flatMap(compileEffect(irState, localState, _)).toSeq))
+    val localRefContext = ThreadLayout.StepRefContext(stepIndex)
+    val effects = step.capturedEffects.flatMap(compileEffect(irState, localRefContext, _)).toSeq ++
+      step.staticEdgePatches.map(patch => PatchedEdge(patch.target, patch.effects.flatMap(compileEffect(irState, localRefContext, _)).toSeq))
     val waits = effects.collect { case wait: WaitEffect => wait }
     StepPlan(
       stepIndex = stepIndex,
@@ -75,17 +86,17 @@ private[kernel] object ThreadCompileAnalysis {
 
   private def compileEffect(
       irState: ThreadIR.IRState,
-      layoutState: ThreadLayout.LayoutState,
+      refContext: ThreadLayout.StepRefContext,
       recorded: RecordedEffect,
   ): Option[EdgeEffect] = recorded.action match {
     case EdgeAction.Wait(cond) =>
       Some(WaitEffect(cond))
     case EdgeAction.Jump(_, target, _) =>
-      Some(JumpEffect(ThreadLayout.resolveStepRef(irState, layoutState, target), recorded.guards))
+      Some(JumpEffect(ThreadLayout.resolveStepRef(irState, refContext, target), recorded.guards))
     case EdgeAction.Return(_, continuation, _) =>
       Some(ReturnEffect(continuation, recorded.guards))
     case EdgeAction.Hijack(target) =>
-      Some(HijackInlineEffect(ThreadLayout.resolveStepRef(irState, layoutState, target)))
+      Some(HijackInlineEffect(ThreadLayout.resolveStepRef(irState, refContext, target)))
   }
 
   private def validateJumpTargets(
