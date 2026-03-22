@@ -90,6 +90,9 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     l
   }
 
+  private[kernel] def createKernelLogic(name: String = "Daemon"): HardwareLogic =
+    createLogic(name)
+
   private[HwOS] def createReaperManagedLogic(name: String = "Reaper"): OSReaperManagedLogic = {
     val l = new OSReaperManagedLogic(s"${this.name}/${name}_logic", this, debugEnable)
     logics += l

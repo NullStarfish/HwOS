@@ -331,10 +331,10 @@ final class KernelAddressSpace {
     * The cursor is state-space data, but its legal values are interpreted
     * through the supplied code segment.
     */
-  def allocateVirtualCursor(owner: HwContextEntity, cursorName: String, segment: GlobalCodeSegment): VirtualCursor = {
+  def allocateRuntimeCursor(owner: HwContextEntity, cursorName: String, segment: GlobalCodeSegment): RuntimeCursor = {
     val cursorReg = RegInit(segment.entryAddress.U(segment.width.W))
     val cursorAddressObject = registerStateSignal(owner.name, cursorReg, Some(cursorName))
-    new VirtualCursor(cursorReg, segment, cursorAddressObject)
+    new RuntimeCursor(cursorReg, segment, cursorAddressObject)
   }
 
   /** Allocate the minimal thread runtime context for one executable cursor.
@@ -352,7 +352,7 @@ final class KernelAddressSpace {
       segment: GlobalCodeSegment,
       initialState: Int = RuntimeLifecycle.Idle,
   ): RuntimeContext = {
-    val cursor = allocateVirtualCursor(owner, s"${bindingName}_cursor", segment)
+    val cursor = allocateRuntimeCursor(owner, s"${bindingName}_cursor", segment)
     val stateReg = RegInit(initialState.U(2.W))
     val runtimeStateObject = registerStateSignal(owner.name, stateReg, Some(s"${bindingName}_runtime_state"))
 

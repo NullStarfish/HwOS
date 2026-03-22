@@ -1,7 +1,7 @@
 package HwOS.kernel.thread.step
 
 import HwOS.kernel.debug.CallStack
-import HwOS.kernel.system.{CallProtocolContext, RuntimeContext}
+import HwOS.kernel.system.CallProtocolContext
 import HwOS.kernel.thread.StepRef
 import HwOS.kernel.thread.step.ControlProgram.{CompiledControlProgram, CompiledProgramLayout}
 
@@ -59,12 +59,17 @@ private[kernel] object ThreadLayout {
   def materializeLayout(
       irState: ThreadIR.IRState,
       compiledProgram: CompiledControlProgram,
-      runtime: RuntimeContext,
+      stepAddresses: Map[Int, Int],
   ): CompiledControlProgram = {
     val plan = compiledProgram.compilePlan
-    val stepAddresses = plan.standaloneIndices.iterator.map { index =>
+    val resolvedStepAddresses = plan.standaloneIndices.iterator.map { index =>
       val step = irState.program.steps(index)
-      val addr = runtime.cursor.segment.addressOf(step.name)
+      val addr = stepAddresses.getOrElse(
+        index,
+        throw new Exception(
+          s"[Thread] Program '${compiledProgram.programName}' is missing an address mapping for standalone step '${step.name}'.",
+        ),
+      )
       step.allocatedAddress = addr
       step.loweredStandalone = true
       index -> addr
@@ -76,7 +81,7 @@ private[kernel] object ThreadLayout {
     }
     compiledProgram.withLayout(
       compiledProgram.layout.copy(
-        stepAddresses = stepAddresses,
+        stepAddresses = resolvedStepAddresses,
       ),
     )
   }

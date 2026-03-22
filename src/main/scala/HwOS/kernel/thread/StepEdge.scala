@@ -2,10 +2,14 @@ package HwOS.kernel.thread
 
 import HwOS.kernel.context.ContextScope
 
+private[kernel] trait StepEdgeRecorder {
+  private[kernel] def recordEdgePatch(target: StepRef)(block: => Unit): Unit
+}
+
 final class StepEdge private[thread] (private val target: StepRef) {
   def add(block: => Unit): Unit = {
     ContextScope.getCurrentThread() match {
-      case t: ThreadCore =>
+      case t: StepEdgeRecorder =>
         t.recordEdgePatch(target) {
           block
         }

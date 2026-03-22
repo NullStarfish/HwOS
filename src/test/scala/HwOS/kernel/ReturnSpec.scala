@@ -3,7 +3,6 @@ package HwOS.kernel
 import HwOS.kernel.HwOSLanguage._
 import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.ThreadDebugApi
-import HwOS.kernel.function.HwFunction
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.process.HwProcess
 import HwOS.kernel.system.SysCall
@@ -237,38 +236,6 @@ class ReturnSpec extends AnyFlatSpec {
 
     assert(ex.getMessage.contains("BadCallSegment"))
     assert(ex.getMessage.contains("no explicit SysCall.Return()"))
-  }
-
-  it should "reject Call(HwFunction) bodies that omit explicit Return()" in {
-    val ex = intercept[Exception] {
-      class MissingFunctionReturnModule extends Module {
-        implicit val kernel: Kernel = new Kernel()
-
-        object Init extends HwProcess("Init") {
-          val worker = createThread("Worker")
-
-          val badFn = HwFunction.thread("BadFn") { t =>
-            t.Step("Body") {}
-            ()
-          }
-
-          override def entry(): Unit = {
-            worker.entry {
-              SysCall.Inline(badFn.Invoke("AfterBadFn"))
-              worker.Step("AfterBadFn") {}
-              SysCall.Return()
-            }
-          }
-        }
-
-        Init.build()
-      }
-
-      _root_.circt.stage.ChiselStage.emitCHIRRTL(new MissingFunctionReturnModule)
-    }
-
-    assert(ex.getMessage.contains("BadFn"))
-    assert(ex.getMessage.contains("must contain an explicit SysCall.Return()"))
   }
 
   it should "route multiple explicit Return sites in one Call to the same continuation" in {

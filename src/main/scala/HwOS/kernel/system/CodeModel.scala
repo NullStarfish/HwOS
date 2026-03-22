@@ -31,11 +31,6 @@ final class GlobalCodeSegment(
   def width: Int = addressObject.width
 }
 
-final class VirtualCursor(val reg: UInt, val segment: GlobalCodeSegment, val addressObject: AddressObject) {
-  def entryAddress: UInt = segment.entryAddress.U(reg.getWidth.W)
-  def addressOf(label: String): UInt = segment.addressOf(label).U(reg.getWidth.W)
-}
-
 final class VirtualStepRecord(
     val name: String,
     val block: () => Unit,

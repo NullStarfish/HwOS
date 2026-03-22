@@ -24,8 +24,6 @@ package object kernel {
 
   type HwInline[T] = function.HwInline[T]
   val HwInline = function.HwInline
-  type HwFunction[T] = function.HwFunction[T]
-  val HwFunction = function.HwFunction
 
   val HwOSLanguage = lang.HwOSLanguage
 

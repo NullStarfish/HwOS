@@ -1,6 +1,6 @@
 package HwOS.kernel.thread.step
 
-import HwOS.kernel.system.{RuntimeContext, VirtualProgram, VirtualStepRecord}
+import HwOS.kernel.system.{VirtualProgram, VirtualStepRecord}
 
 private[kernel] object ControlProgram {
   type PatchTarget = ThreadCompilePlan.PatchTarget
@@ -108,8 +108,3 @@ private[kernel] object CurrentProgramContext {
   def currentDebugRecord: Option[VirtualStepRecord] =
     loweringState.get().headOption.map(_.currentDebugRecord)
 }
-
-private[kernel] final case class LoweredProgramRuntime(
-    compiledProgram: ControlProgram.CompiledControlProgram,
-    runtime: RuntimeContext,
-)

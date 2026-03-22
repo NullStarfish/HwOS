@@ -10,7 +10,8 @@ import HwOS.kernel.thread.step.{ControlProgram, ControlProgramBuilder, CurrentPr
 trait ThreadCore
     extends ThreadControlApi
     with ThreadRuntimeApi
-    with ThreadDebugApi { self: HardwareThread =>
+    with ThreadDebugApi
+    with StepEdgeRecorder { self: HardwareThread =>
   private[kernel] var generatedEntry: Boolean = false
   private[kernel] var hasExitPath: Boolean = false
   private[kernel] val freeze: Bool = WireInit(false.B)
@@ -136,7 +137,7 @@ trait ThreadCore
     ThreadRuntimeLogic.emitJump(programBuilder, compiledProgram, threadHost, target)
   }
 
-  private[kernel] def recordEdgePatch(target: StepRef)(block: => Unit): Unit = {
+  override private[kernel] def recordEdgePatch(target: StepRef)(block: => Unit): Unit = {
     ThreadRuntimeLogic.recordEdgePatch(programBuilder, target, block)
   }
 

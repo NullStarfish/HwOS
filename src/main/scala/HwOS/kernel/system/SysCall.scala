@@ -3,7 +3,7 @@ package HwOS.kernel.system
 import chisel3._
 import HwOS.kernel.context.{AtomicCtx, ContextScope, ThreadCtx}
 import HwOS.kernel.debug.{CallStack, ContinuationNaming}
-import HwOS.kernel.function.{HwFunction, HwInline}
+import HwOS.kernel.function.HwInline
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.{EdgeGuardContext, EdgePatchAnalysis, PreLoweringAnalysis}
@@ -27,6 +27,13 @@ object SysCall {
 
   private def currentInvokeMode: Option[InlineCallMode] =
     invokeModeStack.get().headOption
+
+  private[kernel] def withIsolatedInvokeMode[T](block: => T): T = {
+    val saved = invokeModeStack.get()
+    invokeModeStack.set(Nil)
+    try block
+    finally invokeModeStack.set(saved)
+  }
 
   private def currentCallSite = CallProtocolContext.currentCallSiteSnapshot
   private def currentContinuation = CallProtocolContext.currentContinuationSnapshot
@@ -130,22 +137,6 @@ object SysCall {
   def CallSite[T](func: HwInline[T], returnTo: String): CallSiteHandle[T] =
     new CallSiteHandle(func, returnTo)
 
-  def Call[T](func: HwFunction[T]): T = {
-    ContextScope.current match {
-      case ThreadCtx(t) =>
-        currentContinuation.flatMap(_.targetLabel) match {
-          case Some(target) => Call(func, target)
-          case None =>
-            throw new Exception(
-              s"[HwOS] Direct SysCall.Call(HwFunction '${func.name}') inside ThreadCtx requires an explicit continuation. " +
-                s"Use SysCall.Call(func, returnTo) or func.Invoke(returnTo).",
-            )
-        }
-      case _ =>
-        throw new Exception(s"[HwOS] HwFunction '${func.name}' can only be called from ThreadCtx in v1.")
-    }
-  }
-
   /**
    * 线程级函数调用：为被调用的 thread-function 静态绑定一个返回地址。
    * Return() 将跳转到该返回地址。
@@ -192,56 +183,6 @@ object SysCall {
     }
   }
 
-  def Call[T](func: HwFunction[T], returnTo: String): T = {
-    pushInvokeMode(CallMode)
-    try {
-      ContextScope.current match {
-        case ThreadCtx(caller) =>
-          CallProtocolContext.withCallSite(
-            func.name,
-            CallProtocolContext.bindContinuation(
-              targetLabel = Some(returnTo),
-              requiresExplicitReturn = true,
-            ),
-          ) { _ =>
-            val activation = func.ensureActivation(caller.owner)
-            val callLease = func.allocateCallLease(caller)
-            val result = func.ensureResultHandle(caller.owner)
-            val callStepName = ContinuationNaming.freshFunctionCallStepName(System.identityHashCode(caller), func.name, returnTo)
-
-            caller.Step(callStepName) {
-              val binding = callLease.binding
-              val bindingId = callLease.bindingId
-              val bindingIdValue = bindingId.U(binding.activeBindingId.getWidth.W)
-              val pending = callLease.callPending
-              val thisCallActive = callLease.isActive
-
-              when(!pending) {
-                when(!binding.callActive && !activation.active) {
-                  binding.activeBindingId  :=  bindingIdValue
-                  binding.callActive  :=  true.B
-                  Inline(start(activation))
-                  pending  :=  true.B
-                }
-                caller.waitCondition(false.B)
-              }.elsewhen(thisCallActive && activation.done) {
-                binding.callActive  :=  false.B
-                binding.activeBindingId  :=  0.U(binding.activeBindingId.getWidth.W)
-                pending  :=  false.B
-                caller.jump(returnTo)
-              }.otherwise {
-                caller.waitCondition(false.B)
-              }
-            }
-            result
-          }
-        case _ =>
-          throw new Exception(s"[HwOS] Call('$returnTo') on HwFunction '${func.name}' must be used inside ThreadCtx.")
-      }
-    } finally {
-      popInvokeMode()
-    }
-  }
 
   /**
    * 从当前 thread-function 的静态调用帧返回到预绑定的 continuation。

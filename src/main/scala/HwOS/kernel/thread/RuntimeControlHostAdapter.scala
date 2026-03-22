@@ -6,6 +6,11 @@ import HwOS.kernel.thread.step.{ControlProgramBuilder, ThreadLayout}
 import HwOS.kernel.thread.step.ControlProgram.CompiledControlProgram
 import chisel3._
 
+private[kernel] final case class MaterializedRuntimeProgram(
+    compiledProgram: CompiledControlProgram,
+    runtime: RuntimeContext,
+)
+
 private[kernel] class RuntimeControlHostAdapter(
     val entity: HwContextEntity,
     val hostName: String,
@@ -27,7 +32,7 @@ private[kernel] class RuntimeControlHostAdapter(
       builder: ControlProgramBuilder,
       compiledProgram: CompiledControlProgram,
       initialState: Int,
-  ): HwOS.kernel.thread.step.LoweredProgramRuntime = {
+  ): MaterializedRuntimeProgram = {
     if (runtimeContextOpt.isDefined) {
       throw new Exception(s"[Thread] Program '${builder.programName}' was built twice.")
     }
@@ -42,9 +47,12 @@ private[kernel] class RuntimeControlHostAdapter(
       segment = segment,
       initialState = initialState,
     )
-    val loweredProgram = ThreadLayout.materializeLayout(builder.state.irState, compiledProgram, runtime)
+    val stepAddresses = compiledProgram.layout.standaloneIndices.iterator.map { index =>
+      index -> segment.addressOf(builder.steps(index).name)
+    }.toMap
+    val loweredProgram = ThreadLayout.materializeLayout(builder.state.irState, compiledProgram, stepAddresses)
     onProgramBuilt(loweredProgram, runtime)
-    HwOS.kernel.thread.step.LoweredProgramRuntime(loweredProgram, runtime)
+    MaterializedRuntimeProgram(loweredProgram, runtime)
   }
 
   def onProgramBuilt(compiledProgram: CompiledControlProgram, runtimeHandle: RuntimeContext): Unit = {
