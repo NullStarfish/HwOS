@@ -32,6 +32,8 @@ private[kernel] object ThreadCompilePlan {
   final case class PatchedEdge(
       target: PatchTarget,
       effects: Seq[EdgeEffect],
+      emitThunk: Option[() => Unit] = None,
+      guards: List[Bool] = Nil,
   ) extends EdgeEffect
 
   final case class StepEntryPolicy(

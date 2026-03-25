@@ -46,7 +46,7 @@ object SysCall {
 
   final class CallSiteHandle[T] private[system] (
       val func: HwInline[T],
-      val returnTo: String,
+      val returnTo: Option[String],
   ) {
     private var returnEdgeThunk: () => Unit = () => ()
     val edge: CallEdge = new CallEdge(next => {
@@ -57,11 +57,11 @@ object SysCall {
       }
     })
 
-    private[system] def continuationBinding: ContinuationBinding =
+    private[system] def continuationBinding(target: Option[String]): ContinuationBinding =
       CallProtocolContext.bindContinuation(
-        targetLabel = Some(returnTo),
+        targetLabel = target,
         requiresExplicitReturn = true,
-        returnEdgePatch = Some(ReturnEdgePatch(continuationTarget = Some(returnTo), emitThunk = () => returnEdgeThunk())),
+        returnEdgePatch = Some(ReturnEdgePatch(continuationTarget = target, emitThunk = () => returnEdgeThunk())),
       )
   }
 
@@ -126,16 +126,14 @@ object SysCall {
   }
 
   def Call[T](func: HwInline[T]): T = {
-    currentContinuation.flatMap(_.targetLabel) match {
-      case Some(target) =>
-        Call(func, target)
-      case None =>
-        Inline(func)
-    }
+    Call(CallSite(func))
   }
 
   def CallSite[T](func: HwInline[T], returnTo: String): CallSiteHandle[T] =
-    new CallSiteHandle(func, returnTo)
+    new CallSiteHandle(func, Some(returnTo))
+
+  def CallSite[T](func: HwInline[T]): CallSiteHandle[T] =
+    new CallSiteHandle(func, None)
 
   /**
    * 线程级函数调用：为被调用的 thread-function 静态绑定一个返回地址。
@@ -146,16 +144,18 @@ object SysCall {
   }
 
   def Call[T](site: CallSiteHandle[T]): T = {
+    val resolvedReturnTo = site.returnTo.orElse(currentContinuation.flatMap(_.targetLabel))
     pushInvokeMode(CallMode)
     try {
       ContextScope.current match {
         case ThreadCtx(_) | AtomicCtx(_) =>
         case _ =>
+          val returnTargetDesc = resolvedReturnTo.getOrElse("<thread-exit>")
           throw new Exception(
-            s"[HwOS] Call('${site.returnTo}') with explicit return target must be used inside ThreadCtx or AtomicCtx.",
+            s"[HwOS] Call('$returnTargetDesc') must be used inside ThreadCtx or AtomicCtx.",
           )
       }
-      CallProtocolContext.withCallSite(site.func.name, site.continuationBinding) { liveSite =>
+      CallProtocolContext.withCallSite(site.func.name, site.continuationBinding(resolvedReturnTo)) { liveSite =>
         ContextScope.current match {
           case ThreadCtx(debugThread: ThreadDebugApi) =>
             debugThread.registerCallSiteReturnRequirement(liveSite.snapshot)

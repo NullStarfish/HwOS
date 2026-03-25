@@ -20,12 +20,6 @@ private[kernel] object EdgePatchAnalysis {
     activePatch.set(Some(ActivePatch(effects, guards)))
     try {
       block
-      if (effects.isEmpty) {
-        throw new Exception(
-          s"[HwOS] StepRef.edge.add(...) currently supports only structured control actions " +
-            s"(for example SysCall.Return() or jump(stepRef)) inside the edge patch block.",
-        )
-      }
       effects.toSeq
     } finally {
       activePatch.set(saved)

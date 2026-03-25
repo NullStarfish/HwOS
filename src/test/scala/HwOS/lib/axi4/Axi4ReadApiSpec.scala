@@ -73,6 +73,7 @@ class Axi4ReadApiSpec extends AnyFlatSpec {
       }
 
       c.io.done.expect(true.B)
+      c.clock.step(2)
       c.io.data.expect(38.U)
 
       c.clock.step(3)

@@ -161,6 +161,108 @@ class EdgePatchedReturnModule extends Module {
   Init.build()
 }
 
+class EdgePatchedActionModule extends Module {
+  val io = IO(new Bundle {
+    val allow = Input(Bool())
+    val out = Output(UInt(8.W))
+    val done = Output(Bool())
+  })
+
+  io.out := DontCare
+  io.done := DontCare
+
+  implicit val kernel: Kernel = new Kernel()
+
+  object Init extends HwProcess("Init") {
+    val worker = createThread("Worker")
+    val outReg = RegInit(0.U(8.W))
+
+    override def entry(): Unit = {
+      worker.entry {
+        worker.Step("WaitAndPatch") {
+          outReg := 1.U
+          worker.waitCondition(io.allow)
+          worker.Prev.edge.add {
+            outReg := outReg + 10.U
+            when(outReg === 2.U) {
+              outReg := 12.U
+            }
+            SysCall.Return()
+          }
+          when(io.allow) {
+            outReg := outReg + 1.U
+          }
+        }
+        worker.Step("Dead") {
+          outReg := 99.U
+        }
+      }
+
+      val daemon = createLogic("Daemon")
+      daemon.run {
+        when(!worker.active && !worker.done) {
+          SysCall.Inline(SysCall.start(worker))
+        }
+        io.out := outReg
+        io.done := worker.done
+      }
+    }
+  }
+
+  Init.build()
+}
+
+class EdgePatchedJumpModule extends Module {
+  val io = IO(new Bundle {
+    val allow = Input(Bool())
+    val out = Output(UInt(8.W))
+    val done = Output(Bool())
+  })
+
+  io.out := DontCare
+  io.done := DontCare
+
+  implicit val kernel: Kernel = new Kernel()
+
+  object Init extends HwProcess("Init") {
+    val worker = createThread("Worker")
+    val outReg = RegInit(0.U(8.W))
+
+    override def entry(): Unit = {
+      worker.entry {
+        worker.Step("WaitAndPatchJump") {
+          outReg := 1.U
+          worker.waitCondition(io.allow)
+          worker.Prev.edge.add {
+            outReg := 7.U
+            worker.jump("SkipDead")
+          }
+          when(io.allow) {
+            outReg := 2.U
+          }
+        }
+        worker.Step("Dead") {
+          outReg := 99.U
+        }
+        worker.Step("SkipDead") {
+          SysCall.Return()
+        }
+      }
+
+      val daemon = createLogic("Daemon")
+      daemon.run {
+        when(!worker.active && !worker.done) {
+          SysCall.Inline(SysCall.start(worker))
+        }
+        io.out := outReg
+        io.done := worker.done
+      }
+    }
+  }
+
+  Init.build()
+}
+
 class ReturnSpec extends AnyFlatSpec {
   "SysCall.Return" should "jump to the explicit caller continuation when Call binds a return target" in {
     simulate(new ReturnModule) { c =>
@@ -585,6 +687,43 @@ class ReturnSpec extends AnyFlatSpec {
       c.io.allow.poke(true.B)
       c.clock.step()
       c.io.out.expect(2.U)
+      c.io.done.expect(true.B)
+    }
+  }
+
+  it should "allow StepRef.edge.add blocks with assignment and when statements" in {
+    simulate(new EdgePatchedActionModule) { c =>
+      c.reset.poke(true.B)
+      c.io.allow.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      c.clock.step()
+      c.clock.step()
+      c.io.out.expect(1.U)
+      c.io.done.expect(false.B)
+
+      c.io.allow.poke(true.B)
+      c.clock.step()
+      c.io.out.expect(12.U)
+      c.io.done.expect(true.B)
+    }
+  }
+
+  it should "allow StepRef.edge.add blocks that mix assignment and jump" in {
+    simulate(new EdgePatchedJumpModule) { c =>
+      c.reset.poke(true.B)
+      c.io.allow.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      c.clock.step()
+      c.io.out.expect(1.U)
+      c.io.done.expect(false.B)
+
+      c.io.allow.poke(true.B)
+      c.clock.step()
+      c.io.out.expect(7.U)
       c.io.done.expect(true.B)
     }
   }

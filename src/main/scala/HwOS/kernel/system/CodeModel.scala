@@ -14,7 +14,9 @@ final case class RecordedEffect(
 
 final case class RecordedEdgePatch(
     target: PatchTarget,
-    effects: Seq[RecordedEffect],
+    effects: Seq[RecordedEffect] = Seq.empty,
+    emitThunk: Option[() => Unit] = None,
+    guards: List[Bool] = Nil,
 )
 
 final class GlobalCodeSegment(

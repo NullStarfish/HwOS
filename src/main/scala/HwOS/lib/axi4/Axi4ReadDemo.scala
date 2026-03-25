@@ -27,6 +27,7 @@ class Axi4ReadDemoModule(addrWidth: Int = 32, dataWidth: Int = 32) extends Modul
     private val daemon = createLogic("Daemon")
     private val addrReg = RegInit(0.U(addrWidth.W))
     private val dataReg = RegInit(0.U(dataWidth.W))
+    private val doneReg = RegInit(false.B)
 
 
     private val dataReg_prev = RegNext(dataReg)
@@ -38,20 +39,25 @@ class Axi4ReadDemoModule(addrWidth: Int = 32, dataWidth: Int = 32) extends Modul
       val readTxn = axi_read(io.axi, addrReg)
 
       worker.entry {
-        val value = SysCall.Call(readTxn)
-        worker.Prev.edge.add {
+        val value = WireDefault(0.U(dataWidth.W))
+        val site = SysCall.CallSite(readTxn)
+        site.edge.add {
           dataReg := value
-          io.done := true.B
+          doneReg := true.B
         }
+
+        value := SysCall.Call(site)
       }
 
       daemon.run {
         when(io.start && !worker.active) {
           addrReg := io.addr
+          doneReg := false.B
           SysCall.Inline(SysCall.start(worker))
         }
 
         io.busy := worker.active
+        io.done := doneReg
         io.data := dataReg
       }
     }

@@ -37,7 +37,7 @@ private[kernel] object ThreadCompileAnalysis {
       standaloneIndices = standalone,
       hasReturningStep = stepPlans.exists(_.effects.exists {
         case _: ReturnEffect => true
-        case PatchedEdge(_, patchEffects) => patchEffects.exists(_.isInstanceOf[ReturnEffect])
+        case PatchedEdge(_, patchEffects, _, _) => patchEffects.exists(_.isInstanceOf[ReturnEffect])
         case _ => false
       }),
       entryIndex = 0,
@@ -74,7 +74,14 @@ private[kernel] object ThreadCompileAnalysis {
   ): StepPlan = {
     val localRefContext = ThreadLayout.StepRefContext(stepIndex)
     val effects = step.capturedEffects.flatMap(compileEffect(irState, localRefContext, _)).toSeq ++
-      step.staticEdgePatches.map(patch => PatchedEdge(patch.target, patch.effects.flatMap(compileEffect(irState, localRefContext, _)).toSeq))
+      step.staticEdgePatches.map(patch =>
+        PatchedEdge(
+          target = patch.target,
+          effects = patch.effects.flatMap(compileEffect(irState, localRefContext, _)).toSeq,
+          emitThunk = patch.emitThunk,
+          guards = patch.guards,
+        ),
+      )
     val waits = effects.collect { case wait: WaitEffect => wait }
     StepPlan(
       stepIndex = stepIndex,
@@ -114,7 +121,7 @@ private[kernel] object ThreadCompileAnalysis {
                 s"[Thread] jump target '${targetStep.name}' referenced from '${sourceStep.name}' in program '${irState.programName}' has no standalone code slot.",
               )
             }
-          case PatchedEdge(_, patchEffects) =>
+          case PatchedEdge(_, patchEffects, _, _) =>
             patchEffects.collect { case JumpEffect(targetIndex, _) => targetIndex }.foreach { targetIndex =>
               if (!plan.standaloneIndices.contains(targetIndex)) {
                 val targetStep = irState.program.steps(targetIndex)
