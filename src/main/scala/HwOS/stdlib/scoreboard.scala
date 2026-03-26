@@ -102,8 +102,6 @@ class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val
     val isReserved = RegInit(false.B)
     val reservedAddr = RegInit(0.U(log2Ceil(resourceCount).W))
 
-    (isReserved)
-    (reservedAddr)
 
     def isActive: Bool = isReserved
 

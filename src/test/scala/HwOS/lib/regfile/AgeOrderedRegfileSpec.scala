@@ -22,10 +22,6 @@ class AgeOrderedRegfileModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.committedX1)
-    (io.committedX2)
-    (io.forwardedX2)
-
     val regFile = spawn(new AgeOrderedScoreboardRegfileProcess(8, 32, 4, 8, zeroReg = true, "RegFile"))
     val ingress = spawn(new sync.SemaphoreProcess(4, initialCount = 1, "Ingress"))
     val starter = createLogic("Starter")
