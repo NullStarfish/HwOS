@@ -18,7 +18,6 @@ class ExportDeclareCombinationalModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.observed)
     private val exportedValue = RegInit(9.U(8.W))
     private val consumer = createLogic("Consumer")
 

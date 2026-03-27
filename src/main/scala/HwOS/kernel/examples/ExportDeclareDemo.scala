@@ -36,8 +36,6 @@ class ExportDeclareDemoModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.done)
-    (io.counter)
     val proc = spawn(new ExportDeclareDemoProcess("Demo"))
     val daemon = createLogic("Daemon")
 

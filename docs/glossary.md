@@ -93,16 +93,10 @@ provider/process 通过 `export(symbol, signal, caps)` 把资源注册到 export
 
 ## O-R
 
-### `OSReaper`
+### `registerReset`
 
-可选系统级回收器。  
-它负责在 kill / abort 后做系统级强制收尾与 reclaim。  
-它不是基础语言或基础 runtime 的默认组成部分。
-
-### `OSReaperManaged`
-
-显式声明接入 OSReaper 服务的对象接口。  
-只有 mixin 了这个 trait 的对象，才会暴露 reaper kill / reclaim 所需接口。
+thread 的本地 reset hook 注册接口。  
+用户可以显式把 `lease.forceReclaim()` 之类的本地清理动作挂到 `thread.reset()` 上。
 
 ### `Process`
 
@@ -186,11 +180,6 @@ thread runtime 中表示当前控制位置的状态寄存器。
 内核内部生命周期操作。  
 它不是当前主线下鼓励用户直接调用的 API。
 
-### `kill(contextEntity)`
-
-context-like 对象的系统切断接口。  
-当前只对显式接入 OSReaper 的对象有效，不再被视为所有 entity 的天然能力。
-
 ### `reset`
 
 thread 自己的 runtime 复位语义。  
@@ -217,7 +206,7 @@ thread 自己的 runtime 复位语义。
 ### “thread lifecycle 主要靠 lifecycle lease”
 
 当前 thread lifecycle 首先来自 `RuntimeContext(cursor + stateReg + binding)`。  
-`OSReaper` 是可选系统服务，不是 thread 生命周期本体。
+额外 reclaim 若需要，应通过 `thread.registerReset { ... }` 显式接入，而不是被视为 thread 生命周期本体。
 
 ### “state/code 共用一个地址空间”
 

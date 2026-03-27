@@ -39,8 +39,6 @@ class JumpModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.out)
-    (io.done)
 
     val proc = spawn(new JumpProcess("JumpProc"))
     val daemon = createLogic("Daemon")

@@ -5,8 +5,8 @@ import chisel3.util._
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{Kernel, OSReaper, SysCall}
-import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
+import HwOS.kernel.system.{Kernel, SysCall}
+import HwOS.kernel.thread.HardwareThread
 
 class BaseScoreboardProcess(val resourceCount: Int, val zeroAlwaysFree: Boolean = false, localName: String)(implicit kernel: Kernel)
     extends HwProcess(localName) {
@@ -83,7 +83,6 @@ class SemaphoreScoreboardProcess(
 class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val zeroAlwaysFree: Boolean = false, localName: String)(
     implicit kernel: Kernel
 ) extends HwProcess(localName) {
-  private val reaper = createReaperManagedLogic("Reaper")
   private val semaScoreboard =
     spawn(new SemaphoreScoreboardProcess(resourceCount, maxConcurrentPorts, maxConcurrentPorts, zeroAlwaysFree, "Sema"))
 
@@ -118,9 +117,6 @@ class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val
         isReserved := true.B
         reservedAddr := addr
       }
-      reaper.registerReclaimEntry(t, isActive) { agent =>
-        forceReclaim(agent)
-      }
     }
 
     def Release(): HwInline[Unit] = HwInline.stateless(s"Release_$portIdx") { _ =>
@@ -132,12 +128,12 @@ class ScoreboardProcess(val resourceCount: Int, val maxConcurrentPorts: Int, val
       }
     }
 
-    def forceReclaim(agent: HardwareAgent): Unit = {
+    def forceReclaim(): Unit = {
       val busyPort = SysCall.Inline(semaScoreboard.RequestBusyPort(portIdx))
       when(isReserved) {
         SysCall.Inline(busyPort.ClearBusy(reservedAddr))
         SysCall.Inline(busyPort.Release())
-        OSReaper.forceAssign(isReserved, false.B)
+        isReserved := false.B
       }
     }
   }

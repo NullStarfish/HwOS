@@ -27,7 +27,7 @@
 - `HwInline` 是运行在 thread 上的控制代码段
 - `HwProcess` 当前更接近 service / environment / physical component
 - `KernelAddressSpace` 负责 state / code / binding / exported / dependency 五类元数据
-- `OSReaper` 是可选系统服务，不是基础运行模型的默认组成部分
+- reclaim 不是基础运行模型的默认组成部分
 
 几个重要边界：
 
@@ -54,7 +54,6 @@ graph TD
   AS --> BT["Binding Table"]
   AS --> ET["Exported Memory Table"]
   AS --> DT["Dependency Table"]
-  K --> R["OSReaper (optional)"]
   I["HwInline"] --> T
   C["StructuredControl / ThreadStepDemo"] --> T
 ```
@@ -66,7 +65,6 @@ graph TD
 `Kernel` 是系统级壳子。它负责：
 
 - 注册 process / thread
-- 在 `boot()` 时生成 `Kernel/OSReaper`
 - 触发 monitor / symbol dump / 地址表导出
 - 持有唯一的 `KernelAddressSpace`
 
@@ -160,7 +158,7 @@ graph TD
 
 - state / code 地址分配本体
 - 高层 if/while/for 语法糖
-- OSReaper 的系统级收尾策略
+- thread reset hook 的本地收尾策略
 
 ### `ThreadDef`
 
@@ -377,15 +375,15 @@ symbolic v0 的路径非常轻：
 普通 thread：
 
 1. `SysCall.kill(thread)` 发起系统终止
-2. 如果没有显式 OSReaper 神力接入，最终直接落到 `thread.reset()`
+2. 最终直接落到 `thread.reset()`
 3. `reset()` 使：
    - `cursor := entry`
    - `stateReg := Idle`
 
-显式接入 `OSReaperManaged` 的对象：
+如果用户显式注册了 reset hook：
 
-1. 系统先执行 reaper cleanup / forced reclaim
-2. 再让关联 thread 最终回到 `reset()`
+1. thread runtime 先回到 `reset()`
+2. 再执行这些本地 hook（例如 `lease.forceReclaim()`）
 
 因此：
 
@@ -426,7 +424,7 @@ symbolic v0 的路径非常轻：
 - `HwInline` 是控制代码段，不是软件 function 的直接翻版
 - `export / declare` 构成 lightweight symbolic v0
 - `KernelAddressSpace` 不再维护 `grant table`
-- `OSReaper` 是可选系统服务，不是基础模型默认部分
+- reclaim 通过 thread reset hook 显式接入，而不是基础模型默认部分
 - `exit` 是内核概念，不是用户 API
 - `HwFunction` 已从当前主线移除
 

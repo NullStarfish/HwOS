@@ -25,8 +25,7 @@ class PipelineClientProcess(localName: String)(implicit kernel: Kernel) extends 
   val stallCounter = RegInit(0.U(32.W)) // 记录 Consumer 被阻塞的拍数
   val flagReserved = RegInit(false.B)   // 用于同步：确保 Producer 先占位
 
-  (resultReg); (stallCounter)
-  (flagReserved); override def entry(): Unit = {
+   override def entry(): Unit = {
     // 守护进程：当 Consumer 处于活跃且正在等待时，累加 Stall 计数
     val stallTracker = createLogic("StallTracker")
     stallTracker.run {

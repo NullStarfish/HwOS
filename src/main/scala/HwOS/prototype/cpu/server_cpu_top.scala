@@ -22,10 +22,6 @@ class ServerInjectedCpuModule(program: Seq[ISA.Instr], initData: Seq[Int] = Seq.
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    io.x1
-    io.x2
-    io.x3
-    io.activeThreads
     val backend = spawn(new BackendProcess(initData, decodeServers, "Backend"))
     val frontend = spawn(new FrontendProcess(program, decodeServers, backend, "Frontend"))
     val daemon = createLogic("Daemon")
@@ -69,12 +65,7 @@ class ServerDecodeWrapperModule(
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    io.reqBusy
-    io.reqDone
-    io.x1
-    io.x2
-    io.x3
-    io.activeThreads
+
 
     val backend = spawn(new BackendProcess(initData, decodeServers, "Backend"))
     val decode = spawn(new ServerDecodeProcess(maxClients, decodeServers, backend, "Decode"))

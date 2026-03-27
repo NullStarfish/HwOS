@@ -4,12 +4,10 @@ import chisel3._
 import chisel3.util._
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{Kernel, OSReaper, SysCall}
-import HwOS.kernel.thread.HardwareAgent
+import HwOS.kernel.system.{Kernel, SysCall}
 
 class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName: String)(implicit kernel: Kernel)
     extends HwProcess(localName) {
-  private val reaper = createReaperManagedLogic("Reaper")
   private val tokenWidth = log2Ceil((maxInFlight + 1) max 2)
 
   private case class WindowReq(reserve: Bool, commit: Bool, forceCommit: Bool, reclaim: Bool)
@@ -93,9 +91,6 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
       reqs(id).reserve := true.B
       val granted = entries(id).active
       t.waitCondition(granted)
-      reaper.registerReclaimEntry(t, isActive) { agent =>
-        forceReclaim(agent)
-      }
     }
 
     def Commit(): HwInline[Unit] = HwInline.stateless(s"Commit_$id") { _ =>
@@ -111,8 +106,10 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
       reqs(id).forceCommit := true.B
     }
 
-    def forceReclaim(agent: HardwareAgent): Unit = {
-      OSReaper.forceAssign(reqs(id).reclaim, true.B)
+    def forceReclaim(): Unit = {
+      when(entries(id).active) {
+        reqs(id).reclaim := true.B
+      }
     }
   }
 

@@ -62,10 +62,6 @@ class LifecycleLeaseModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.hits)
-    (io.done)
-    (io.workerActive)
-
     val proc = spawn(new LifecycleLeaseProcess("Lifecycle"))
     val daemon = createLogic("Daemon")
 
@@ -85,7 +81,7 @@ class LifecycleLeaseModule extends Module {
 }
 
 class LifecycleLeaseSpec extends AnyFlatSpec {
-  "Unified thread runtime lifecycle" should "support kill, reclaim, and restart" in {
+  "Unified thread runtime lifecycle" should "support kill, reset, and restart" in {
     simulate(new LifecycleLeaseModule) { c =>
       c.reset.poke(true.B)
       c.clock.step()
@@ -103,7 +99,7 @@ class LifecycleLeaseSpec extends AnyFlatSpec {
       c.clock.step(3)
 
       c.io.done.expect(true.B)
-      assert(c.io.hits.peek().litValue >= 2, "worker was not restarted after kill/reclaim")
+      assert(c.io.hits.peek().litValue >= 2, "worker was not restarted after kill/reset")
     }
   }
 }

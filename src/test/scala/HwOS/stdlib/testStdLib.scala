@@ -13,7 +13,6 @@ class SyncProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(
 
   // --- 声明物理资源与授权 ---
   val sharedCounter = RegInit(0.U(32.W))
-  (sharedCounter)
   // ===================================================================
   // 核心亮点：孵化 Stdlib 并发原语 (作为子进程)
   // ===================================================================

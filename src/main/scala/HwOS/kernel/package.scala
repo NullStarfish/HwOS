@@ -35,7 +35,6 @@ package object kernel {
   type Kernel = system.Kernel
   type KernelAddressSpace = system.KernelAddressSpace
   type RuntimeContext = system.RuntimeContext
-  type OSReaperProcess = system.OSReaperProcess
   val SysCall = system.SysCall
 
   type ExportCapability = memory.ExportCapability

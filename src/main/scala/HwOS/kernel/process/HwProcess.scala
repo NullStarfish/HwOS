@@ -5,7 +5,7 @@ import chisel3.util._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import HwOS.kernel.context.HwContextEntity
-import HwOS.kernel.system.{Kernel, OSReaperManaged, OSReaperManagedLogic}
+import HwOS.kernel.system.Kernel
 import HwOS.kernel.thread._
 
 //命名永远让上一级来命名
@@ -92,14 +92,6 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
 
   private[kernel] def createKernelLogic(name: String = "Daemon"): HardwareLogic =
     createLogic(name)
-
-  private[HwOS] def createReaperManagedLogic(name: String = "Reaper"): OSReaperManagedLogic = {
-    val l = new OSReaperManagedLogic(s"${this.name}/${name}_logic", this, debugEnable)
-    logics += l
-    l
-  }
-
-
   def spawn[T <: HwProcess](child: => T): T = {
 
     ProcessBuilder.push(this)

@@ -1,18 +1,26 @@
 State Table
-owner                        | object                                             | space | kind  | start | span | end_exclusive | signal                                   
------------------------------+----------------------------------------------------+-------+-------+-------+------+---------------+------------------------------------------
-Init/ResetProc/Worker_thread | Init/ResetProc/Worker_thread_runtime_cursor        | state | state | 0     | 2    | 2             | ThreadResetModule.cursorReg: Reg[UInt<2>]
-Init/ResetProc/Worker_thread | Init/ResetProc/Worker_thread_runtime_runtime_state | state | state | 2     | 2    | 4             | ThreadResetModule.stateReg: Reg[UInt<2>] 
+owner                   | object                                        | space | kind  | start | span | end_exclusive | signal                                         
+------------------------+-----------------------------------------------+-------+-------+-------+------+---------------+------------------------------------------------
+Init/OldWriter_thread   | Init/OldWriter_thread_runtime_cursor          | state | state | 0     | 3    | 3             | AgeOrderedRegfileModule.cursorReg: Reg[UInt<3>]
+Init/OldWriter_thread   | Init/OldWriter_thread_runtime_runtime_state   | state | state | 3     | 2    | 5             | AgeOrderedRegfileModule.stateReg: Reg[UInt<2>] 
+Init/YoungWriter_thread | Init/YoungWriter_thread_runtime_cursor        | state | state | 5     | 4    | 9             | AgeOrderedRegfileModule.cursorReg: Reg[UInt<4>]
+Init/YoungWriter_thread | Init/YoungWriter_thread_runtime_runtime_state | state | state | 9     | 2    | 11            | AgeOrderedRegfileModule.stateReg: Reg[UInt<2>] 
+Init/Reader_thread      | Init/Reader_thread_runtime_cursor             | state | state | 11    | 4    | 15            | AgeOrderedRegfileModule.cursorReg: Reg[UInt<4>]
+Init/Reader_thread      | Init/Reader_thread_runtime_runtime_state      | state | state | 15    | 2    | 17            | AgeOrderedRegfileModule.stateReg: Reg[UInt<2>] 
 
 Code Table
-owner                        | segment                              | space | code_start | span | code_entry | labels                                  | addresses                                    
------------------------------+--------------------------------------+-------+------------+------+------------+-----------------------------------------+----------------------------------------------
-Init/ResetProc/Worker_thread | Init/ResetProc/Worker_thread_segment | code  | 0          | 3    | 0          | [Tick, Park, Anon_Return_to_ThreadExit] | {Tick=0, Park=1, Anon_Return_to_ThreadExit=2}
+owner                   | segment                         | space | code_start | span | code_entry | labels                                                                       | addresses                                                                                 
+------------------------+---------------------------------+-------+------------+------+------------+------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------
+Init/OldWriter_thread   | Init/OldWriter_thread_segment   | code  | 0          | 5    | 0          | [ReserveOld, DelayOld, CompleteOld, ExitOld, Anon_Return_to_ThreadExit]      | {ReserveOld=0, DelayOld=1, CompleteOld=2, ExitOld=3, Anon_Return_to_ThreadExit=4}         
+Init/YoungWriter_thread | Init/YoungWriter_thread_segment | code  | 5          | 4    | 5          | [ReserveYoung, CompleteYoung, ExitYoung, Anon_Return_to_ThreadExit]          | {ReserveYoung=5, CompleteYoung=6, ExitYoung=7, Anon_Return_to_ThreadExit=8}               
+Init/Reader_thread      | Init/Reader_thread_segment      | code  | 9          | 5    | 9          | [DelayReader, ReadForwarded, Publish, ExitReader, Anon_Return_to_ThreadExit] | {DelayReader=9, ReadForwarded=10, Publish=11, ExitReader=12, Anon_Return_to_ThreadExit=13}
 
 Binding Table
-binding                              | owner                        | cursor_object                               | cursor_space | cursor_start | runtime_state_object                               | runtime_state_space | runtime_state_start | code_segment                         | code_space | code_start | code_owner                   | code_entry
--------------------------------------+------------------------------+---------------------------------------------+--------------+--------------+----------------------------------------------------+---------------------+---------------------+--------------------------------------+------------+------------+------------------------------+-----------
-Init/ResetProc/Worker_thread_runtime | Init/ResetProc/Worker_thread | Init/ResetProc/Worker_thread_runtime_cursor | state        | 0            | Init/ResetProc/Worker_thread_runtime_runtime_state | state               | 2                   | Init/ResetProc/Worker_thread_segment | code       | 0          | Init/ResetProc/Worker_thread | 0         
+binding                         | owner                   | cursor_object                          | cursor_space | cursor_start | runtime_state_object                          | runtime_state_space | runtime_state_start | code_segment                    | code_space | code_start | code_owner              | code_entry
+--------------------------------+-------------------------+----------------------------------------+--------------+--------------+-----------------------------------------------+---------------------+---------------------+---------------------------------+------------+------------+-------------------------+-----------
+Init/OldWriter_thread_runtime   | Init/OldWriter_thread   | Init/OldWriter_thread_runtime_cursor   | state        | 0            | Init/OldWriter_thread_runtime_runtime_state   | state               | 3                   | Init/OldWriter_thread_segment   | code       | 0          | Init/OldWriter_thread   | 0         
+Init/YoungWriter_thread_runtime | Init/YoungWriter_thread | Init/YoungWriter_thread_runtime_cursor | state        | 5            | Init/YoungWriter_thread_runtime_runtime_state | state               | 9                   | Init/YoungWriter_thread_segment | code       | 5          | Init/YoungWriter_thread | 5         
+Init/Reader_thread_runtime      | Init/Reader_thread      | Init/Reader_thread_runtime_cursor      | state        | 11           | Init/Reader_thread_runtime_runtime_state      | state               | 15                  | Init/Reader_thread_segment      | code       | 9          | Init/Reader_thread      | 9         
 
 Exported Memory Table
 symbol | owner | backing_object | start | span | type | capability

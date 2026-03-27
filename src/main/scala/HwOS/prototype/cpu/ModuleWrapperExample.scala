@@ -41,9 +41,6 @@ object ModuleWrapperExample {
     implicit val kernel: Kernel = new Kernel()
 
     object Init extends HwProcess("Init") {
-      (io.busy)
-      (io.done)
-      (io.result)
 
       val adder = spawn(new WrappedAdderProcess("Adder"))
       val worker = createThread("Worker")

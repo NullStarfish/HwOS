@@ -33,8 +33,6 @@ class UnifiedThreadKernelModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.value)
-    (io.done)
 
     val proc = spawn(new UnifiedThreadKernelProcess("BackendProc"))
     val daemon = createLogic("Daemon")

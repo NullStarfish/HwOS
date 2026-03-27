@@ -83,7 +83,6 @@ class CallStackIntegrationModule extends Module {
   implicit val kernel: Kernel = osKernel
 
   object Init extends HwProcess("Init") {
-    (io.done)
     val demo = spawn(new CallStackDemoProcess("Demo"))
     val daemon = createLogic("Daemon")
 

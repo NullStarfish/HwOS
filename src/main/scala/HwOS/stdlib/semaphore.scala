@@ -5,15 +5,13 @@ import chisel3.util._
 import HwOS.kernel.function.HwInline
 import HwOS.kernel.lang.HwOSLanguage._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.{Kernel, OSReaper, SysCall}
-import HwOS.kernel.thread.{HardwareAgent, HardwareThread}
+import HwOS.kernel.system.{Kernel, SysCall}
+import HwOS.kernel.thread.HardwareThread
 
 // Single service/component for permit arbitration.
 // initialCount = 1 means single-permit mutual exclusion.
 class SemaphoreProcess(val maxClients: Int, val initialCount: Int, localName: String)(implicit kernel: Kernel)
     extends HwProcess(localName) {
-  private val reaper = createReaperManagedLogic("Reaper")
-
   private val count = RegInit(initialCount.U(32.W))
   private val acquires = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
   private val releases = WireInit(VecInit(Seq.fill(maxClients)(false.B)))
@@ -41,7 +39,6 @@ class SemaphoreProcess(val maxClients: Int, val initialCount: Int, localName: St
   // Protocol handle: a resource-usage lease, not the old HwLease model.
   class SemaphoreLease(val id: Int) {
     val isHeld = RegInit(false.B)
-    (isHeld)
 
     def isActive: Bool = isHeld
 
@@ -53,9 +50,6 @@ class SemaphoreProcess(val maxClients: Int, val initialCount: Int, localName: St
       when(!isHeld && canAcquire) {
         isHeld := true.B
       }
-      reaper.registerReclaimEntry(t, isActive) { agent =>
-        forceReclaim(agent)
-      }
     }
 
     def Release(): HwInline[Unit] = HwInline.stateless(s"Release_$id") { _ =>
@@ -65,9 +59,11 @@ class SemaphoreProcess(val maxClients: Int, val initialCount: Int, localName: St
       }
     }
 
-    def forceReclaim(agent: HardwareAgent): Unit = {
-      OSReaper.forceAssign(releases(id), true.B)
-      OSReaper.forceAssign(isHeld, false.B)
+    def forceReclaim(): Unit = {
+      when(isHeld) {
+        releases(id) := true.B
+        isHeld := false.B
+      }
     }
   }
 

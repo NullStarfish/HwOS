@@ -38,8 +38,6 @@ class ExplicitStartRuntimeModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.counter)
-    (io.done)
     val proc = spawn(new ExplicitStartWorkerProcess("InlineProc"))
     val daemon = createLogic("Daemon")
 

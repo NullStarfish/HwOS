@@ -23,7 +23,6 @@ graph TD
   AS --> BT["Binding Table"]
   AS --> ET["Exported Memory Table"]
   AS --> DT["Dependency Table"]
-  K --> O["OSReaper (optional service)"]
 ```
 
 ## Process
@@ -78,7 +77,7 @@ process 主要提供：
 
 - 它不是执行单元
 - 它不是 ACL / ownership 系统
-- 它不是 OSReaper 默认接口壳
+- 它不是自动 reclaim 接口壳
 
 ### 它的边界
 
@@ -347,23 +346,18 @@ cursor 是 state object，
 
 它的职责是“解释关系”，不是“存储状态”。
 
-## OSReaper
+## Reset Hooks
 
 ### 它是什么
 
-`OSReaper` 是可选系统级回收器。
+thread 可以通过 `registerReset { ... }` 注册本地 reset hook。
 
 ### 它不是什么
 
-- 它不是所有 thread 的默认组成部分
-- 它不是基础语言的一部分
+- 它不是系统级 reclaim 框架
+- 它不是跨对象 kill 机制
 
 ### 它的边界
 
-当前只有显式接入 `OSReaperManaged` 的对象才拥有：
-
-- 即时截断
-- 强制收尾
-- 系统级 reclaim
-
-普通 thread 的基础终止原语仍然是 `reset()`。
+普通 thread 的基础终止原语仍然是 `reset()`。  
+如果某些 lease 或局部状态需要在 reset 时额外清理，应由 thread 显式注册对应 hook。

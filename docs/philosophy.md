@@ -11,7 +11,7 @@
 - `thread` 是统一执行宿主，`HwInline` 是运行在其上的控制代码段
 - `Process` 当前更接近 **service / environment / physical component**，而不是软件意义上的 OS process
 - `export / declare` 只负责跨边界可见性与依赖记录；同一 process 内的本地代码可以继续直接 Scala/Chisel 交互
-- `OSReaper` 是可选系统神力，不是基础语言或基础 runtime 的默认组成部分
+- reclaim 必须显式接到 thread reset hook，而不是基础语言或基础 runtime 的默认组成部分
 
 这不是历史文档，也不是未来宣言。  
 它只解释：**为什么当前主线被收敛成现在这个样子。**
@@ -125,20 +125,18 @@ HwOS 试图解决的不是“如何再包装一层 Chisel API”，而是以下�
 
 这使 symbolic 模型不会压垮日常开发，同时又能为可移植控制代码建立正式边界。
 
-## 为什么 `OSReaper` 必须是可选系统神力
+## 为什么 reclaim 应该显式接到 thread reset
 
-`OSReaper` 当前负责的是系统级 kill / reclaim / 强制收尾。  
-它不应该污染基础语言和基础 runtime。
-
-因此当前边界是：
+系统级 kill / reclaim / 强制收尾逻辑很容易污染基础语言和基础 runtime。  
+当前主线选择把这部分责任收回到 thread 本地：
 
 - 普通 thread 的基础原语是 `reset()`
 - `kill(thread)` 默认最终落到 `reset()`
-- 只有显式接入 `OSReaperManaged` 的对象，才拥有额外的即时截断/强制回收能力
+- 如果某些 lease 或局部状态需要额外 reclaim，用户必须显式写 `thread.registerReset { ... }`
 
 换句话说：
 
-- `OSReaper` 是可选神力
+- reclaim 是显式接入的本地策略
 - 不是所有对象的默认基础能力
 
 ## 当前主线的边界
@@ -151,7 +149,7 @@ HwOS 试图解决的不是“如何再包装一层 Chisel API”，而是以下�
 - `Process` 更接近 service / environment / physical component
 - `export / declare` 构成 lightweight symbolic v0
 - `own / grant / ACL` 已退出当前主线
-- `OSReaper` 是可选系统服务，不是基础模型
+- reclaim 不再是基础模型的默认能力
 
 如果未来这些边界变了，这份文档也应跟着改。  
 但在当前代码下，这些不是偏好，而是已经落地的系统定义。

@@ -132,14 +132,6 @@ class StructuredControlModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.branchOut)
-    (io.elifOut)
-    (io.acc)
-    (io.loopOut)
-    (io.returnOut)
-    (io.actionOut)
-    (io.done)
-
     val proc = spawn(new StructuredControlProcess("Structured"))
     val daemon = createLogic("Daemon")
 

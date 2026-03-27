@@ -43,9 +43,6 @@ class UnifiedCodeTableModule extends Module {
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.out)
-    (io.done)
-
     val proc = spawn(new UnifiedCodeTableProcess("VirtualProc"))
     val daemon = createLogic("Daemon")
 

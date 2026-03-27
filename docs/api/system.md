@@ -76,19 +76,7 @@
 当前边界：
 
 - 普通 thread 默认最终就是 `reset()`
-- 如果该 thread 关联了显式的 `OSReaperManaged` cleanup holder，系统会先做 reclaim/cleanup，再 `reset()`
-- 也就是说，`OSReaper` 的即时截断是附加神力，不是所有 thread 的默认基础能力
-
-### `SysCall.kill(target: HwContextEntity)`
-
-作用：
-
-- 对显式接入 `OSReaperManaged` 的对象发起系统切断
-
-关键边界：
-
-- 它不再被视为所有 entity 的天然能力
-- 未接入 `OSReaperManaged` 的对象不应该把 `kill(contextEntity)` 当通用接口
+- 如果需要额外 reclaim，必须由 thread 自己通过 `registerReset { ... }` 显式接入
 
 ### `KernelAddressSpace`
 
@@ -141,10 +129,10 @@ kernel.addressSpace.exportAddressTables("generated")
 当前用户态正式结束接口是 `SysCall.Return()`。  
 `exit()` 是内核内部生命周期操作。
 
-### `kill(thread)` 默认不是“OSReaper 神力”
+### `kill(thread)` 不自带 reclaim
 
 普通 thread 的基础终止原语最终落点是 `reset()`。  
-只有显式接入 OSReaper 的对象才会拥有额外的即时收尾能力。
+如果需要额外 lease 回收或本地状态清理，应由 thread 自己注册 reset hook。
 
 ### `KernelAddressSpace` 不只是导出器
 

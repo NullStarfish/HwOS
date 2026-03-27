@@ -5,7 +5,6 @@ import chisel3.util._
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import java.io._
 import HwOS.kernel.process.HwProcess
-import HwOS.kernel.system.OSReaperManaged
 import HwOS.kernel.thread.{HardwareThread, ThreadDebugApi}
 
 class Kernel {
@@ -56,37 +55,12 @@ class Kernel {
 
     booting = true
     try {
-      implicit val selfKernel: Kernel = this
-
-      object SystemKernel extends HwProcess("Kernel", overrideDebug = Some(false)) {
-        val reaper = spawn(new OSReaperProcess(collectManagedEntities(), "OSReaper")(Kernel.this))
-        override def entry(): Unit = {}
-      }
-
-      SystemKernel.build()
       addressSpace.exportAddressTables("generated")
       booted = true
     } finally {
       booting = false
     }
   }
-
-  private def collectManagedEntities(): Seq[OSReaperManaged] = {
-    def collectFromProcess(proc: HwProcess): Seq[OSReaperManaged] = {
-      val self = proc match {
-        case managed: OSReaperManaged => Seq(managed)
-        case _ => Seq.empty
-      }
-      val threadManaged = proc.threads.collect { case managed: OSReaperManaged => managed }
-      val logicManaged = proc.logics.collect { case managed: OSReaperManaged => managed }
-      val childManaged = proc.children.flatMap(collectFromProcess)
-      self ++ threadManaged ++ logicManaged ++ childManaged
-    }
-
-    processes.filter(_.parent.isEmpty).flatMap(collectFromProcess).distinct.toSeq
-  }
-
-  private[kernel] def managedReaperEntities: Seq[OSReaperManaged] = collectManagedEntities()
 
 
 

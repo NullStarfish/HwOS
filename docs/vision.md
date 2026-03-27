@@ -31,7 +31,7 @@ HwOS 当前的工作，是把这些分散机制收敛成一条更清楚的主线
 - `Process` 作为 service / environment / physical component
 - `export / declare` 作为 lightweight symbolic v0 的跨边界接口
 - `KernelAddressSpace` 作为 state/code/binding/exported/dependency 元数据平面
-- `OSReaper` 作为可选的系统级神力，而不是基础模型的一部分
+- reclaim 通过 thread reset hook 显式接入，而不是基础模型的一部分
 
 因此，HwOS 不是一个“更漂亮的 Chisel DSL”，而是一个关于**控制流本位硬件描述**的提案。
 
@@ -80,7 +80,7 @@ HwOS 当前的核心命题可以压成两句：
 4. **`Process` 是环境、服务与物理组件壳，而不是软件意义上的 OS process**
 5. **`export / declare` 只负责跨边界可见性与依赖记录**
 6. **state/code 是两套不同的空间**
-7. **`reset` 是 thread 自己的基础原语；`OSReaper` 的即时截断是可选系统神力**
+7. **`reset` 是 thread 自己的基础原语；额外 reclaim 必须显式接到 reset hook**
 
 也就是说，HwOS 当前想建立的不是另一套“语法糖”，而是一套：
 
@@ -171,20 +171,20 @@ HwOS 当前的核心命题可以压成两句：
   - `export(symbol, signal, caps)`
   - `declare(symbol, caps)`
 
-### 定义 6：系统神力
+### 定义 6：显式 reset reclaim
 
-在 HwOS 中，**`OSReaper` 是系统级附加能力，而不是基础语言默认语义**。
+在 HwOS 中，**`reset()` 是基础生命周期原语，而 reclaim 必须显式接到 thread 上**。
 
 当前主线中，这体现为：
 
 - 普通 thread 的基础原语是 `reset()`
 - `kill(thread)` 默认最终落到 `reset()`
-- 只有显式接入 `OSReaperManaged` 的对象，才拥有额外的即时截断、强制收尾与 reclaim 能力
+- 如果某些 lease 或局部状态需要额外 reclaim，必须显式写 `thread.registerReset { ... }`
 
 这一定义的关键意义在于：
 
 - 基础执行模型保持轻量
-- 系统级强制收尾保持显式
+- reclaim 策略保持显式
 
 ## 4. 与传统 RTL 方法的区别
 
@@ -293,7 +293,7 @@ HwOS 不是试图把所有硬件值都做成符号系统。
 - state/code 已分离为两套空间
 - `export / declare` 已经构成 symbolic v0
 - `reset()` 已经是 thread 自己的正式原语
-- `OSReaper` 是可选系统服务，而不是基础模型默认组成部分
+- reclaim 不是基础模型默认组成部分
 
 ### 仍然是演进中的部分
 

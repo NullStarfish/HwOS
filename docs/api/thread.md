@@ -171,7 +171,7 @@
 
 - 这是 thread 自己的基础原语
 - 普通 `kill(thread)` 默认最终落到 `reset()`
-- `OSReaper` 的即时截断和强制收尾是额外系统神力，不是 `reset()` 本体
+- `reset()` 默认只负责 thread runtime 与用户注册的 reset hooks
 
 ### `registerReset { ... }`
 
@@ -190,13 +190,13 @@
 适用场景：
 
 - 你希望某些 thread 相关的本地状态在 `reset()` 时一起清掉
-- 但你不想引入 `OSReaper` 那种系统级 reclaim 机制
+- 或者你希望某些 lease 在 reset 时显式执行 `forceReclaim()`
 
 关键边界：
 
 - 这里传入的是普通 Chisel block，不是 `HwInline`
 - 它是 thread 本地 reset 扩展点，不是 process 级 cleanup 框架
-- 它不会替代 `OSReaper` 的跨对象 reclaim 语义
+- 框架不会自动替你给 lease 注册 reclaim 逻辑
 
 ## Usage examples
 
@@ -288,10 +288,10 @@ worker.registerReset {
 
 - `HwInline`
 
-### `registerReset` 不是 `OSReaper`
+### `registerReset` 不是自动 reclaim
 
 `registerReset` 只是 thread 自己的本地 reset hook。  
-如果你要做跨对象 reclaim / kill cleanup / lease 回收，那仍然是另一层机制。
+如果某个 lease 需要在 `reset()` 时回收，用户必须显式写 `thread.registerReset { lease.forceReclaim() }`。
 
 ### `Process` 不是 thread 的“父线程”
 

@@ -23,7 +23,7 @@ For practical kernel API usage, see [docs/api/README.md](docs/api/README.md).
 * **Portable Control Segments:** `HwInline` is the current first-class control code segment API for callable/inline control transactions.
 * **Thread as Execution Host:** `HardwareThread` is the unified runtime host for control flow, while control payload is carried by `HwInline` and process/service composition.
 * **Lightweight Symbolic v0:** `export / declare` provide explicit cross-boundary visibility and dependency recording, while same-process local code can still use direct Scala/Chisel interaction.
-* **Optional OSReaper Services:** system-level reclaim and forced cleanup exist as explicit extra power, not as the default semantics of every thread.
+* **Explicit Reset Reclaim Hooks:** `thread.reset()` is the default lifecycle primitive, and extra reclaim can be attached explicitly with `thread.registerReset { ... }` when needed.
 * **Hardware Stdlib:** Comes with a built-in, highly optimized concurrency library including `Semaphore` (with `initialCount = 1` as single-permit mutual exclusion), `WaitGroup` (using concurrent adder-trees), and `Scoreboard`.
 * **Native Semantic Observability (HwOSgdb):** A DPI-C and ncurses-based TUI debugger. It visualizes the dual-track CallStack (macro-temporal and micro-combinational) and supports time-travel debugging.
 * **Frontend/Backend Process Composition (Prototype CPU):** the current server-injected CPU prototype is organized as explicit `FrontendProcess` and `BackendProcess` containers, with decode dispatch decoupled from path execution and commit.
