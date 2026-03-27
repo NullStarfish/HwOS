@@ -52,6 +52,7 @@
 - `done`
 - `pc`
 - `reset()`
+- `registerReset { ... }`
 
 内部实现背景：
 
@@ -172,6 +173,31 @@
 - 普通 `kill(thread)` 默认最终落到 `reset()`
 - `OSReaper` 的即时截断和强制收尾是额外系统神力，不是 `reset()` 本体
 
+### `registerReset { ... }`
+
+作用：
+
+- 给当前 thread 注册额外的本地 reset hook
+
+当前语义：
+
+- 可以调用多次
+- hook 按注册顺序执行
+- 当 `thread.reset()` 被调用时：
+  - 先执行 thread runtime reset
+  - 再执行这些已注册的 hook
+
+适用场景：
+
+- 你希望某些 thread 相关的本地状态在 `reset()` 时一起清掉
+- 但你不想引入 `OSReaper` 那种系统级 reclaim 机制
+
+关键边界：
+
+- 这里传入的是普通 Chisel block，不是 `HwInline`
+- 它是 thread 本地 reset 扩展点，不是 process 级 cleanup 框架
+- 它不会替代 `OSReaper` 的跨对象 reclaim 语义
+
 ## Usage examples
 
 ### 示例 1：最小 thread
@@ -232,6 +258,22 @@ worker.entry {
 }
 ```
 
+### 示例 5：`registerReset`
+
+```scala
+val worker = createThread("Worker")
+val localFlag = RegInit(false.B)
+val localCount = RegInit(0.U(8.W))
+
+worker.registerReset {
+  localFlag := false.B
+}
+
+worker.registerReset {
+  localCount := 0.U
+}
+```
+
 ## 常见误区
 
 ### `hijack` 不是 runtime jump
@@ -245,6 +287,11 @@ worker.entry {
 真正 portable / combinable 的控制代码更多体现在：
 
 - `HwInline`
+
+### `registerReset` 不是 `OSReaper`
+
+`registerReset` 只是 thread 自己的本地 reset hook。  
+如果你要做跨对象 reclaim / kill cleanup / lease 回收，那仍然是另一层机制。
 
 ### `Process` 不是 thread 的“父线程”
 

@@ -8,4 +8,5 @@ trait ThreadRuntimeApi {
   def active: Bool
   def done: Bool
   def reset(): Unit
+  def registerReset(block: => Unit): Unit
 }

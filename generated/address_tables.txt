@@ -1,18 +1,18 @@
 State Table
-owner              | object                                   | space | kind  | start | span | end_exclusive | signal                                    
--------------------+------------------------------------------+-------+-------+-------+------+---------------+-------------------------------------------
-Init/Reader_thread | Init/Reader_thread_runtime_cursor        | state | state | 0     | 1    | 1             | Axi4ReadDemoModule.cursorReg: Reg[UInt<1>]
-Init/Reader_thread | Init/Reader_thread_runtime_runtime_state | state | state | 1     | 2    | 3             | Axi4ReadDemoModule.stateReg: Reg[UInt<2>] 
+owner                        | object                                             | space | kind  | start | span | end_exclusive | signal                                   
+-----------------------------+----------------------------------------------------+-------+-------+-------+------+---------------+------------------------------------------
+Init/ResetProc/Worker_thread | Init/ResetProc/Worker_thread_runtime_cursor        | state | state | 0     | 2    | 2             | ThreadResetModule.cursorReg: Reg[UInt<2>]
+Init/ResetProc/Worker_thread | Init/ResetProc/Worker_thread_runtime_runtime_state | state | state | 2     | 2    | 4             | ThreadResetModule.stateReg: Reg[UInt<2>] 
 
 Code Table
-owner              | segment                    | space | code_start | span | code_entry | labels                                                      | addresses                                                      
--------------------+----------------------------+-------+------------+------+------------+-------------------------------------------------------------+----------------------------------------------------------------
-Init/Reader_thread | Init/Reader_thread_segment | code  | 0          | 2    | 0          | [axi_read_637752917_IssueAddr, axi_read_637752917_WaitData] | {axi_read_637752917_IssueAddr=0, axi_read_637752917_WaitData=1}
+owner                        | segment                              | space | code_start | span | code_entry | labels                                  | addresses                                    
+-----------------------------+--------------------------------------+-------+------------+------+------------+-----------------------------------------+----------------------------------------------
+Init/ResetProc/Worker_thread | Init/ResetProc/Worker_thread_segment | code  | 0          | 3    | 0          | [Tick, Park, Anon_Return_to_ThreadExit] | {Tick=0, Park=1, Anon_Return_to_ThreadExit=2}
 
 Binding Table
-binding                    | owner              | cursor_object                     | cursor_space | cursor_start | runtime_state_object                     | runtime_state_space | runtime_state_start | code_segment               | code_space | code_start | code_owner         | code_entry
----------------------------+--------------------+-----------------------------------+--------------+--------------+------------------------------------------+---------------------+---------------------+----------------------------+------------+------------+--------------------+-----------
-Init/Reader_thread_runtime | Init/Reader_thread | Init/Reader_thread_runtime_cursor | state        | 0            | Init/Reader_thread_runtime_runtime_state | state               | 1                   | Init/Reader_thread_segment | code       | 0          | Init/Reader_thread | 0         
+binding                              | owner                        | cursor_object                               | cursor_space | cursor_start | runtime_state_object                               | runtime_state_space | runtime_state_start | code_segment                         | code_space | code_start | code_owner                   | code_entry
+-------------------------------------+------------------------------+---------------------------------------------+--------------+--------------+----------------------------------------------------+---------------------+---------------------+--------------------------------------+------------+------------+------------------------------+-----------
+Init/ResetProc/Worker_thread_runtime | Init/ResetProc/Worker_thread | Init/ResetProc/Worker_thread_runtime_cursor | state        | 0            | Init/ResetProc/Worker_thread_runtime_runtime_state | state               | 2                   | Init/ResetProc/Worker_thread_segment | code       | 0          | Init/ResetProc/Worker_thread | 0         
 
 Exported Memory Table
 symbol | owner | backing_object | start | span | type | capability

@@ -6,6 +6,7 @@ import HwOS.kernel.system.CallProtocolContext.CallSiteSnapshot
 import HwOS.kernel.system.{RuntimeContext, RuntimeLifecycle}
 import HwOS.kernel.thread.step.EdgeAction
 import HwOS.kernel.thread.step.{ControlProgram, ControlProgramBuilder, CurrentProgramContext, ThreadRuntimeLogic}
+import scala.collection.mutable.ArrayBuffer
 
 trait ThreadCore
     extends ThreadControlApi
@@ -19,6 +20,7 @@ trait ThreadCore
   private var programBuilderOpt: Option[ControlProgramBuilder] = None
   private var compiledProgramOpt: Option[ControlProgram.CompiledControlProgram] = None
   private var threadHostOpt: Option[ThreadHost] = None
+  private val resetHooks = ArrayBuffer.empty[() => Unit]
   private val debugValidation = new ThreadDebugValidation
 
   private def programBuilder: ControlProgramBuilder =
@@ -60,6 +62,11 @@ trait ThreadCore
 
   override def reset(): Unit = {
     threadHost.reset()
+    resetHooks.foreach(_.apply())
+  }
+
+  override def registerReset(block: => Unit): Unit = {
+    resetHooks += (() => block)
   }
 
   private def verifyExitPath(): Unit = {}

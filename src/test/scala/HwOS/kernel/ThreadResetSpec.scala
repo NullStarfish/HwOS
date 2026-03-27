@@ -10,8 +10,19 @@ class ThreadResetProcess(localName: String)(implicit kernel: Kernel) extends HwP
   val hits = (RegInit(0.U(8.W)))
   val resetIssued = (RegInit(false.B))
   val restarted = (RegInit(false.B))
+  val resetHookHits = (RegInit(0.U(8.W)))
+  val hookValueA = (RegInit(0.U(8.W)))
+  val hookValueB = (RegInit(0.U(8.W)))
 
   override def entry(): Unit = {
+    worker.registerReset {
+      resetHookHits := resetHookHits + 1.U
+      hookValueA := 0.U
+    }
+    worker.registerReset {
+      hookValueB := 0.U
+    }
+
     worker.entry {
       worker.Step("Tick") {
         hits := hits + 1.U
@@ -31,6 +42,9 @@ class ThreadResetModule extends Module {
     val workerDone = Output(Bool())
     val resetIssued = Output(Bool())
     val restarted = Output(Bool())
+    val resetHookHits = Output(UInt(8.W))
+    val hookValueA = Output(UInt(8.W))
+    val hookValueB = Output(UInt(8.W))
   })
 
   io.hits := DontCare
@@ -38,15 +52,13 @@ class ThreadResetModule extends Module {
   io.workerDone := DontCare
   io.resetIssued := DontCare
   io.restarted := DontCare
+  io.resetHookHits := DontCare
+  io.hookValueA := DontCare
+  io.hookValueB := DontCare
 
   implicit val kernel: Kernel = new Kernel()
 
   object Init extends HwProcess("Init") {
-    (io.hits)
-    (io.workerActive)
-    (io.workerDone)
-    (io.resetIssued)
-    (io.restarted)
 
     val proc = spawn(new ThreadResetProcess("ResetProc"))
     val daemon = createLogic("Daemon")
@@ -55,6 +67,11 @@ class ThreadResetModule extends Module {
       daemon.run {
         when(!proc.worker.active && !proc.worker.done && !proc.resetIssued && !proc.restarted) {
           SysCall.Inline(SysCall.start(proc.worker))
+        }
+
+        when(proc.hits === 1.U && !proc.resetIssued) {
+          proc.hookValueA := 9.U
+          proc.hookValueB := 7.U
         }
 
         when(proc.hits === 1.U && !proc.resetIssued) {
@@ -72,6 +89,9 @@ class ThreadResetModule extends Module {
         io.workerDone := proc.worker.done
         io.resetIssued := proc.resetIssued
         io.restarted := proc.restarted
+        io.resetHookHits := proc.resetHookHits
+        io.hookValueA := proc.hookValueA
+        io.hookValueB := proc.hookValueB
       }
     }
   }
@@ -102,6 +122,31 @@ class ThreadResetSpec extends AnyFlatSpec {
       assert(settled, "thread.reset() did not reset the runtime and allow a clean restart")
       assert(c.io.hits.peek().litValue >= 2, "thread.reset() unexpectedly reclaimed ordinary state")
       c.io.workerDone.expect(false.B)
+    }
+  }
+
+  it should "run all registered reset hooks when reset() is called" in {
+    simulate(new ThreadResetModule) { c =>
+      c.reset.poke(true.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      var settled = false
+      var guard = 0
+      while (!settled && guard < 20) {
+        c.clock.step()
+        settled =
+          c.io.resetIssued.peek().litValue == 1 &&
+            c.io.resetHookHits.peek().litValue >= 1 &&
+            c.io.hookValueA.peek().litValue == 0 &&
+            c.io.hookValueB.peek().litValue == 0
+        guard += 1
+      }
+
+      assert(settled, "registered reset hooks did not all run during thread.reset()")
+      c.io.resetHookHits.expect(1.U)
+      c.io.hookValueA.expect(0.U)
+      c.io.hookValueB.expect(0.U)
     }
   }
 }
