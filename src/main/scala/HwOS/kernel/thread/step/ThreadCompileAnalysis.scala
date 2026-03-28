@@ -79,7 +79,7 @@ private[kernel] object ThreadCompileAnalysis {
           target = patch.target,
           effects = patch.effects.flatMap(compileEffect(irState, localRefContext, _)).toSeq,
           emitThunk = patch.emitThunk,
-          guards = patch.guards,
+          guards = if (patch.inheritPassEdgeGuards) step.passEdgeGuards else patch.guards,
         ),
       )
     val waits = effects.collect { case wait: WaitEffect => wait }

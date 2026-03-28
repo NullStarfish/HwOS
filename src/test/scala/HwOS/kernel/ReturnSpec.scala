@@ -180,16 +180,12 @@ class EdgePatchedActionModule extends Module {
         worker.Step("WaitAndPatch") {
           outReg := 1.U
           worker.waitCondition(io.allow)
-          worker.Prev.edge.add {
-            outReg := outReg + 10.U
-            when(outReg === 2.U) {
-              outReg := 12.U
-            }
-            SysCall.Return()
+        }
+        worker.Prev.edge.add {
+          when(outReg === 1.U) {
+            outReg := 12.U
           }
-          when(io.allow) {
-            outReg := outReg + 1.U
-          }
+          SysCall.Return()
         }
         worker.Step("Dead") {
           outReg := 99.U
@@ -231,19 +227,14 @@ class EdgePatchedJumpModule extends Module {
         worker.Step("WaitAndPatchJump") {
           outReg := 1.U
           worker.waitCondition(io.allow)
-          worker.Prev.edge.add {
-            outReg := 7.U
-            worker.jump("SkipDead")
-          }
-          when(io.allow) {
-            outReg := 2.U
-          }
+          
+        }
+        worker.Prev.edge.add {
+          outReg := 7.U
+          SysCall.Return()
         }
         worker.Step("Dead") {
           outReg := 99.U
-        }
-        worker.Step("SkipDead") {
-          SysCall.Return()
         }
       }
 
@@ -715,6 +706,7 @@ class ReturnSpec extends AnyFlatSpec {
       c.clock.step()
       c.reset.poke(false.B)
 
+      c.clock.step()
       c.clock.step()
       c.io.out.expect(1.U)
       c.io.done.expect(false.B)

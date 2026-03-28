@@ -111,9 +111,9 @@ private[kernel] object ControlRuntimeCore {
   ): Unit = {
     val targetIndex = ThreadLayout.resolveStepRef(builder.state.irState, currentRefContext(builder), target)
     val targetStep = builder.steps(targetIndex)
-    val patchGuards = target.edgeContext.passEdgeGuards
 
     if (PreLoweringAnalysis.isActive) {
+      val patchGuards = target.edgeContext.passEdgeGuards
       val capturedEffects = EdgePatchAnalysis.capture(patchGuards) {
         block
       }
@@ -122,6 +122,7 @@ private[kernel] object ControlRuntimeCore {
         effects = capturedEffects,
         emitThunk = None,
         guards = patchGuards,
+        inheritPassEdgeGuards = false,
       )
       return
     }
@@ -139,7 +140,8 @@ private[kernel] object ControlRuntimeCore {
           targetStep.staticEdgePatches += HwOS.kernel.system.RecordedEdgePatch(
             target = PatchTarget.PassEdge,
             emitThunk = Some(() => block),
-            guards = patchGuards,
+            guards = Nil,
+            inheritPassEdgeGuards = true,
           )
       }
       return
@@ -152,7 +154,8 @@ private[kernel] object ControlRuntimeCore {
     targetStep.staticEdgePatches += HwOS.kernel.system.RecordedEdgePatch(
       target = PatchTarget.PassEdge,
       emitThunk = Some(() => block),
-      guards = patchGuards,
+      guards = Nil,
+      inheritPassEdgeGuards = true,
     )
   }
 
