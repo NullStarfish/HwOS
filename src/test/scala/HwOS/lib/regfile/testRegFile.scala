@@ -90,9 +90,6 @@ class RegfileIntegrationModule extends Module {
   
   
   object Init extends HwProcess("Init") {
-    (io.result)
-    (io.stalls)
-    (io.done)
     val daemon = createLogic("Init")
 
     val client = spawn(

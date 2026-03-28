@@ -57,6 +57,7 @@ private[kernel] object PreLoweringAnalysis {
 
     record.edgeActions.clear()
     record.capturedEffects.clear()
+    record.passEdgeGuards = Nil
     activeRecord.set(Some(record))
     edgeGuardStack.set(Nil)
     try {
@@ -65,6 +66,7 @@ private[kernel] object PreLoweringAnalysis {
           withTempRegion(module, tempRegion) { block }
         }
       }
+      record.passEdgeGuards = edgeGuardStack.get()
     } finally {
       val addedIds = ids.length - idsBefore
       if (addedIds > 0) {

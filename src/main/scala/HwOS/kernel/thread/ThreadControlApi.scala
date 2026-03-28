@@ -4,11 +4,22 @@ import chisel3._
 
 sealed trait StepRef {
   def edge: StepEdge = StepEdge(this)
+  def edgeContext: StepRef.EdgeContext
 }
 
 object StepRef {
-  final case class NamedStepRef(name: String) extends StepRef
-  case object NextStepRef extends StepRef
+  final case class EdgeContext(
+      passEdgeGuards: List[Bool] = Nil,
+  )
+
+  final case class NamedStepRef(
+      name: String,
+      edgeContext: EdgeContext = EdgeContext(),
+  ) extends StepRef
+
+  final case class NextStepRef(
+      edgeContext: EdgeContext = EdgeContext(),
+  ) extends StepRef
 }
 
 trait ThreadControlApi {

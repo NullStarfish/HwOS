@@ -25,7 +25,7 @@ object ThreadStepDemo {
 
     def stepRef(stepName: String): StepRef = StepRef.NamedStepRef(stepName)
 
-    def Next: StepRef = StepRef.NextStepRef
+    def Next: StepRef = StepRef.NextStepRef()
 
     def hijack(target: StepRef): HijackAction =
       ThreadIR.defineHijack(irState) {

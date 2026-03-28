@@ -19,7 +19,6 @@ class TopModule extends Module {
 
   // 顶层容器进程
   object Init extends HwProcess("Init") {
-    (io.result); (io.done)
     
     // 孵化 (Spawn) 我们的计数器子进程
     val counterProc = spawn(new CounterProcess("CounterApp"))

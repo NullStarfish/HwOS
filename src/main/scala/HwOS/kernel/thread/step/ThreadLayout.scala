@@ -22,9 +22,9 @@ private[kernel] object ThreadLayout {
       refContext: StepRefContext,
       target: StepRef,
   ): Int = target match {
-    case StepRef.NamedStepRef(name) =>
+    case StepRef.NamedStepRef(name, _) =>
       resolveStepIndex(irState, name)
-    case StepRef.NextStepRef =>
+    case StepRef.NextStepRef(_) =>
       val current = refContext.currentStepIndex
       if (current < 0) {
         throw new Exception(s"[Thread] Next step reference requires an active lowering step in program '${irState.programName}'.")

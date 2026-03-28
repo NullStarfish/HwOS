@@ -10,7 +10,7 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
     extends HwProcess(localName) {
   private val tokenWidth = log2Ceil((maxInFlight + 1) max 2)
 
-  private case class WindowReq(reserve: Bool, commit: Bool, forceCommit: Bool, reclaim: Bool)
+  private case class WindowReq(reserve: Bool, commit: Bool, retire: Bool, reclaim: Bool)
   private case class WindowEntry(active: Bool, commitPending: Bool, token: UInt)
 
   private val nextIssue = RegInit(0.U(tokenWidth.W))
@@ -23,35 +23,28 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
     WindowEntry(RegInit(false.B), RegInit(false.B), RegInit(0.U(tokenWidth.W)))
   }
 
-  private def reserveRequests: UInt =
-    PriorityEncoderOH(VecInit((0 until maxClients).map(i => reqs(i).reserve && !entries(i).active)).asUInt)
+  private case class ReserveGrant(valid: Bool, grantOH: UInt)
+  private case class WindowProgress(retireOH: UInt, reclaimOH: UInt, retireFire: Bool, reclaimCount: UInt, reclaimTouchesHead: Bool)
 
-  private def forceCommitRequests: UInt =
-    PriorityEncoderOH(
-      VecInit((0 until maxClients).map(i => reqs(i).forceCommit && entries(i).active && entries(i).commitPending && entries(i).token === nextCommit)).asUInt
+  private def SelectReserveGrant(): HwInline[ReserveGrant] = HwInline.stateless("SelectReserveGrant") { _ =>
+    val requestOH = PriorityEncoderOH(VecInit((0 until maxClients).map(i => reqs(i).reserve && !entries(i).active)).asUInt)
+    val grantOH = Mux(inFlight < maxInFlight.U, requestOH, 0.U(maxClients.W))
+    ReserveGrant(grantOH.orR, grantOH)
+  }
+
+  private def ComputeWindowProgress(): HwInline[WindowProgress] = HwInline.stateless("ComputeWindowProgress") { _ =>
+    val retireOH = PriorityEncoderOH(
+      VecInit((0 until maxClients).map(i => reqs(i).retire && entries(i).active && entries(i).commitPending && entries(i).token === nextCommit)).asUInt
     )
+    val reclaimOH = VecInit((0 until maxClients).map(i => reqs(i).reclaim && entries(i).active)).asUInt
+    val reclaimTouchesHead = VecInit((0 until maxClients).map(i => reclaimOH(i) && entries(i).token === nextCommit)).asUInt.orR
+    WindowProgress(retireOH, reclaimOH, retireOH.orR, PopCount(reclaimOH), reclaimTouchesHead)
+  }
 
-  private def reclaimRequests: UInt =
-    VecInit((0 until maxClients).map(i => reqs(i).reclaim && entries(i).active)).asUInt
-
-  private def reclaimHead(reclaimOH: UInt): Bool =
-    VecInit((0 until maxClients).map(i => reclaimOH(i) && entries(i).token === nextCommit)).asUInt.orR
-
-  override def entry(): Unit = {
-    val daemon = createLogic("OrderDaemon")
-
-    daemon.run {
-      val reserveGrantOH = Mux(inFlight < maxInFlight.U, reserveRequests, 0.U(maxClients.W))
-      val reserveFire = reserveGrantOH.orR
-      val forceCommitOH = forceCommitRequests
-      val commitFire = forceCommitOH.orR
-      val reclaimOH = reclaimRequests
-      val reclaimCount = PopCount(reclaimOH)
-      val reserveDelta = Mux(reserveFire, 1.U, 0.U)
-      val commitDelta = Mux(commitFire, 1.U, 0.U)
-
+  private def UpdateEntryState(reserveGrant: ReserveGrant, progress: WindowProgress): HwInline[Unit] =
+    HwInline.stateless("UpdateWindowEntryState") { _ =>
       for ((entry, i) <- entries.zipWithIndex) {
-        when(reserveGrantOH(i)) {
+        when(reserveGrant.grantOH(i)) {
           entry.active := true.B
           entry.commitPending := false.B
           entry.token := nextIssue
@@ -59,27 +52,44 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
         when(reqs(i).commit && entry.active) {
           entry.commitPending := true.B
         }
-        when(forceCommitOH(i) || reclaimOH(i)) {
+        when(progress.retireOH(i) || progress.reclaimOH(i)) {
           entry.active := false.B
           entry.commitPending := false.B
         }
       }
+    }
 
-      when(reserveFire) {
+  private def UpdateWindowState(reserveGrant: ReserveGrant, progress: WindowProgress): HwInline[Unit] =
+    HwInline.stateless("UpdateWindowState") { _ =>
+      val reserveDelta = Mux(reserveGrant.valid, 1.U, 0.U)
+      val retireDelta = Mux(progress.retireFire, 1.U, 0.U)
+
+      when(reserveGrant.valid) {
         nextIssue := nextIssue + 1.U
       }
-      when(commitFire || reclaimOH.asUInt.orR) {
-        when(commitFire) {
+      when(progress.retireFire || progress.reclaimOH.orR) {
+        when(progress.retireFire) {
           nextCommit := nextCommit + 1.U
         }.otherwise {
-          when(reclaimHead(reclaimOH)) {
+          when(progress.reclaimTouchesHead) {
             nextCommit := nextCommit + 1.U
           }
         }
-        inFlight := inFlight + reserveDelta - commitDelta - reclaimCount
-      }.elsewhen(reserveFire) {
+        inFlight := inFlight + reserveDelta - retireDelta - progress.reclaimCount
+      }.elsewhen(reserveGrant.valid) {
         inFlight := inFlight + 1.U
       }
+    }
+
+  override def entry(): Unit = {
+    val daemon = createLogic("OrderDaemon")
+
+    daemon.run {
+      val reserveGrant = SysCall.Inline(SelectReserveGrant())
+      val progress = SysCall.Inline(ComputeWindowProgress())
+
+      SysCall.Inline(UpdateEntryState(reserveGrant, progress))
+      SysCall.Inline(UpdateWindowState(reserveGrant, progress))
     }
   }
 
@@ -102,8 +112,8 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
       entry.active && entry.commitPending && entry.token === nextCommit
     }
 
-    def ForceCommit(): HwInline[Unit] = HwInline.stateless(s"ForceCommit_$id") { _ =>
-      reqs(id).forceCommit := true.B
+    def Retire(): HwInline[Unit] = HwInline.stateless(s"Retire_$id") { _ =>
+      reqs(id).retire := true.B
     }
 
     def forceReclaim(): Unit = {
@@ -115,34 +125,8 @@ class OrderedWindowProcess(val maxClients: Int, val maxInFlight: Int, localName:
 
   private val leases = Array.tabulate(maxClients)(i => new WindowLease(i))
 
-  // Protocol-level API
+  // Protocol-level API: callers obtain a per-client lease and drive it directly.
   def RequestLease(id: Int): HwInline[WindowLease] = HwInline.bindings(s"ReqWindowLease_$id") { _ =>
     leases(id)
-  }
-
-  private def withLease[T](id: Int, bindingName: String)(body: WindowLease => T): HwInline[T] =
-    HwInline.bindings(bindingName) { _ =>
-      body(leases(id))
-    }
-
-  // Facade-first API
-  def Reserve(id: Int): HwInline[Unit] = HwInline.atomic(s"WindowReserve_$id") { _ =>
-    val lease = SysCall.Inline(withLease(id, s"WindowReserveLease_$id")(identity))
-    SysCall.Inline(lease.Reserve())
-  }
-
-  def Commit(id: Int): HwInline[Unit] = HwInline.stateless(s"WindowCommit_$id") { _ =>
-    val lease = SysCall.Inline(withLease(id, s"WindowCommitLease_$id")(identity))
-    SysCall.Inline(lease.Commit())
-  }
-
-  def Committed(id: Int): HwInline[Bool] = HwInline.stateless(s"WindowCommitted_$id") { _ =>
-    val lease = SysCall.Inline(withLease(id, s"WindowCommittedLease_$id")(identity))
-    SysCall.Inline(lease.Committed())
-  }
-
-  def ForceCommit(id: Int): HwInline[Unit] = HwInline.stateless(s"WindowForceCommit_$id") { _ =>
-    val lease = SysCall.Inline(withLease(id, s"WindowForceCommitLease_$id")(identity))
-    SysCall.Inline(lease.ForceCommit())
   }
 }

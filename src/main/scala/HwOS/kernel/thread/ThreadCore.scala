@@ -116,7 +116,7 @@ trait ThreadCore
     debugValidation.markCallSiteReturned(callSiteId)
   }
 
-  override val Next: StepRef = StepRef.NextStepRef
+  override val Next: StepRef = StepRef.NextStepRef()
 
   override def Prev: StepRef = {
     programFacade.prevRef

@@ -1,5 +1,7 @@
 package HwOS.kernel.thread.step
 
+import HwOS.kernel.context.{AtomicCtx, ContextScope}
+import HwOS.kernel.thread.{ControlHost, HardwareThread}
 import HwOS.kernel.thread.{ControlHostAdapter, StepRef}
 import HwOS.kernel.thread.step.ControlProgram.CompiledControlProgram
 import HwOS.kernel.thread.step.ThreadCompilePlan._
@@ -109,17 +111,17 @@ private[kernel] object ControlRuntimeCore {
   ): Unit = {
     val targetIndex = ThreadLayout.resolveStepRef(builder.state.irState, currentRefContext(builder), target)
     val targetStep = builder.steps(targetIndex)
+    val patchGuards = target.edgeContext.passEdgeGuards
 
     if (PreLoweringAnalysis.isActive) {
-      val savedGuards = PreLoweringAnalysis.currentEdgeGuards
-      val capturedEffects = EdgePatchAnalysis.capture(savedGuards) {
+      val capturedEffects = EdgePatchAnalysis.capture(patchGuards) {
         block
       }
       targetStep.staticEdgePatches += HwOS.kernel.system.RecordedEdgePatch(
         target = PatchTarget.PassEdge,
         effects = capturedEffects,
         emitThunk = None,
-        guards = savedGuards,
+        guards = patchGuards,
       )
       return
     }
@@ -137,7 +139,7 @@ private[kernel] object ControlRuntimeCore {
           targetStep.staticEdgePatches += HwOS.kernel.system.RecordedEdgePatch(
             target = PatchTarget.PassEdge,
             emitThunk = Some(() => block),
-            guards = Nil,
+            guards = patchGuards,
           )
       }
       return
@@ -150,7 +152,7 @@ private[kernel] object ControlRuntimeCore {
     targetStep.staticEdgePatches += HwOS.kernel.system.RecordedEdgePatch(
       target = PatchTarget.PassEdge,
       emitThunk = Some(() => block),
-      guards = Nil,
+      guards = patchGuards,
     )
   }
 
@@ -181,7 +183,9 @@ private[kernel] object ControlRuntimeCore {
         runtimePatchOrdinal += 1
         emitGuarded(patchGuards) {
           // New semantics: replay the full edge patch block during lowering under edge guards.
-          runtimeThunk.foreach(_.apply())
+          withAtomicThreadScope(host) {
+            runtimeThunk.foreach(_.apply())
+          }
           // Legacy structured effects remain supported for backward compatibility.
           effects.foreach {
             case JumpEffect(targetIndex, guards) =>
@@ -222,6 +226,21 @@ private[kernel] object ControlRuntimeCore {
         ()
     }
   }
+
+  private def withAtomicThreadScope(host: ControlHostAdapter)(block: => Unit): Unit =
+    host match {
+      case controlHost: ControlHost =>
+        controlHost.entity match {
+          case thread: HardwareThread =>
+            ContextScope.withContext(AtomicCtx(thread)) {
+              block
+            }
+          case _ =>
+            block
+        }
+      case _ =>
+        block
+    }
 
   private def emitGuarded(guards: List[Bool])(block: => Unit): Unit = guards.reverse match {
     case Nil => block

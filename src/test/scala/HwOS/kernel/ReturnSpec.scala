@@ -132,12 +132,12 @@ class EdgePatchedReturnModule extends Module {
         worker.Step("WaitThenReturn") {
           outReg := 1.U
           worker.waitCondition(io.allow)
-          worker.Prev.edge.add {
-            SysCall.Return()
-          }
-          when(io.allow) {
-            outReg := 2.U
-          }
+
+        }
+        worker.Prev.edge.add {
+          printf(p"hello\n")
+          SysCall.Return()
+          outReg := 2.U
         }
         worker.Step("Dead") {
           outReg := 9.U

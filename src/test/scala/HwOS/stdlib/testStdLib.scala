@@ -76,7 +76,6 @@ class SyncIntegrationModule extends Module {
 
 
   object Init extends HwProcess("Init") {
-    (io.finalCount); (io.allDone)
 
 
     val sync = spawn(new SyncProcess("Sync"))

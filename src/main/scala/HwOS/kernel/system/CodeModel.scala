@@ -45,6 +45,7 @@ final class VirtualStepRecord(
   val edgeActions: ArrayBuffer[EdgeAction] = ArrayBuffer.empty[EdgeAction]
   val capturedEffects: ArrayBuffer[RecordedEffect] = ArrayBuffer.empty[RecordedEffect]
   val staticEdgePatches: ArrayBuffer[RecordedEdgePatch] = ArrayBuffer.empty[RecordedEdgePatch]
+  var passEdgeGuards: List[Bool] = Nil
 }
 
 final class VirtualProgram(val ownerName: String) {

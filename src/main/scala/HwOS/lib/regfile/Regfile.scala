@@ -211,7 +211,7 @@ object RegfileLib {
       SysCall.Inline(writePort.Write(pending.addr, pending.data))
       SysCall.Inline(sbLease.Release())
       SysCall.Inline(writePort.Release())
-      SysCall.Inline(windowLease.ForceCommit())
+      SysCall.Inline(windowLease.Retire())
       clearPublishState(portIdx)
     }
 
