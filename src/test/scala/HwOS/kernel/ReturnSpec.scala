@@ -252,6 +252,101 @@ class EdgePatchedJumpModule extends Module {
   Init.build()
 }
 
+class InlinePrevEdgePatchedModule extends Module {
+  val io = IO(new Bundle {
+    val allow = Input(Bool())
+    val out = Output(UInt(8.W))
+    val done = Output(Bool())
+  })
+
+  io.out := DontCare
+  io.done := DontCare
+
+  implicit val kernel: Kernel = new Kernel()
+
+  object Init extends HwProcess("Init") {
+    val worker = createThread("Worker")
+    val outReg = RegInit(0.U(8.W))
+
+    override def entry(): Unit = {
+      worker.entry {
+        worker.Step("WaitAndPatchInline") {
+          outReg := 1.U
+          worker.waitCondition(io.allow)
+          worker.Prev.edge.add {
+            outReg := 5.U
+            SysCall.Return()
+          }
+        }
+        worker.Step("Dead") {
+          outReg := 99.U
+        }
+      }
+
+      val daemon = createLogic("Daemon")
+      daemon.run {
+        when(!worker.active && !worker.done) {
+          SysCall.Inline(SysCall.start(worker))
+        }
+        io.out := outReg
+        io.done := worker.done
+      }
+    }
+  }
+
+  Init.build()
+}
+
+class InlinePrevEdgeOrderingModule extends Module {
+  val io = IO(new Bundle {
+    val allowA = Input(Bool())
+    val allowB = Input(Bool())
+    val out = Output(UInt(8.W))
+    val done = Output(Bool())
+  })
+
+  io.out := DontCare
+  io.done := DontCare
+
+  implicit val kernel: Kernel = new Kernel()
+
+  object Init extends HwProcess("Init") {
+    val worker = createThread("Worker")
+    val outReg = RegInit(0.U(8.W))
+
+    override def entry(): Unit = {
+      worker.entry {
+        worker.Step("WaitTwice") {
+          outReg := 1.U
+          worker.waitCondition(io.allowA)
+          worker.Prev.edge.add {
+            outReg := 5.U
+          }
+          worker.waitCondition(io.allowB)
+          worker.Prev.edge.add {
+            outReg := 9.U
+            SysCall.Return()
+          }
+        }
+        worker.Step("Dead") {
+          outReg := 99.U
+        }
+      }
+
+      val daemon = createLogic("Daemon")
+      daemon.run {
+        when(!worker.active && !worker.done) {
+          SysCall.Inline(SysCall.start(worker))
+        }
+        io.out := outReg
+        io.done := worker.done
+      }
+    }
+  }
+
+  Init.build()
+}
+
 class ReturnSpec extends AnyFlatSpec {
   "SysCall.Return" should "jump to the explicit caller continuation when Call binds a return target" in {
     simulate(new ReturnModule) { c =>
@@ -714,6 +809,51 @@ class ReturnSpec extends AnyFlatSpec {
       c.io.allow.poke(true.B)
       c.clock.step()
       c.io.out.expect(7.U)
+      c.io.done.expect(true.B)
+    }
+  }
+
+  it should "stably patch the edge created inside the current step when Prev.edge.add is declared inline" in {
+    simulate(new InlinePrevEdgePatchedModule) { c =>
+      c.reset.poke(true.B)
+      c.io.allow.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      c.clock.step()
+      c.clock.step()
+      c.io.out.expect(1.U)
+      c.io.done.expect(false.B)
+
+      c.io.allow.poke(true.B)
+      c.clock.step()
+      c.io.out.expect(5.U)
+      c.io.done.expect(true.B)
+    }
+  }
+
+  it should "bind each inline Prev.edge.add to the most recently created edge within the same step" in {
+    simulate(new InlinePrevEdgeOrderingModule) { c =>
+      c.reset.poke(true.B)
+      c.io.allowA.poke(false.B)
+      c.io.allowB.poke(false.B)
+      c.clock.step()
+      c.reset.poke(false.B)
+
+      c.clock.step()
+      c.clock.step()
+      c.io.out.expect(1.U)
+      c.io.done.expect(false.B)
+
+      c.io.allowA.poke(true.B)
+      c.clock.step()
+      c.io.out.expect(5.U)
+      c.io.done.expect(false.B)
+
+      c.io.allowA.poke(true.B)
+      c.io.allowB.poke(true.B)
+      c.clock.step()
+      c.io.out.expect(9.U)
       c.io.done.expect(true.B)
     }
   }

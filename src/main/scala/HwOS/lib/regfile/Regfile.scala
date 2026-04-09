@@ -25,7 +25,12 @@ object RegfileLib {
       if (zeroReg) Mux(addr === 0.U, 0.U, regs(addr)) else regs(addr)
     }
 
+    def ObserveFlat(): HwInline[UInt] = HwInline.bindings("Base_ObserveFlat") { _ =>
+      regs.asUInt
+    }
+
     def Write(addr: UInt, data: UInt): HwInline[Unit] = HwInline.stateless("Base_Write") { _ =>
+      printf(p"[REGFILE] base write addr=${Decimal(addr)} data=${Hexadecimal(data)}\n")
       if (zeroReg) {
         when(addr =/= 0.U) {
           regs.at(addr)  :=  data
@@ -57,6 +62,8 @@ object RegfileLib {
     override def entry(): Unit = {}
 
     def Read(addr: UInt): HwInline[UInt] = baseReg.Read(addr)
+
+    def ObserveFlat(): HwInline[UInt] = baseReg.ObserveFlat()
 
     def Write(clientId: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"SemaWrite_$clientId") { _ =>
       val writePort = SysCall.Inline(RequestWritePort(clientId))
@@ -106,6 +113,7 @@ object RegfileLib {
 
     def ReadCommitted(addr: UInt): HwInline[UInt] = semaReg.Read(addr)
     def Read(addr: UInt): HwInline[UInt] = GuardedRead(addr)
+    def ObserveFlat(): HwInline[UInt] = semaReg.ObserveFlat()
 
     def GuardedRead(addr: UInt): HwInline[UInt] = HwInline.atomic("GuardedRead") { t =>
       val ready = SysCall.Inline(scoreboard.Guard(addr))
@@ -230,6 +238,7 @@ object RegfileLib {
 
     def ReadCommitted(addr: UInt): HwInline[UInt] = semaReg.Read(addr)
     def Read(addr: UInt): HwInline[UInt] = GuardedRead(addr)
+    def ObserveFlat(): HwInline[UInt] = semaReg.ObserveFlat()
 
     def GuardedRead(addr: UInt): HwInline[UInt] = HwInline.atomic("OrderedGuardedRead") { t =>
       val matchingReady = matchingPorts(addr, requireReady = true.B)

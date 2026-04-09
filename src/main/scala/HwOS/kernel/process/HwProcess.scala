@@ -92,7 +92,8 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
 
   private[kernel] def createKernelLogic(name: String = "Daemon"): HardwareLogic =
     createLogic(name)
-  def spawn[T <: HwProcess](child: => T): T = {
+
+  def adopt[T <: HwProcess](child: => T): T = {
 
     ProcessBuilder.push(this)
 
@@ -102,8 +103,12 @@ abstract class HwProcess(val localName: String, overrideDebug: Option[Boolean] =
     ProcessBuilder.pop()
     
     this.children += c
+    c
+  }
+
+  def spawn[T <: HwProcess](child: => T): T = {
+    val c = adopt(child)
     c.build()
-    
     c
   }
   

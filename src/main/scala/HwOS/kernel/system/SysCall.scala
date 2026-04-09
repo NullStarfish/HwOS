@@ -164,19 +164,7 @@ object SysCall {
           case _ =>
         }
         val currentAgent = ContextScope.getCurrentAgent()
-        ContextScope.current match {
-          case AtomicCtx(t) =>
-            try {
-              site.func.emit(currentAgent)
-            } catch {
-              case ex: Exception if ex.getMessage != null && ex.getMessage.contains("Illegal inline call") =>
-                ContextScope.withContext(ThreadCtx(t)) {
-                  site.func.emit(currentAgent)
-                }
-            }
-          case _ =>
-            site.func.emit(currentAgent)
-        }
+        site.func.emit(currentAgent)
       }
     } finally {
       popInvokeMode()
