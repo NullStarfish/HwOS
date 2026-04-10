@@ -165,6 +165,12 @@ object RegfileLib {
       localName: String,
   )(implicit kernel: Kernel)
       extends HwProcess(localName) {
+    private var orderedWriteCallSeq = 0
+    private def nextOrderedWriteTag(portIdx: Int): String = {
+      val tag = s"OrderedRegWrite_${portIdx}_$orderedWriteCallSeq"
+      orderedWriteCallSeq += 1
+      tag
+    }
 
     private val addrWidth = log2Ceil(depth max 2)
     private case class PendingPort(busy: Bool, addr: UInt, data: UInt, ready: Bool)
@@ -197,6 +203,7 @@ object RegfileLib {
 
     private def BeginPendingWrite(portIdx: Int, addr: UInt): HwInline[Unit] = HwInline.atomic(s"BeginPendingWrite_$portIdx") { t =>
       val pending = pendingPort(portIdx)
+      printf(p"[REGFILE] begin pending port=${Decimal(portIdx.U)} addr=${Decimal(addr)}\n")
       pending.busy  :=  true.B
       pending.addr  :=  addr
       pending.ready  :=  false.B
@@ -206,6 +213,7 @@ object RegfileLib {
 
     private def FinishPendingWrite(portIdx: Int, data: UInt): HwInline[Unit] = HwInline.atomic(s"FinishPendingWrite_$portIdx") { t =>
       val pending = pendingPort(portIdx)
+      printf(p"[REGFILE] finish pending port=${Decimal(portIdx.U)} addr=${Decimal(pending.addr)} data=${Hexadecimal(data)}\n")
       pending.data  :=  data
       pending.ready  :=  true.B
       ()
@@ -213,6 +221,7 @@ object RegfileLib {
 
     private def publishPendingWrite(portIdx: Int): Unit = {
       val pending = pendingPort(portIdx)
+      printf(p"[REGFILE] publish pending port=${Decimal(portIdx.U)} addr=${Decimal(pending.addr)} data=${Hexadecimal(pending.data)}\n")
       val writePort = SysCall.Inline(semaReg.RequestWritePort(portIdx))
       val sbLease = SysCall.Inline(scoreboard.RequestLease(portIdx))
       val windowLease = SysCall.Inline(orderWindow.RequestLease(portIdx))
@@ -262,6 +271,7 @@ object RegfileLib {
 
     class OrderedRegWritePort(val portIdx: Int) {
       def Reserve(addr: UInt): HwInline[Unit] = HwInline.atomic(s"Reserve_$portIdx") { t =>
+        printf(p"[REGFILE] reserve port=${Decimal(portIdx.U)} addr=${Decimal(addr)}\n")
         val writePort = SysCall.Inline(semaReg.RequestWritePort(portIdx))
         val sbLease = SysCall.Inline(scoreboard.RequestLease(portIdx))
         val windowLease = SysCall.Inline(orderWindow.RequestLease(portIdx))
@@ -272,6 +282,7 @@ object RegfileLib {
       }
 
       def WritebackAndClear(addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"WB_$portIdx") { t =>
+        printf(p"[REGFILE] writeback+clear port=${Decimal(portIdx.U)} addr=${Decimal(addr)} data=${Hexadecimal(data)}\n")
         val windowLease = SysCall.Inline(orderWindow.RequestLease(portIdx))
         SysCall.Inline(FinishPendingWrite(portIdx, data))
         SysCall.Inline(windowLease.Commit())
@@ -280,11 +291,15 @@ object RegfileLib {
       }
     }
 
-    def Write(portIdx: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.atomic(s"OrderedRegWrite_$portIdx") { _ =>
+    def Write(portIdx: Int, addr: UInt, data: UInt): HwInline[Unit] = HwInline.thread(s"OrderedRegWrite_$portIdx") { t =>
+      val stepTag = nextOrderedWriteTag(portIdx)
       val writePort = SysCall.Inline(RequestWritePort(portIdx))
-      SysCall.Inline(writePort.Reserve(addr))
-      SysCall.Inline(writePort.WritebackAndClear(addr, data))
-      ()
+      t.Step(s"${stepTag}_Reserve") {
+        SysCall.Inline(writePort.Reserve(addr))
+      }
+      t.Step(s"${stepTag}_WritebackAndClear") {
+        SysCall.Inline(writePort.WritebackAndClear(addr, data))
+      }
     }
 
     private val writePorts = Array.tabulate(maxWriters)(i => new OrderedRegWritePort(i))
