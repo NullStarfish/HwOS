@@ -1,159 +1,188 @@
-# HwOS: A Thread-Level RTL Abstraction Framework
+# HwOS: Transaction-Oriented RTL Construction
 
 [![Scala Version](https://img.shields.io/badge/Scala-2.13+-red.svg)](https://www.scala-lang.org/)
-[![Chisel Version](https://img.shields.io/badge/Chisel-3.6+-blue.svg)](https://www.chisel-lang.org/)
+[![Chisel Version](https://img.shields.io/badge/Chisel-7.0-blue.svg)](https://www.chisel-lang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**HwOS** is a hardware construction framework built on top of Chisel/Scala. Its current main line is **control-flow-first**: it treats thread-hosted control flow and reusable control segments as first-class hardware design objects, rather than treating control as an afterthought attached to datapaths.
+HwOS is an experimental hardware construction framework built on Chisel/Scala.
+Its current focus is **transaction-oriented RTL construction with timing-semantic APIs**:
+hardware operations such as channel transfers, AXI reads, register-file reservation, and
+writeback are packaged as APIs whose meaning includes timing behavior such as blocking,
+sequencing, and commit points.
 
-HwOS operates on a simple but radical philosophy: **"Hardware is an Operating System"**.
+The goal is not to hide RTL or replace ordinary signals and state machines. Instead, HwOS
+tries to move repeated protocol choreography and ad hoc FSM glue behind reusable API
+boundaries. A call site should express the transaction it wants; the implementation should
+own the handshake timing, arbitration, forwarding, or publication policy needed to realize it.
 
-By replacing fragmented FSMs and ad-hoc control glue with a **thread-hosted control-flow model**, HwOS explores how hardware control can become portable, composable, and observable without hiding its structural cost.
+This repository is an active research artifact. It contains the core control model, reusable
+transaction components, standard-library synchronization primitives, register-file variants,
+and CPU-oriented prototypes that exercise the API style beyond toy examples.
 
-For the current implementation architecture, see [docs/architecture.md](docs/architecture.md).  
-For a paper-style statement of vision and core definitions, see [docs/vision.md](docs/vision.md).  
-For the current philosophy and concept model, see [docs/philosophy.md](docs/philosophy.md), [docs/concepts.md](docs/concepts.md), and [docs/glossary.md](docs/glossary.md).  
-For practical kernel API usage, see [docs/api/README.md](docs/api/README.md).  
-`README.md` is the project overview; `docs/architecture.md` describes the current implementation; the philosophy/concept docs explain why the system is organized this way and what the core terms mean.
+## Core Ideas
 
-## ✨ Core Features
+* **Transaction as frontend unit:** a transaction is a hardware operation with a control
+  boundary, such as `push(packet)`, `axi_read(addr)`, `Reserve(rd)`, or
+  `WritebackAndClear(rd, data)`.
+* **Timing-semantic APIs:** APIs can carry timing behavior. A transaction may block,
+  wait for a protocol condition, return a value, or commit side effects at a control boundary.
+* **Thread-hosted control:** `HardwareThread` executes a program written with `Step`,
+  `waitCondition`, `jump`, `Call`, and `Return`.
+* **Reusable control segments:** `HwInline` packages callable or inline transaction logic
+  that can be reused across call sites.
+* **Backend policy behind stable APIs:** arbitration, forwarding, ordered publication,
+  and commit discipline can live inside a component implementation rather than leaking
+  into every caller.
 
-* **Thread-Level RTL (TL-RTL):** Write sequential hardware logic using `HardwareThread` and `Step`. The compiler automatically flattens these into optimal FSMs with assigned Program Counters (PCs).
-* **Zero-Bubble `hijack`:** A compiler-level metaprogramming directive that inlines the closure of the next `Step` into the current cycle, enabling 0-cycle, zero-bubble state transitions without writing complex manual combinational bypasses.
-* **Portable Control Segments:** `HwInline` is the current first-class control code segment API for callable/inline control transactions.
-* **Thread as Execution Host:** `HardwareThread` is the unified runtime host for control flow, while control payload is carried by `HwInline` and process/service composition.
-* **Lightweight Symbolic v0:** `export / declare` provide explicit cross-boundary visibility and dependency recording, while same-process local code can still use direct Scala/Chisel interaction.
-* **Explicit Reset Reclaim Hooks:** `thread.reset()` is the default lifecycle primitive, and extra reclaim can be attached explicitly with `thread.registerReset { ... }` when needed.
-* **Hardware Stdlib:** Comes with a built-in, highly optimized concurrency library including `Semaphore` (with `initialCount = 1` as single-permit mutual exclusion), `WaitGroup` (using concurrent adder-trees), and `Scoreboard`.
-* **Native Semantic Observability (HwOSgdb):** A DPI-C and ncurses-based TUI debugger. It visualizes the dual-track CallStack (macro-temporal and micro-combinational) and supports time-travel debugging.
-* **Frontend/Backend Process Composition (Prototype CPU):** the current server-injected CPU prototype is organized as explicit `FrontendProcess` and `BackendProcess` containers, with decode dispatch decoupled from path execution and commit.
+## What Is Included
 
-## 🚀 Quick Start
+### Kernel
+
+`src/main/scala/HwOS/kernel/`
+
+The kernel provides the control construction substrate:
+
+* `HwProcess` as the service/component container
+* `HardwareThread` and `Step` as the control-flow execution model
+* `HwInline` for transaction segments
+* `SysCall.Call`, `SysCall.Return`, and thread lifecycle operations
+* `KernelAddressSpace` metadata for code/state/export/dependency tables
+* structured-control helpers and thread debug validation
+
+### Library Components
+
+`src/main/scala/HwOS/lib/`
+
+Reusable examples of timing-semantic APIs:
+
+* `lib/axi4`: AXI read transaction API
+* `lib/regfile`: base, semaphore-backed, scoreboard-backed, and age-ordered scoreboard
+  register files
+
+### Standard Library
+
+`src/main/scala/HwOS/stdlib/`
+
+Synchronization and ordering components used by the examples:
+
+* `Semaphore`
+* `Mutex`
+* `WaitGroup`
+* `Scoreboard`
+* `OrderedWindow`
+
+### CPU-Oriented Prototypes
+
+`src/main/scala/HwOS/prototype/cpu/`
+
+Small CPU/service experiments that exercise transaction APIs across interacting components:
+
+* server-injected decode
+* frontend/backend process composition
+* arithmetic, load, path, and commit services
+* scoreboard and age-ordered regfile integration
+* module-wrapper examples for wrapping service-style APIs
+
+These prototypes are not presented as performance-tuned CPU cores. They are stress cases for
+API boundaries, backpressure, arbitration, and backend policy factoring.
+
+### Tests
+
+`src/test/scala/HwOS/`
+
+The test suite covers kernel control behavior, symbolic export/declare behavior, standard
+library primitives, AXI APIs, register files, quick-start examples, and CPU prototypes.
+
+## Quick Start
 
 ### Prerequisites
-* JDK 17+ 
-* sbt (Scala Build Tool)
-* Verilator (for HwOSgdb and fast simulation)
-* `ncurses` library (for HwOSgdb UI)
 
-### 1. Run the Counter Example
-The quickest way to see HwOS in action is to run the QuickStart counter process.
+* JDK 17+
+* sbt
+* Verilator, if you want to use the generated RTL/debugger flow
+* `ncurses`, if you want to build the HwOSgdb TUI debugger
+
+### Run the Quick Start Test
 
 ```bash
-# Run the ScalaTest to simulate the Counter Process
 sbt "testOnly HwOS.quick_start.TopModuleSpec"
-
-# Or generate the SystemVerilog files and the Symbol Table
-sbt "runMain HwOS.quick_start.QuickStart"
-
 ```
 
-The generated SystemVerilog and `hwos.symbols` file will be located in the `generated/` directory.
+### Generate the Quick Start SystemVerilog
 
-### 2. A Glimpse of TL-RTL Code
+```bash
+sbt "runMain HwOS.quick_start.QuickStart"
+```
 
-Here is how you define a hardware process with a local thread in current HwOS:
+Generated SystemVerilog and symbol metadata are emitted under `generated/`.
+
+### Run Focused Component Tests
+
+```bash
+sbt "testOnly HwOS.lib.axi4.Axi4ReadApiSpec"
+sbt "testOnly HwOS.lib.regfile.AgeOrderedRegfileSpec"
+sbt "testOnly HwOS.stdlib.MutexSpec"
+sbt "testOnly HwOS.prototype.cpu.ServerInjectedFreeFlowSpec"
+```
+
+## Minimal Example
+
+This sketch shows the basic control style. A thread advances through named steps, can block
+with `waitCondition`, and can return through the system call layer.
 
 ```scala
-class CounterProcess(localName: String)(implicit kernel: Kernel) extends HwProcess(localName) {
-  // 1. Local process state
-  val counter  = RegInit(0.U(32.W))
-  
-  // 2. Spawn a hardware thread
-  val mainThread = createThread("MainThread")
+class CounterProcess(localName: String)(implicit kernel: Kernel)
+    extends HwProcess(localName) {
+  val counter = RegInit(0.U(32.W))
+  val main = createThread("Main")
 
   override def entry(): Unit = {
-    // 3. Define sequential logic
-    mainThread.entry {
-      mainThread.Step("Init") {
+    main.entry {
+      main.Step("Init") {
         counter := 0.U
       }
-      mainThread.Step("CountUp") {
+
+      main.Step("Count") {
         counter := counter + 1.U
-        mainThread.waitAndAct(counter === 10.U) {
-          mainThread.hijack(mainThread.Next)
-        }
+        main.waitCondition(counter === 10.U)
       }
-      mainThread.Step("Finish") {
-        SysCall.Call(SysCall.Return())
+
+      main.Step("Finish") {
+        SysCall.Return()
       }
     }
   }
 }
-
 ```
 
-## 🛠️ HwOSgdb: Source-Level Hardware Debugger
+## Documentation
 
-Stop guessing states from raw VCD waveforms. **HwOSgdb** is a terminal-based UI debugger that leverages DPI-C to stream live telemetry from your RTL simulation.
+The docs are still catching up with the current transaction-oriented framing, but they remain
+useful for understanding the implementation:
 
-### Building and Running HwOSgdb
+* [docs/architecture.md](docs/architecture.md): current implementation architecture
+* [docs/concepts.md](docs/concepts.md): core concept model
+* [docs/philosophy.md](docs/philosophy.md): design philosophy
+* [docs/vision.md](docs/vision.md): broader research framing
+* [docs/glossary.md](docs/glossary.md): terminology
+* [docs/api/README.md](docs/api/README.md): kernel API guide
+
+## HwOSgdb
+
+`HwOSgdb/` contains an experimental DPI-C and ncurses-based debugger. It is intended to make
+thread-level execution and call-stack behavior easier to inspect during RTL simulation.
+
+Typical flow:
 
 ```bash
-# First, generate the Verilog and symbols via sbt
-sbt "runMain HwOS.kernel.Example"
-
-# Navigate to the debugger directory
+sbt "runMain HwOS.kernel.examples.Example"
 cd HwOSgdb
-
-# Build the C++ simulator and TUI
 make
-
-# Run the interactive debugger
 ./hwosgdb
-
 ```
 
-### GDB Controls:
-
-* `[SPACE]`: Step exactly one clock cycle.
-* `[r]`: Run continuously.
-* `[s]`: Step-over (Run until the focused thread changes state).
-* `[TAB]`: Switch focus between Sidebar (Thread List) and Scope (Timeline).
-* `[UP/DOWN]`: Scroll through the Time-Travel history buffer.
-
-## 📂 Project Structure
-
-* `src/main/scala/HwOS/`
-* `kernel/`: The core framework (`HwProcess`, `HardwareThread`, `ThreadDef`, `HwInline`, `SysCall`).
-* `stdlib/`: Hardware synchronization primitives (`Semaphore`, `WaitGroup`, `Scoreboard`).
-* `lib/`: Standard components (e.g., `ScoreboardRegfile`).
-* `quick_start/`: Hello World examples.
-
----
-
-* `src/test/scala/HwOS/`: Comprehensive unit tests verifying deadlocks, lease reclaims, and RAW hazard stalling.
-* `HwOSgdb/`: The C++ and `ncurses` based TUI debugger and Verilator simulation engine.
-
-## 📄 Academic Citation
-
-If you find HwOS useful in your research, please consider citing our Technical Report / Preprint:
-
-```bibtex
-@misc{chen2026hwos,
-  author       = {Chen, Kaixin},
-  title        = {HwOS: A Thread-Level RTL Abstraction for Composable and Observable Hardware Design},
-  publisher    = {TechRxiv},
-  year         = {2026},
-  month        = {feb},
-  howpublished = {Preprint},
-  doi          = {10.36227/techrxiv.177155627.77438450/v1}, 
-  url          = {https://doi.org/10.36227/techrxiv.177155627.77438450/v1}
-}
 
 
+## License
 
-@techreport{chen2026hwos1.1,
-  title={HwOS 1.1 Technical Report: Ownership,
-Functional Hardware, and Zero-Bubble
-Concurrency},
-  author={Chen, Kaixin},
-  year={2026},
-  doi={https://doi.org/10.5281/zenodo.18795624}
-}
-
-```
-
-## 📜 License
-
-This project is licensed under the Apache License 2.0
+This project is licensed under the Apache License 2.0.
