@@ -1,7 +1,0 @@
-Init/Demo/Main_thread 0 Init 0 None 0 None
-Init/Demo/Main_thread 1 WaitLink 0 None 0 None
-Init/Demo/Main_thread 2 PrepareHeader 0 None 0 None
-Init/Demo/Main_thread 3 Transmit 0 None 0 None
-Init/Demo/Main_thread 4 Ack 0 None 0 None
-Init/Demo/Main_thread 5 Finish 0 None 0 None
-Init/Demo/Main_thread 6 Anon_Return_to_ThreadExit 0 None 0 None
